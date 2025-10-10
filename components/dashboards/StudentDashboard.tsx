@@ -1,4 +1,3 @@
-// FIX: Implemented an interactive StudentDashboard component which was a placeholder. It includes features like gamification, recent grades, a link to a parent portal, and an AI chat assistant.
 import React, { useState } from 'react';
 import { User } from '../../types';
 import Card from '../Card';
@@ -66,7 +65,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
           </Card>
           <Card title="Absensi Bulan Ini">
             <div className="text-center">
-                <p className="text-4xl font-bold text-gray-800">98%</p>
+                <p className="text-4xl font-bold text-gray-800">95%</p>
                 <p className="text-sm text-gray-500">Kehadiran</p>
             </div>
              <button onClick={() => onNavigate('Absensi')} className="mt-4 w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Detail Absensi</button>
@@ -74,7 +73,6 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
         </div>
       </div>
 
-      {/* AI Chat Assistant FAB */}
       <button 
         onClick={() => setShowAIChat(true)}
         className="fixed bottom-6 right-6 bg-brand-600 text-white p-4 rounded-full shadow-lg hover:bg-brand-700 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 z-40"

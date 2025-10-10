@@ -1,9 +1,72 @@
-// FIX: Implemented the ManageSchoolsPage component which was a placeholder, resolving 'not a module' errors. It currently displays a placeholder page.
-import React from 'react';
-import PlaceholderPage from './PlaceholderPage';
+import React, { useState } from 'react';
+import Card from '../Card';
+import { MOCK_SCHOOLS } from '../../constants';
+import { School } from '../../types';
+import Modal from '../ui/Modal';
+import { PlusIcon } from '../icons/PlusIcon';
+import { PencilIcon } from '../icons/PencilIcon';
+import { TrashIcon } from '../icons/TrashIcon';
 
 const ManageSchoolsPage: React.FC = () => {
-    return <PlaceholderPage title="Kelola Sekolah" />;
+    const [schools, setSchools] = useState<School[]>(MOCK_SCHOOLS);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+
+    const openModal = (school: School | null = null) => {
+        setSelectedSchool(school);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedSchool(null);
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Kelola Sekolah</h2>
+                <button
+                    onClick={() => openModal()}
+                    className="flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
+                >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Tambah Sekolah
+                </button>
+            </div>
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-500">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3">Nama Sekolah</th>
+                                <th className="px-6 py-3">Jenjang</th>
+                                <th className="px-6 py-3">Alamat</th>
+                                <th className="px-6 py-3 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {schools.map(school => (
+                                <tr key={school.id} className="bg-white border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4 font-medium text-gray-900">{school.name}</td>
+                                    <td className="px-6 py-4">{school.level}</td>
+                                    <td className="px-6 py-4">{school.address}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button onClick={() => openModal(school)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
+                                        <button className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
+
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedSchool ? "Edit Sekolah" : "Tambah Sekolah"}>
+                <p>Formulir untuk menambah atau mengedit sekolah akan ditampilkan di sini.</p>
+            </Modal>
+        </div>
+    );
 };
 
 export default ManageSchoolsPage;

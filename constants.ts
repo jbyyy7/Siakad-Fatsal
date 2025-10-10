@@ -1,90 +1,99 @@
-// FIX: Implemented the content for `constants.ts` which was a placeholder. This file now contains mock data for schools, users, and grades, resolving multiple "not a module" errors across the application.
-import { User, UserRole, School, GamificationProfile, Badge, JournalEntry } from './types';
+import { User, UserRole, School, GamificationProfile, JournalEntry, Badge, Announcement } from './types';
 
 export const MOCK_SCHOOLS: School[] = [
-  { id: 'ra_fs', name: 'RA Fathus Salafi', level: 'RA', address: 'Jl. Ceria No. 1' },
-  { id: 'mi_fs', name: 'MI Fathus Salafi', level: 'MI', address: 'Jl. Pendidikan No. 10' },
-  { id: 'mts_fs', name: 'MTs Fathus Salafi', level: 'MTs', address: 'Jl. Prestasi No. 5' },
-  { id: 'ma_fs', name: 'MA Fathus Salafi', level: 'MA', address: 'Jl. Ilmu No. 12' },
+  { id: 'ma_fs', name: 'MA Fathus Salafi', level: 'Madrasah Aliyah', address: 'Jl. Pesantren No. 1, Pagentan' },
+  { id: 'mts_fs', name: 'MTS Fathus Salafi', level: 'Madrasah Tsanawiyah', address: 'Jl. Pesantren No. 2, Pagentan' },
 ];
 
 export const MOCK_USERS: User[] = [
-  // Admins
-  { id: 'admin_01', email: 'admin@fathussalafi.ac.id', username: 'admin', name: 'Admin Sistem', role: UserRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=admin_01' },
-  // Foundation
-  { id: 'ky_01', email: 'kepala.yayasan@fathussalafi.ac.id', username: 'kepala.yayasan', name: 'Bpk. H. Ahmad', role: UserRole.FOUNDATION_HEAD, avatarUrl: 'https://i.pravatar.cc/150?u=ky_01' },
+  // Admin
+  { id: 'admin-01', email: 'admin@siakad.dev', username: 'admin', name: 'Admin Utama', role: UserRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=admin-01' },
+  // Foundation Head
+  { id: 'head-01', email: 'yayasan@siakad.dev', username: 'kepala.yayasan', name: 'Dr. H. Ahmad Fauzi', role: UserRole.FOUNDATION_HEAD, avatarUrl: 'https://i.pravatar.cc/150?u=head-01' },
   // Principals
-  { id: 'ks_mi_01', email: 'kepsek.mi@fathussalafi.ac.id', username: 'kepsek.mi', name: 'Ibu Budiarti', role: UserRole.PRINCIPAL, schoolId: 'mi_fs', schoolName: 'MI Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=ks_mi_01' },
-  { id: 'ks_ma_01', email: 'kepsek.ma@fathussalafi.ac.id', username: 'kepsek.ma', name: 'Bpk. Susilo', role: UserRole.PRINCIPAL, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=ks_ma_01' },
+  { id: 'principal-ma', email: 'kepsek.ma@siakad.dev', username: 'kepsek.ma', name: 'Budi Santoso, S.Pd.', role: UserRole.PRINCIPAL, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-ma' },
+  { id: 'principal-mts', email: 'kepsek.mts@siakad.dev', username: 'kepsek.mts', name: 'Siti Aminah, M.Pd.', role: UserRole.PRINCIPAL, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-mts' },
   // Teachers
-  { id: 'guru_mi_01', email: 'rina.m@fathussalafi.ac.id', username: 'rina.m', name: 'Rina Mustika', role: UserRole.TEACHER, schoolId: 'mi_fs', schoolName: 'MI Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=guru_mi_01' },
-  { id: 'guru_ma_01', email: 'eko.w@fathussalafi.ac.id', username: 'eko.w', name: 'Eko Wibowo', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=guru_ma_01' },
+  { id: 'teacher-01', email: 'eko.wibowo@siakad.dev', username: '198503152010011001', name: 'Eko Wibowo, S.Pd.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-01' },
+  { id: 'teacher-02', email: 'dewi.lestari@siakad.dev', username: '199008202015032002', name: 'Dewi Lestari, S.Si.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-02' },
+   { id: 'teacher-03', email: 'rudi.hartono@siakad.dev', username: '198801012012011003', name: 'Rudi Hartono, S.Kom.', role: UserRole.TEACHER, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-03' },
   // Students
-  { id: 'siswa_mi_01', email: 'andi.mi@fathussalafi.ac.id', username: 'andi.mi', name: 'Andi Pratama', role: UserRole.STUDENT, schoolId: 'mi_fs', schoolName: 'MI Fathus Salafi', level: 'MI', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_mi_01' },
-  { id: 'siswa_ma_01', email: 'cinta.ma@fathussalafi.ac.id', username: 'cinta.ma', name: 'Cinta Ayu', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_ma_01' },
-  { id: 'siswa_ma_02', email: 'budi.d@fathussalafi.ac.id', username: 'budi.d', name: 'Budi Doremi', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_ma_02' },
-  { id: 'siswa_ma_03', email: 'dewi.p@fathussalafi.ac.id', username: 'dewi.p', name: 'Dewi Persada', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_ma_03' },
-  { id: 'siswa_ma_04', email: 'fitri.a@fathussalafi.ac.id', username: 'fitri.a', name: 'Fitri Anggraini', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_ma_04' },
-  { id: 'siswa_ma_05', email: 'gita.s@fathussalafi.ac.id', username: 'gita.s', name: 'Gita Savitri', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA', avatarUrl: 'https://i.pravatar.cc/150?u=siswa_ma_05' },
+  { id: 'student-01', email: 'ahmad.zain@siakad.dev', username: '1001', name: 'Ahmad Zain', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-01' },
+  { id: 'student-02', email: 'budi.darmawan@siakad.dev', username: '1002', name: 'Budi Darmawan', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-02' },
+  { id: 'student-03', email: 'cindy.putri@siakad.dev', username: '1003', name: 'Cindy Putri', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-03' },
+  { id: 'student-04', email: 'dian.sari@siakad.dev', username: '2001', name: 'Dian Sari', role: UserRole.STUDENT, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', level: 'MTS Kelas 8-B', avatarUrl: 'https://i.pravatar.cc/150?u=student-04' },
 ];
 
-
-export const MOCK_GRADES: { [studentId: string]: { subject: string; grade: string; score: number }[] } = {
-  'siswa_ma_01': [
-    { subject: 'Matematika', grade: 'A-', score: 88 },
-    { subject: 'Fisika', grade: 'B+', score: 82 },
-    { subject: 'Kimia', grade: 'A', score: 91 },
-    { subject: 'Biologi', grade: 'B', score: 78 },
-    { subject: 'Bahasa Indonesia', grade: 'A', score: 95 },
-    { subject: 'Bahasa Inggris', grade: 'A-', score: 89 },
+export const MOCK_GRADES: Record<string, { subject: string, score: number, grade: string }[]> = {
+  'student-01': [
+    { subject: 'Matematika', score: 88, grade: 'A-' },
+    { subject: 'Bahasa Indonesia', score: 92, grade: 'A' },
+    { subject: 'Fisika', score: 85, grade: 'B+' },
+    { subject: 'Kimia', score: 90, grade: 'A' },
+    { subject: 'Biologi', score: 78, grade: 'B' },
+    { subject: 'Sejarah', score: 82, grade: 'B' },
   ],
-  'siswa_mi_01': [
-    { subject: 'Matematika', grade: 'A', score: 92 },
-    { subject: 'Bahasa Indonesia', grade: 'A-', score: 89 },
-    { subject: 'IPA', grade: 'A', score: 95 },
+  'student-02': [
+    { subject: 'Matematika', score: 75, grade: 'B' },
+    { subject: 'Bahasa Indonesia', score: 80, grade: 'B' },
+    { subject: 'Fisika', score: 72, grade: 'C+' },
+    { subject: 'Kimia', score: 78, grade: 'B' },
+    { subject: 'Biologi', score: 81, grade: 'B' },
+    { subject: 'Sejarah', score: 85, grade: 'B+' },
+  ],
+};
+
+export const MOCK_TEACHER_NOTES: Record<string, string> = {
+  'student-01': "Ahmad menunjukkan perkembangan yang sangat baik semester ini, terutama di bidang IPA. Pertahankan semangat belajarmu!",
+};
+
+export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> = {
+  'student-01': [
+    ...Array.from({ length: 24 }, (_, i) => {
+      const day = i + 1;
+      const date = new Date(2024, 6, day); // July
+      // Skip weekends
+      if (date.getDay() === 0 || date.getDay() === 6) {
+        return null;
+      }
+      return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' };
+    }).filter(Boolean) as { date: string, status: 'Hadir' }[],
+    { date: '2024-07-08', status: 'Sakit' },
+    { date: '2024-07-15', status: 'Izin' },
+  ].sort((a,b) => a.date.localeCompare(b.date)),
+};
+
+
+export const MOCK_JOURNAL: Record<string, JournalEntry[]> = {
+  '2024-07-25': [
+    { teacherId: 'teacher-01', classId: '10-a', subject: 'Matematika', date: '2024-07-25', topic: 'Trigonometri Dasar' },
+    { teacherId: 'teacher-01', classId: '10-b', subject: 'Matematika', date: '2024-07-25', topic: 'Pengenalan Logaritma' },
   ]
 };
 
-export const MOCK_BADGES: Badge[] = [
-    { id: 'b01', name: 'Bintang Kelas', description: 'Mendapatkan nilai rata-rata di atas 90.', icon: '⭐' },
-    { id: 'b02', name: 'Rajin Membaca', description: 'Menyelesaikan 10 buku bacaan.', icon: '📚' },
-    { id: 'b03', name: 'Absensi Sempurna', description: 'Tidak pernah absen dalam sebulan.', icon: '✅' },
+const badgeData: Badge[] = [
+    { id: 'b-math-1', name: 'Ahli Aljabar', description: 'Menyelesaikan 100 soal aljabar', icon: '🧮' },
+    { id: 'b-phys-1', name: 'Newton Muda', description: 'Menguasai konsep dasar mekanika', icon: '🍎' },
+    { id: 'b-bio-1', name: 'Penjelajah Sel', description: 'Mengidentifikasi seluruh organel sel', icon: '🔬' },
+    { id: 'b-hist-1', name: 'Saksi Sejarah', description: 'Menghafal 50 tanggal penting', icon: '📜' },
 ];
 
-export const MOCK_GAMIFICATION: { [studentId: string]: GamificationProfile } = {
-    'siswa_ma_01': {
-        studentId: 'siswa_ma_01',
-        points: 1250,
-        level: 12,
-        progress: { 'Matematika': 88, 'Fisika': 82, 'Kimia': 91, 'Biologi': 78 },
-        badges: [MOCK_BADGES[0], MOCK_BADGES[1]],
+export const MOCK_GAMIFICATION: Record<string, GamificationProfile> = {
+  'student-01': {
+    studentId: 'student-01',
+    points: 1250,
+    level: 12,
+    progress: {
+      'Matematika': 88,
+      'Fisika': 85,
+      'Kimia': 90,
+      'Biologi': 78,
     },
-    'siswa_mi_01': {
-        studentId: 'siswa_mi_01',
-        points: 850,
-        level: 8,
-        progress: { 'Matematika': 92, 'Bahasa Indonesia': 89, 'IPA': 95 },
-        badges: [MOCK_BADGES[0], MOCK_BADGES[2]],
-    }
+    badges: [badgeData[0], badgeData[1], badgeData[2]],
+  },
 };
 
-export const MOCK_JOURNAL: { [date: string]: JournalEntry[] } = {
-    '2024-07-25': [
-        { teacherId: 'guru_mi_01', classId: 'mi-4a', subject: 'Matematika', date: '2024-07-25', topic: 'Penjumlahan Dasar' },
-        { teacherId: 'guru_mi_01', classId: 'mi-4a', subject: 'Bahasa Indonesia', date: '2024-07-25', topic: 'Membaca Lancar' },
-    ]
-};
-
-export const MOCK_TEACHER_NOTES: { [studentId: string]: string } = {
-    'siswa_ma_01': "Cinta menunjukkan perkembangan yang sangat baik di semester ini, terutama dalam mata pelajaran sains. Ia aktif bertanya di kelas dan memiliki rasa ingin tahu yang tinggi. Pertahankan semangat belajarmu dan teruslah berlatih dalam manajemen waktu untuk tugas-tugas besar.",
-};
-
-type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
-export const MOCK_ATTENDANCE: { [studentId: string]: { date: string; status: AttendanceStatus }[] } = {
-    'siswa_ma_01': [
-        { date: '2024-07-01', status: 'Hadir' }, { date: '2024-07-02', status: 'Hadir' }, { date: '2024-07-03', status: 'Sakit' }, { date: '2024-07-04', status: 'Hadir' }, { date: '2024-07-05', status: 'Hadir' },
-        { date: '2024-07-08', status: 'Hadir' }, { date: '2024-07-09', status: 'Hadir' }, { date: '2024-07-10', status: 'Hadir' }, { date: '2024-07-11', status: 'Hadir' }, { date: '2024-07-12', status: 'Izin' },
-        { date: '2024-07-15', status: 'Hadir' }, { date: '2024-07-16', status: 'Hadir' }, { date: '2024-07-17', status: 'Hadir' }, { date: '2024-07-18', status: 'Alpha' }, { date: '2024-07-19', status: 'Hadir' },
-        { date: '2024-07-22', status: 'Hadir' }, { date: '2024-07-23', status: 'Hadir' }, { date: '2024-07-24', status: 'Sakit' }, { date: '2024-07-25', status: 'Hadir' }, { date: '2024-07-26', status: 'Hadir' },
-    ]
-};
+export const MOCK_ANNOUNCEMENTS: Announcement[] = [
+    { id: 'ann-1', title: 'Rapat Persiapan Ujian Akhir Semester', content: 'Diberitahukan kepada seluruh dewan guru untuk menghadiri rapat persiapan UAS yang akan dilaksanakan pada hari Senin depan.', date: '2024-07-22', author: 'Dr. H. Ahmad Fauzi' },
+    { id: 'ann-2', title: 'Informasi Libur Idul Adha', content: 'Sehubungan dengan perayaan Idul Adha, kegiatan belajar mengajar akan diliburkan selama 3 hari.', date: '2024-07-15', author: 'Dr. H. Ahmad Fauzi' },
+];

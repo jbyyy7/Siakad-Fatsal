@@ -25,7 +25,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       onLogin(user);
     } catch (err: any) {
       console.error("Login error:", err);
-      // Use the specific error message from the service, or a default.
       setError(err.message || 'Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setIsLoading(false);

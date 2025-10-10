@@ -21,22 +21,20 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
         }
     };
     
-    // Create a map for quick lookup
     const attendanceMap = new Map(attendanceData.map(item => [item.date, item.status]));
 
-    // Generate calendar days for July 2024
     const year = 2024;
     const month = 6; // 0-indexed for July
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun, 1=Mon...
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
 
     const calendarDays = Array.from({ length: daysInMonth }, (_, i) => {
         const day = i + 1;
         const date = `${year}-07-${day.toString().padStart(2, '0')}`;
         return { date, status: attendanceMap.get(date) || 'Belum Tercatat' };
     });
-
-    const emptySlots = Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth -1 });
+    
+    const emptySlots = Array(firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1).fill(null);
 
     const summary = attendanceData.reduce((acc, curr) => {
         acc[curr.status] = (acc[curr.status] || 0) + 1;
@@ -90,9 +88,10 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
 
                     <div className="grid grid-cols-7 gap-2">
                         {emptySlots.map((_, index) => <div key={`empty-${index}`}></div>)}
-                        {calendarDays.map(({ date, status }, index) => {
+                        {calendarDays.map(({ date, status }) => {
                              const dayOfMonth = new Date(date).getDate();
-                             const isWeekend = (new Date(date).getDay() === 6) || (new Date(date).getDay() === 0);
+                             const dayOfWeek = new Date(date).getDay();
+                             const isWeekend = dayOfWeek === 6 || dayOfWeek === 0;
                              const color = isWeekend ? 'bg-gray-100' : getStatusColor(status);
                              
                              return (
@@ -100,7 +99,7 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                                     <div className={`w-full h-full rounded-md flex items-center justify-center ${color} text-white text-sm font-bold`}>
                                         {dayOfMonth}
                                     </div>
-                                    <div className="absolute bottom-full mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    <div className="absolute bottom-full mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                         {date}: {isWeekend ? "Libur" : status}
                                     </div>
                                 </div>

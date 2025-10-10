@@ -17,8 +17,6 @@ const App: React.FC = () => {
         }
       } catch (error) {
         console.error("Gagal memeriksa sesi pengguna:", error);
-        // Jika pemeriksaan sesi gagal, anggap saja pengguna keluar.
-        // Dengan begini aplikasi tidak akan crash dan bisa menampilkan halaman login.
         setCurrentUser(null);
       } finally {
         setIsLoading(false);

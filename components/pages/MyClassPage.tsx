@@ -1,11 +1,14 @@
-// FIX: Implemented the MyClassPage component which was a placeholder.
 import React from 'react';
 import Card from '../Card';
 import { MOCK_USERS } from '../../constants';
-import { UserRole } from '../../types';
+import { User, UserRole } from '../../types';
 
-const MyClassPage: React.FC = () => {
-    const students = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === 'ma_fs');
+interface MyClassPageProps {
+    user: User;
+}
+
+const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
+    const students = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === user.schoolId);
 
     return (
         <div>

@@ -1,4 +1,3 @@
-// FIX: Implemented the content for `types.ts` which was a placeholder. This file now contains all the necessary type definitions for the application, resolving multiple "not a module" and "Cannot find name" errors across various components.
 export enum UserRole {
   ADMIN = 'Admin',
   FOUNDATION_HEAD = 'Kepala Yayasan',
@@ -54,4 +53,12 @@ export interface NotificationSettings {
     attendance: boolean;
     newAssignment: boolean;
     dailyReport: boolean;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  author: string;
 }

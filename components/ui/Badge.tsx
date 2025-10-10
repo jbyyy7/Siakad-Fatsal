@@ -1,4 +1,3 @@
-// FIX: Implemented a functional Badge component to resolve "not a module" errors. The file was previously empty.
 import React from 'react';
 
 interface BadgeProps {

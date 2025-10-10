@@ -1,13 +1,16 @@
-// FIX: Implemented the StudentAttendancePage component which was a placeholder.
 import React, { useState } from 'react';
 import Card from '../Card';
 import { MOCK_USERS } from '../../constants';
-import { UserRole } from '../../types';
+import { User, UserRole } from '../../types';
 
 type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
 
-const StudentAttendancePage: React.FC = () => {
-    const students = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === 'ma_fs');
+interface StudentAttendancePageProps {
+  user: User;
+}
+
+const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) => {
+    const students = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === user.schoolId);
     const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>(
         students.reduce((acc, student) => ({ ...acc, [student.id]: 'Hadir' }), {})
     );

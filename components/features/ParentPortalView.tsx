@@ -30,7 +30,6 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
     }
     
     const handleSave = () => {
-        // Simulate saving
         console.log("Saving settings:", settings);
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
@@ -59,7 +58,7 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
                  </Card>
                  <Card className="bg-green-50">
                     <p className="text-lg font-medium text-green-800">Tingkat Kehadiran</p>
-                    <p className="text-4xl font-bold text-green-900">98%</p>
+                    <p className="text-4xl font-bold text-green-900">95%</p>
                  </Card>
                  <Card className="bg-yellow-50">
                     <p className="text-lg font-medium text-yellow-800">Tugas Belum Selesai</p>

@@ -3,7 +3,6 @@ import Card from '../Card';
 import { MOCK_GAMIFICATION } from '../../constants';
 import ProgressBar from '../ui/ProgressBar';
 import { AcademicCapIcon } from '../icons/AcademicCapIcon';
-// FIX: Corrected import for Badge component to use the default export.
 import BadgeUI from '../ui/Badge';
 
 interface GamificationSectionProps {
@@ -14,13 +13,12 @@ const GamificationSection: React.FC<GamificationSectionProps> = ({ studentId }) 
   const profile = MOCK_GAMIFICATION[studentId];
 
   if (!profile) {
-    return null; // or a default state
+    return null;
   }
 
   return (
     <Card title="Perjalanan Belajarku" icon={AcademicCapIcon}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Progress Section */}
         <div className="md:col-span-2">
           <h4 className="font-semibold text-gray-700 mb-3">Penguasaan Materi</h4>
           <div className="space-y-4">
@@ -36,7 +34,6 @@ const GamificationSection: React.FC<GamificationSectionProps> = ({ studentId }) 
           </div>
         </div>
 
-        {/* Badges Section */}
         <div className="md:col-span-1">
           <h4 className="font-semibold text-gray-700 mb-3">Lencana Prestasi</h4>
           <div className="flex flex-wrap gap-2">

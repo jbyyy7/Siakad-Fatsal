@@ -27,7 +27,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
         hadir: 20,
         sakit: 2,
         izin: 1,
-        alpha: 1,
+        alpha: 0,
     };
     
     const totalDays = Object.values(attendanceSummary).reduce((a, b) => a + b, 0);
@@ -49,13 +49,11 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
             </div>
 
             <div id="printable-report-card" className="printable-area bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                {/* --- Print Header (Hidden on screen) --- */}
                 <div className="hidden print-header">
                     <h1>SIAKAD Fathus Salafi</h1>
                     <p>Laporan Hasil Belajar Siswa - Semester Ganjil 2024/2025</p>
                 </div>
 
-                {/* --- Report Card Header --- */}
                 <div className="grid grid-cols-2 gap-4 mb-8 pb-4 border-b">
                     <div>
                         <p className="text-sm text-gray-500">Nama Siswa</p>
@@ -71,11 +69,10 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Kelas</p>
-                        <p className="font-bold text-lg text-gray-800">MA Kelas 10-A</p>
+                        <p className="font-bold text-lg text-gray-800">{user.level}</p>
                     </div>
                 </div>
 
-                {/* --- Grades Table --- */}
                 <Card title="Detail Nilai Akademik" icon={ChartBarIcon} className="shadow-none border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-500">
@@ -111,7 +108,6 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </div>
                 </Card>
 
-                {/* --- Additional Info --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <Card title="Kehadiran & Prestasi" className="shadow-none border">
                         <h4 className="font-semibold mb-2">Rekap Kehadiran Semester</h4>
@@ -132,7 +128,6 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </Card>
                 </div>
                 
-                {/* --- AI Review --- */}
                 <Card title="Ulasan Asisten AI" icon={SparklesIcon} className="mt-6 shadow-none border bg-brand-50">
                      <p className="text-sm text-brand-900">{aiReview}</p>
                 </Card>

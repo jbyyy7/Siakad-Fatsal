@@ -1,4 +1,3 @@
-// FIX: Implemented the ClassSchedulePage component which was a placeholder.
 import React from 'react';
 import Card from '../Card';
 import { CalendarIcon } from '../icons/CalendarIcon';

@@ -1,4 +1,3 @@
-// FIX: Implemented the AdminDashboard component which was a placeholder, resolving 'not a module' errors. This component now displays key statistics and quick navigation links for administrators.
 import React from 'react';
 import { User } from '../../types';
 import Card from '../Card';
@@ -40,7 +39,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onNavigate }) => 
             <CogIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
               <p className="text-sm text-gray-500">Versi Sistem</p>
-              <p className="text-2xl font-bold text-gray-800">1.0.0</p>
+              <p className="text-2xl font-bold text-gray-800">1.1.0</p>
             </div>
           </div>
         </Card>

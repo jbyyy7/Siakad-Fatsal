@@ -1,4 +1,3 @@
-// FIX: Implemented the FoundationHeadDashboard component which was a placeholder. It now shows high-level statistics and navigation relevant to a foundation head.
 import React from 'react';
 import { User } from '../../types';
 import Card from '../Card';

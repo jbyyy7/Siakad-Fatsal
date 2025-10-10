@@ -1,4 +1,3 @@
-// FIX: Implemented the TeacherDashboard component which was a placeholder. It provides teachers with quick access to input grades, take attendance, and view their class schedules.
 import React from 'react';
 import { User } from '../../types';
 import Card from '../Card';
@@ -6,6 +5,7 @@ import { MOCK_JOURNAL } from '../../constants';
 import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { CalendarIcon } from '../icons/CalendarIcon';
+import { BookOpenIcon } from '../icons/BookOpenIcon';
 
 interface TeacherDashboardProps {
   user: User;
@@ -33,6 +33,22 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
                 </button>
              </div>
            </Card>
+
+           <Card title="Jurnal Mengajar Hari Ini" icon={BookOpenIcon}>
+                {journalToday.length > 0 ? (
+                    <ul className="space-y-3">
+                        {journalToday.map((entry, index) => (
+                            <li key={index} className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-400">
+                                <p className="font-bold text-blue-800">{entry.subject} - Kelas {entry.classId.toUpperCase()}</p>
+                                <p className="text-sm text-blue-700">Materi: {entry.topic}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-gray-500">Belum ada jurnal mengajar yang diisi untuk hari ini.</p>
+                )}
+           </Card>
+
            <Card title="Jadwal Mengajar Hari Ini" icon={CalendarIcon}>
                 <ul className="space-y-2">
                     <li className="flex justify-between p-2 bg-gray-50 rounded"><span>07:30 - 09:00</span><strong>Matematika - Kelas 10-A</strong></li>

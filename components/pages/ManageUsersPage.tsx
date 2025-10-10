@@ -1,9 +1,119 @@
-// FIX: Implemented the ManageUsersPage component which was a placeholder, resolving 'not a module' errors. It currently displays a placeholder page.
-import React from 'react';
-import PlaceholderPage from './PlaceholderPage';
+import React, { useState, useMemo } from 'react';
+import Card from '../Card';
+import { MOCK_USERS, MOCK_SCHOOLS } from '../../constants';
+import { User, UserRole, School } from '../../types';
+import Modal from '../ui/Modal';
+import { PlusIcon } from '../icons/PlusIcon';
+import { PencilIcon } from '../icons/PencilIcon';
+import { TrashIcon } from '../icons/TrashIcon';
 
 const ManageUsersPage: React.FC = () => {
-    return <PlaceholderPage title="Kelola Pengguna" />;
+    const [users, setUsers] = useState<User[]>(MOCK_USERS);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
+    const [schoolFilter, setSchoolFilter] = useState<string | 'all'>('all');
+
+    const openModal = (user: User | null = null) => {
+        setSelectedUser(user);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+    };
+
+    const filteredUsers = useMemo(() => {
+        return users
+            .filter(user => searchTerm === '' || user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .filter(user => roleFilter === 'all' || user.role === roleFilter)
+            .filter(user => schoolFilter === 'all' || user.schoolId === schoolFilter);
+    }, [users, searchTerm, roleFilter, schoolFilter]);
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Kelola Pengguna</h2>
+                <button
+                    onClick={() => openModal()}
+                    className="flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
+                >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Tambah Pengguna
+                </button>
+            </div>
+            
+            <Card className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                        type="text"
+                        placeholder="Cari nama pengguna..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                    />
+                    <select
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                    >
+                        <option value="all">Semua Peran</option>
+                        {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
+                    </select>
+                     <select
+                        value={schoolFilter}
+                        onChange={(e) => setSchoolFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                    >
+                        <option value="all">Semua Sekolah</option>
+                        {MOCK_SCHOOLS.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                    </select>
+                </div>
+            </Card>
+
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-500">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3">Nama</th>
+                                <th className="px-6 py-3">Email</th>
+                                <th className="px-6 py-3">Peran</th>
+                                <th className="px-6 py-3">Sekolah</th>
+                                <th className="px-6 py-3 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredUsers.map(user => (
+                                <tr key={user.id} className="bg-white border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                            <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3"/>
+                                            {user.name}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">{user.email}</td>
+                                    <td className="px-6 py-4">{user.role}</td>
+                                    <td className="px-6 py-4">{user.schoolName || '-'}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button onClick={() => openModal(user)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
+                                        <button className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
+
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedUser ? "Edit Pengguna" : "Tambah Pengguna"}>
+                <p>Formulir untuk menambah atau mengedit pengguna akan ditampilkan di sini.</p>
+                {/* Placeholder for form fields */}
+            </Modal>
+        </div>
+    );
 };
 
 export default ManageUsersPage;

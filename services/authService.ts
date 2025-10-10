@@ -32,7 +32,7 @@ const mapSupabaseUserToAppUser = async (supabaseUser: any): Promise<User | null>
       avatarUrl: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.id}`,
       schoolId: profile.school_id || undefined,
       schoolName: (profile.school as any)?.name || undefined,
-      level: (profile.school as any)?.level || undefined,
+      level: profile.level || (profile.school as any)?.level || undefined,
     };
   } catch(e) {
       console.error("Failed to map Supabase user:", e);
@@ -68,7 +68,6 @@ const login = async (identifier: string, password: string): Promise<User> => {
     });
 
     if (error) {
-        // Provide a more user-friendly message for invalid credentials
         if (error.message.includes('Invalid login credentials')) {
             throw new Error('Nomor Induk atau password salah.');
         }
@@ -82,7 +81,6 @@ const login = async (identifier: string, password: string): Promise<User> => {
     const appUser = await mapSupabaseUserToAppUser(data.user);
 
     if (!appUser) {
-        // This case can happen if a user exists in auth.users but not in public.profiles
         await supabase.auth.signOut();
         throw new Error('Login berhasil, namun profil pengguna tidak dapat dimuat.');
     }

@@ -1,4 +1,3 @@
-// FIX: Implemented the PrincipalDashboard component which was a placeholder. It now displays school-specific data like teacher and student counts.
 import React from 'react';
 import { User, UserRole } from '../../types';
 import Card from '../Card';

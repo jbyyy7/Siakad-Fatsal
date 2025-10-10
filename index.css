@@ -38,27 +38,4 @@ html {
   .print-header p {
     font-size: 14px;
   }
-
-  /* Specific styles for report card */
-  #printable-report-card .print-header {
-    text-align: left;
-    border-bottom: 2px solid #333;
-    padding-bottom: 1rem;
-  }
-   #printable-report-card .print-header h1 {
-    font-size: 24px;
-   }
-
-  /* Specific styles for attendance calendar */
-  #printable-attendance .attendance-calendar-print {
-      display: grid !important;
-      grid-template-columns: repeat(7, 1fr) !important;
-      gap: 4px !important;
-  }
-  #printable-attendance .attendance-day-print {
-      border: 1px solid #ccc;
-      padding: 4px;
-      text-align: center;
-      height: 40px;
-  }
 }
