@@ -41,7 +41,8 @@ const getCurrentUser = async (): Promise<User | null> => {
       await new Promise(resolve => setTimeout(resolve, 100)); // Simulate check
       console.log("Sesi aktif ditemukan untuk pengguna:", user);
       return user;
-    } catch (error)
+// FIX: Added curly braces to the catch block to define its scope correctly.
+    } catch (error) {
       console.error("Gagal mem-parsing data sesi pengguna:", error);
       localStorage.removeItem(USER_SESSION_KEY);
       return null;

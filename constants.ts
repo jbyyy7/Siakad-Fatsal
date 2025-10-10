@@ -49,15 +49,15 @@ export const MOCK_TEACHER_NOTES: Record<string, string> = {
 
 export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> = {
   'student-01': [
-    // FIX: Correctly typed the generated attendance data to match the required literal type for the 'status' property.
-    ...Array.from({ length: 24 }, (_, i): { date: string; status: 'Hadir' } | null => {
+    // FIX: Using `as const` ensures TypeScript infers the literal type 'Hadir' for the status property, not the general type 'string'.
+    ...Array.from({ length: 24 }, (_, i) => {
       const day = i + 1;
       const date = new Date(2024, 6, day); // July
       // Skip weekends
       if (date.getDay() === 0 || date.getDay() === 6) {
         return null;
       }
-      return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' };
+      return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' as const };
     }).filter((v): v is { date: string; status: 'Hadir' } => Boolean(v)),
     { date: '2024-07-08', status: 'Sakit' },
     { date: '2024-07-15', status: 'Izin' },
