@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://aistudiocdn.com/supabase-js@^2.45.0';
 
 // Implementasi sederhana dari storage di dalam memori untuk lingkungan tanpa localStorage
 class InMemoryStorage {
@@ -31,7 +31,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Inisialisasi klien Supabase dengan opsi custom storage
 // Ini akan membuat aplikasi bekerja di browser biasa DAN di preview AI Studio
-// FIX: The custom storage implementation must be provided under the `auth` key, not `global`. This resolves the type error.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: new InMemoryStorage(),
