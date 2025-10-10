@@ -1,0 +1,5 @@
+{
+  "name": "SIAKAD Fathus Salafi",
+  "description": "Sistem Informasi Akademik Terpadu untuk Yayasan Fathus Salafi yang menaungi berbagai jenjang sekolah, dari TK hingga SMA. Aplikasi ini menyediakan portal login multi-peran untuk admin, pimpinan yayasan, kepala sekolah, guru, dan siswa.",
+  "requestFramePermissions": []
+}
