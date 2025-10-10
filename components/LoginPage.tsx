@@ -10,7 +10,7 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [identifier, setIdentifier] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,96 +19,81 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
     try {
-      const user = await authService.login(identifier, password);
+      // Password is not checked in this mock implementation
+      const user = await authService.login(username);
       onLogin(user);
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      setError(err.message || 'Terjadi kesalahan saat login.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center items-center">
-          <AcademicCapIcon className="h-12 w-12 text-brand-700"/>
-          <h2 className="ml-3 text-center text-3xl font-extrabold text-gray-900">
-            SIAKAD Fathus Salafi
-          </h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div className="text-center">
+          <AcademicCapIcon className="w-16 h-16 mx-auto text-brand-600" />
+          <h2 className="mt-4 text-3xl font-bold text-gray-900">SIAKAD</h2>
+          <p className="mt-2 text-sm text-gray-600">Sistem Informasi Akademik Terpadu</p>
         </div>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl rounded-xl sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                Nomor Induk (NIS/NIP)
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                 <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <UserCircleIcon className="h-5 w-5 text-gray-400" />
-                 </div>
-                <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-                  placeholder="Masukkan Nomor Induk Anda"
-                />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="username" className="sr-only">
+              Nomor Induk (NIS/NIP)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <UserCircleIcon className="w-5 h-5 text-gray-400" />
               </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="w-full py-3 pl-10 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                placeholder="Nomor Induk (NIS/NIP)"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+              />
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <LockClosedIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-                  placeholder="Password"
-                />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">
+              Kata Sandi
+            </label>
+            <div className="relative">
+               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <LockClosedIcon className="w-5 h-5 text-gray-400" />
               </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="w-full py-3 pl-10 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                placeholder="Kata Sandi"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
             </div>
-            
-            {error && (
-              <div className="p-3 bg-red-50 border-l-4 border-red-400">
-                  <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+          </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:bg-brand-400 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Memproses...' : 'Masuk'}
-              </button>
-            </div>
-          </form>
-        </div>
-         <p className="mt-4 text-center text-sm text-gray-600">
-            Silakan login menggunakan Nomor Induk Anda.
-        </p>
+          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full px-4 py-3 font-semibold text-white bg-brand-600 rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:bg-brand-400"
+            >
+              {isLoading ? 'Memproses...' : 'Masuk'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
