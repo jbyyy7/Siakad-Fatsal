@@ -3,77 +3,78 @@ import React, { useState } from 'react';
 import { User } from '../../types';
 import Card from '../Card';
 import { MOCK_GRADES } from '../../constants';
-import GamificationSection from '../features/GamificationSection';
-import ParentPortalView from '../features/ParentPortalView';
 import AIChatAssistant from '../features/AIChatAssistant';
 import { SparklesIcon } from '../icons/SparklesIcon';
-import { UserCircleIcon } from '../icons/UserCircleIcon';
+import ParentPortalView from '../features/ParentPortalView';
+import GamificationSection from '../features/GamificationSection';
 
 interface StudentDashboardProps {
   user: User;
+  onNavigate: (page: string) => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
-    const [isParentView, setIsParentView] = useState(false);
-    const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
-
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
+    const [showAIChat, setShowAIChat] = useState(false);
+    const [showParentPortal, setShowParentPortal] = useState(false);
     const myGrades = MOCK_GRADES[user.id] || [];
-    const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
+    const recentGrades = myGrades.slice(0, 3);
 
-    if (isParentView) {
-        return <ParentPortalView user={user} onBack={() => setIsParentView(false)} />
+    if (showParentPortal) {
+        return <ParentPortalView user={user} onBack={() => setShowParentPortal(false)} />;
     }
-  
+
     return (
-    <div className="relative">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800">Hai, {user.name.split(' ')[0]}!</h2>
-          <p className="text-gray-600">Semangat belajar hari ini!</p>
+        <div className="relative">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Halo, {user.name}!</h2>
+            <p className="text-gray-600 mb-8">Selamat datang kembali di dasbor belajarmu. Terus semangat!</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main content */}
+                <div className="lg:col-span-2 space-y-6">
+                    <Card title="Nilai Terbaru">
+                         {recentGrades.length > 0 ? (
+                            <ul className="space-y-3">
+                                {recentGrades.map((grade) => (
+                                    <li key={grade.subject} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="font-semibold text-gray-800">{grade.subject}</span>
+                                        <span className={`font-bold text-xl ${grade.score >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>{grade.grade} ({grade.score})</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">Belum ada nilai yang diinput.</p>
+                        )}
+                    </Card>
+                    
+                    <GamificationSection studentId={user.id} />
+
+                </div>
+
+                {/* Quick Actions */}
+                <div className="lg:col-span-1">
+                    <Card title="Akses Cepat">
+                        <div className="flex flex-col space-y-3">
+                            <button onClick={() => onNavigate('Jadwal Pelajaran')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Jadwal Pelajaran</button>
+                            <button onClick={() => onNavigate('Lihat Nilai')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Lihat Semua Nilai</button>
+                            <button onClick={() => onNavigate('Absensi')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Absensi Saya</button>
+                            <button onClick={() => setShowParentPortal(true)} className="w-full text-left p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-800 font-semibold transition-colors">Portal Orang Tua</button>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+
+            {/* AI Assistant FAB */}
+            <button
+                onClick={() => setShowAIChat(true)}
+                className="fixed bottom-6 right-6 bg-brand-600 text-white p-4 rounded-full shadow-lg hover:bg-brand-700 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 z-40"
+                aria-label="Buka Asisten AI"
+            >
+                <SparklesIcon className="h-7 w-7" />
+            </button>
+
+            {showAIChat && <AIChatAssistant onClose={() => setShowAIChat(false)} />}
         </div>
-        <button
-            onClick={() => setIsParentView(true)}
-            className="flex items-center px-4 py-2 bg-yellow-400 text-yellow-900 font-semibold rounded-lg hover:bg-yellow-500 transition-colors shadow"
-        >
-            <UserCircleIcon className="h-5 w-5 mr-2" />
-            Portal Orang Tua
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-blue-50">
-            <p className="text-lg font-medium text-blue-800">Rata-rata Nilai</p>
-            <p className="text-4xl font-bold text-blue-900">{averageScore}</p>
-        </Card>
-        <Card className="bg-green-50">
-            <p className="text-lg font-medium text-green-800">Kehadiran Bulan Ini</p>
-            <p className="text-4xl font-bold text-green-900">98%</p>
-        </Card>
-        <Card className="bg-yellow-50">
-            <p className="text-lg font-medium text-yellow-800">Pelajaran Berikutnya</p>
-            <p className="text-2xl font-bold text-yellow-900 mt-1">Fisika - 10:00</p>
-        </Card>
-      </div>
-
-      <div className="mb-8">
-        <GamificationSection studentId={user.id} />
-      </div>
-
-       <div
-        className="fixed bottom-6 right-6 z-40"
-       >
-        <button
-            onClick={() => setIsAiAssistantOpen(true)}
-            className="flex items-center px-5 py-3 bg-brand-600 text-white font-bold rounded-full hover:bg-brand-700 transition-transform hover:scale-105 shadow-lg"
-        >
-            <SparklesIcon className="h-6 w-6 mr-2" />
-            Tanya AI
-        </button>
-      </div>
-      
-      {isAiAssistantOpen && <AIChatAssistant onClose={() => setIsAiAssistantOpen(false)} />}
-    </div>
-  );
+    );
 };
 
 export default StudentDashboard;

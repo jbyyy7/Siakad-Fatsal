@@ -1,4 +1,4 @@
-// FIX: Implemented the content for `types.ts` which was a placeholder. This defines the core data structures like User, UserRole, and School used throughout the application, resolving multiple "not a module" errors.
+// FIX: Implemented the content for `types.ts` which was a placeholder. This file now contains all the necessary type definitions for the application, resolving multiple "not a module" and "Cannot find name" errors across various components.
 export enum UserRole {
   ADMIN = 'Admin',
   FOUNDATION_HEAD = 'Kepala Yayasan',
@@ -13,16 +13,16 @@ export interface User {
   username: string;
   name: string;
   role: UserRole;
-  avatarUrl: string;
+  avatarUrl?: string;
   schoolId?: string;
   schoolName?: string;
-  level?: 'RA' | 'MI' | 'MTs' | 'MA';
+  level?: string;
 }
 
 export interface School {
   id: string;
   name: string;
-  level: 'RA' | 'MI' | 'MTs' | 'MA';
+  level: string;
   address: string;
 }
 
@@ -30,14 +30,14 @@ export interface Badge {
   id: string;
   name: string;
   description: string;
-  icon: string; // Emoji or icon name
+  icon: string;
 }
 
 export interface GamificationProfile {
   studentId: string;
   points: number;
   level: number;
-  progress: { [subject: string]: number }; // Progress 0-100 per subject
+  progress: { [subject: string]: number };
   badges: Badge[];
 }
 
@@ -50,8 +50,8 @@ export interface JournalEntry {
 }
 
 export interface NotificationSettings {
-  whatsappNumber: string;
-  attendance: boolean;
-  newAssignment: boolean;
-  dailyReport: boolean;
+    whatsappNumber: string;
+    attendance: boolean;
+    newAssignment: boolean;
+    dailyReport: boolean;
 }

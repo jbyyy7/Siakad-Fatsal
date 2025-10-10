@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { User, UserRole } from '../types';
 import { HomeIcon } from './icons/HomeIcon';
 import { UserGroupIcon } from './icons/UserGroupIcon';
@@ -8,11 +8,14 @@ import { BuildingLibraryIcon } from './icons/BuildingLibraryIcon';
 import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { EnvelopeIcon } from './icons/EnvelopeIcon';
+import { XIcon } from './icons/XIcon';
 
 interface SidebarProps {
   user: User;
   activePage: string;
   onNavigate: (page: string) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
 const getNavItems = (role: UserRole) => {
@@ -62,39 +65,76 @@ const getNavItems = (role: UserRole) => {
     }
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ user, activePage, onNavigate }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, activePage, onNavigate, isSidebarOpen, setIsSidebarOpen }) => {
     const navItems = getNavItems(user.role);
 
-    return (
-        <div className="hidden md:flex md:flex-shrink-0">
-            <div className="flex flex-col w-64">
-                <div className="flex items-center h-16 flex-shrink-0 px-4 bg-brand-800 text-white">
+    const handleNavigate = (page: string) => {
+        onNavigate(page);
+        setIsSidebarOpen(false); // Close sidebar on navigation
+    }
+
+    const SidebarContent = () => (
+        <div className="flex flex-col w-64">
+            <div className="flex items-center justify-between h-16 flex-shrink-0 px-4 bg-brand-800 text-white">
+                <div className="flex items-center">
                     <AcademicCapIcon className="h-8 w-8 mr-2"/>
                     <span className="font-semibold text-lg">SIAKAD</span>
                 </div>
-                <div className="flex-1 flex flex-col overflow-y-auto bg-brand-900">
-                    <nav className="flex-1 px-2 py-4 space-y-1">
-                        {navItems.map((item) => (
-                            <a
-                                key={item.name}
-                                href={item.href}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onNavigate(item.name);
-                                }}
-                                className={`
-                                    ${activePage === item.name ? 'bg-brand-700 text-white' : 'text-brand-100 hover:bg-brand-800 hover:text-white'}
-                                    group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer
-                                `}
-                            >
-                                <item.icon className="mr-3 flex-shrink-0 h-6 w-6 text-brand-300" />
-                                {item.name}
-                            </a>
-                        ))}
-                    </nav>
-                </div>
+                 {/* Close button for mobile */}
+                <button
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="md:hidden p-1 text-brand-200 hover:text-white"
+                    aria-label="Close sidebar"
+                >
+                    <XIcon className="h-6 w-6" />
+                </button>
+            </div>
+            <div className="flex-1 flex flex-col overflow-y-auto bg-brand-900">
+                <nav className="flex-1 px-2 py-4 space-y-1">
+                    {navItems.map((item) => (
+                        <a
+                            key={item.name}
+                            href={item.href}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleNavigate(item.name);
+                            }}
+                            className={`
+                                ${activePage === item.name ? 'bg-brand-700 text-white' : 'text-brand-100 hover:bg-brand-800 hover:text-white'}
+                                group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer
+                            `}
+                        >
+                            <item.icon className="mr-3 flex-shrink-0 h-6 w-6 text-brand-300" />
+                            {item.name}
+                        </a>
+                    ))}
+                </nav>
             </div>
         </div>
+    );
+
+    return (
+        <Fragment>
+            {/* Desktop Sidebar */}
+            <div className="hidden md:flex md:flex-shrink-0">
+                <SidebarContent />
+            </div>
+
+            {/* Mobile Sidebar */}
+            <div className={`fixed inset-0 flex z-40 md:hidden ${isSidebarOpen ? '' : 'pointer-events-none'}`}>
+                {/* Overlay */}
+                <div 
+                    className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                    aria-hidden="true"
+                ></div>
+
+                {/* Sidebar Panel */}
+                <div className={`relative flex-1 flex flex-col max-w-xs w-full transform transition-transform ease-in-out duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <SidebarContent />
+                </div>
+            </div>
+        </Fragment>
     );
 };
 
