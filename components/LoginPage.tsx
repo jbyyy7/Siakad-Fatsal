@@ -10,7 +10,7 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +20,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setError(null);
     setIsLoading(true);
     try {
-      // Password is not checked in this mock implementation
-      const user = await authService.login(username);
+      const user = await authService.login(email, password);
       onLogin(user);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat login.');
@@ -40,23 +39,23 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="username" className="sr-only">
-              Nomor Induk (NIS/NIP)
+            <label htmlFor="email" className="sr-only">
+              Alamat Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <UserCircleIcon className="w-5 h-5 text-gray-400" />
               </div>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="w-full py-3 pl-10 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
-                placeholder="Nomor Induk (NIS/NIP)"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
+                placeholder="Alamat Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
               />
             </div>
           </div>
