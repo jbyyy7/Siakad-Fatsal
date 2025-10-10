@@ -1,3 +1,64 @@
+@import url('https://rsms.me/inter/inter.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  font-family: 'Inter', sans-serif;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .printable-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    font-size: 12px;
+  }
+  .print-header {
+    display: block !important;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .print-header h1 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .print-header p {
+    font-size: 14px;
+  }
+
+  /* Specific styles for report card */
+  #printable-report-card .print-header {
+    text-align: left;
+    border-bottom: 2px solid #333;
+    padding-bottom: 1rem;
+  }
+   #printable-report-card .print-header h1 {
+    font-size: 24px;
+   }
+
+  /* Specific styles for attendance calendar */
+  #printable-attendance .attendance-calendar-print {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      gap: 4px !important;
+  }
+  #printable-attendance .attendance-day-print {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: center;
+      height: 40px;
+  }
+}

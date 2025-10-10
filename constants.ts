@@ -74,3 +74,17 @@ export const MOCK_JOURNAL: { [date: string]: JournalEntry[] } = {
         { teacherId: 'guru_mi_01', classId: 'mi-4a', subject: 'Bahasa Indonesia', date: '2024-07-25', topic: 'Membaca Lancar' },
     ]
 };
+
+export const MOCK_TEACHER_NOTES: { [studentId: string]: string } = {
+    'siswa_ma_01': "Cinta menunjukkan perkembangan yang sangat baik di semester ini, terutama dalam mata pelajaran sains. Ia aktif bertanya di kelas dan memiliki rasa ingin tahu yang tinggi. Pertahankan semangat belajarmu dan teruslah berlatih dalam manajemen waktu untuk tugas-tugas besar.",
+};
+
+type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
+export const MOCK_ATTENDANCE: { [studentId: string]: { date: string; status: AttendanceStatus }[] } = {
+    'siswa_ma_01': [
+        { date: '2024-07-01', status: 'Hadir' }, { date: '2024-07-02', status: 'Hadir' }, { date: '2024-07-03', status: 'Sakit' }, { date: '2024-07-04', status: 'Hadir' }, { date: '2024-07-05', status: 'Hadir' },
+        { date: '2024-07-08', status: 'Hadir' }, { date: '2024-07-09', status: 'Hadir' }, { date: '2024-07-10', status: 'Hadir' }, { date: '2024-07-11', status: 'Hadir' }, { date: '2024-07-12', status: 'Izin' },
+        { date: '2024-07-15', status: 'Hadir' }, { date: '2024-07-16', status: 'Hadir' }, { date: '2024-07-17', status: 'Hadir' }, { date: '2024-07-18', status: 'Alpha' }, { date: '2024-07-19', status: 'Hadir' },
+        { date: '2024-07-22', status: 'Hadir' }, { date: '2024-07-23', status: 'Hadir' }, { date: '2024-07-24', status: 'Sakit' }, { date: '2024-07-25', status: 'Hadir' }, { date: '2024-07-26', status: 'Hadir' },
+    ]
+};

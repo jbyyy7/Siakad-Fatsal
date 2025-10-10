@@ -89,7 +89,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             case 'Lihat Nilai':
                 return <GradesPage user={user} />;
             case 'Absensi':
-                return <MyAttendancePage />;
+                return <MyAttendancePage user={user} />;
 
             default:
                 return <PlaceholderPage title={activePage} />;

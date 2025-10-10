@@ -1,10 +1,11 @@
-// FIX: Implemented the TeacherDashboard component which was a placeholder.
+// FIX: Implemented the TeacherDashboard component which was a placeholder. It provides teachers with quick access to input grades, take attendance, and view their class schedules.
 import React from 'react';
 import { User } from '../../types';
 import Card from '../Card';
-import { CalendarIcon } from '../icons/CalendarIcon';
-import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 import { MOCK_JOURNAL } from '../../constants';
+import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
+import { UserGroupIcon } from '../icons/UserGroupIcon';
+import { CalendarIcon } from '../icons/CalendarIcon';
 
 interface TeacherDashboardProps {
   user: User;
@@ -12,49 +13,46 @@ interface TeacherDashboardProps {
 }
 
 const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate }) => {
-    const today = '2024-07-25'; // Using a fixed date for consistent mock data
-    const todaysJournal = MOCK_JOURNAL[today] || [];
+  const today = '2024-07-25'; // Mocking date for demo data
+  const journalToday = MOCK_JOURNAL[today] || [];
 
-    return (
-        <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Selamat Datang, {user.name}!</h2>
-            <p className="text-gray-600 mb-8">Berikut adalah ringkasan aktivitas mengajar Anda hari ini.</p>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main content */}
-                <div className="lg:col-span-2 space-y-6">
-                     <Card title="Jadwal Mengajar Hari Ini" icon={CalendarIcon}>
-                        <ul className="space-y-3">
-                            <li className="p-3 bg-blue-50 rounded-lg">10:00 - 11:30: Kelas X-A - Matematika</li>
-                            <li className="p-3 bg-blue-50 rounded-lg">13:00 - 14:30: Kelas X-B - Matematika</li>
-                        </ul>
-                    </Card>
-                     <Card title="Jurnal Mengajar Terakhir" icon={ClipboardDocumentListIcon}>
-                        {todaysJournal.length > 0 ? (
-                            <ul className="space-y-2">
-                                {todaysJournal.map((entry, idx) => (
-                                    <li key={idx} className="text-gray-700"><strong>{entry.subject}:</strong> {entry.topic}</li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">Belum ada jurnal mengajar yang diisi untuk hari ini.</p>
-                        )}
-                    </Card>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="lg:col-span-1">
-                     <Card title="Akses Cepat">
-                         <div className="flex flex-col space-y-3">
-                            <button onClick={() => onNavigate('Kelas Saya')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Lihat Kelas Saya</button>
-                            <button onClick={() => onNavigate('Input Nilai')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Input Nilai Siswa</button>
-                            <button onClick={() => onNavigate('Absensi Siswa')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Isi Absensi Siswa</button>
-                        </div>
-                    </Card>
-                </div>
-            </div>
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Selamat Datang, {user.name}!</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+           <Card title="Akses Cepat" icon={ClipboardDocumentListIcon}>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onClick={() => onNavigate('Input Nilai')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                  <h4 className="font-semibold text-gray-800">Input Nilai</h4>
+                  <p className="text-sm text-gray-600">Masukkan nilai siswa untuk ujian terakhir.</p>
+                </button>
+                <button onClick={() => onNavigate('Absensi Siswa')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                  <h4 className="font-semibold text-gray-800">Absensi Siswa</h4>
+                  <p className="text-sm text-gray-600">Catat kehadiran siswa hari ini.</p>
+                </button>
+             </div>
+           </Card>
+           <Card title="Jadwal Mengajar Hari Ini" icon={CalendarIcon}>
+                <ul className="space-y-2">
+                    <li className="flex justify-between p-2 bg-gray-50 rounded"><span>07:30 - 09:00</span><strong>Matematika - Kelas 10-A</strong></li>
+                    <li className="flex justify-between p-2 bg-gray-50 rounded"><span>10:00 - 11:30</span><strong>Matematika - Kelas 10-B</strong></li>
+                </ul>
+           </Card>
         </div>
-    );
+        <div className="lg:col-span-1 space-y-6">
+          <Card title="Kelas Saya" icon={UserGroupIcon}>
+            <ul className="space-y-2">
+                <li className="p-2 bg-brand-50 rounded text-brand-800 font-semibold">MA Kelas 10-A</li>
+                <li className="p-2 bg-brand-50 rounded text-brand-800 font-semibold">MA Kelas 10-B</li>
+                <li className="p-2 bg-brand-50 rounded text-brand-800 font-semibold">MA Kelas 11-A</li>
+            </ul>
+            <button onClick={() => onNavigate('Kelas Saya')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Semua Kelas &rarr;</button>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default TeacherDashboard;

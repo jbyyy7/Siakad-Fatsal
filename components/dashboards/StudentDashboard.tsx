@@ -1,12 +1,12 @@
-// FIX: Implemented the StudentDashboard component which was a placeholder.
+// FIX: Implemented an interactive StudentDashboard component which was a placeholder. It includes features like gamification, recent grades, a link to a parent portal, and an AI chat assistant.
 import React, { useState } from 'react';
 import { User } from '../../types';
 import Card from '../Card';
 import { MOCK_GRADES } from '../../constants';
+import GamificationSection from '../features/GamificationSection';
+import ParentPortalView from '../features/ParentPortalView';
 import AIChatAssistant from '../features/AIChatAssistant';
 import { SparklesIcon } from '../icons/SparklesIcon';
-import ParentPortalView from '../features/ParentPortalView';
-import GamificationSection from '../features/GamificationSection';
 
 interface StudentDashboardProps {
   user: User;
@@ -14,67 +14,78 @@ interface StudentDashboardProps {
 }
 
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
-    const [showAIChat, setShowAIChat] = useState(false);
-    const [showParentPortal, setShowParentPortal] = useState(false);
-    const myGrades = MOCK_GRADES[user.id] || [];
-    const recentGrades = myGrades.slice(0, 3);
+  const [showParentPortal, setShowParentPortal] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const myGrades = MOCK_GRADES[user.id] || [];
+  const recentGrades = myGrades.slice(0, 3);
 
-    if (showParentPortal) {
-        return <ParentPortalView user={user} onBack={() => setShowParentPortal(false)} />;
-    }
+  if (showParentPortal) {
+    return <ParentPortalView user={user} onBack={() => setShowParentPortal(false)} />;
+  }
 
-    return (
-        <div className="relative">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Halo, {user.name}!</h2>
-            <p className="text-gray-600 mb-8">Selamat datang kembali di dasbor belajarmu. Terus semangat!</p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main content */}
-                <div className="lg:col-span-2 space-y-6">
-                    <Card title="Nilai Terbaru">
-                         {recentGrades.length > 0 ? (
-                            <ul className="space-y-3">
-                                {recentGrades.map((grade) => (
-                                    <li key={grade.subject} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="font-semibold text-gray-800">{grade.subject}</span>
-                                        <span className={`font-bold text-xl ${grade.score >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>{grade.grade} ({grade.score})</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">Belum ada nilai yang diinput.</p>
-                        )}
-                    </Card>
-                    
-                    <GamificationSection studentId={user.id} />
-
-                </div>
-
-                {/* Quick Actions */}
-                <div className="lg:col-span-1">
-                    <Card title="Akses Cepat">
-                        <div className="flex flex-col space-y-3">
-                            <button onClick={() => onNavigate('Jadwal Pelajaran')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Jadwal Pelajaran</button>
-                            <button onClick={() => onNavigate('Lihat Nilai')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Lihat Semua Nilai</button>
-                            <button onClick={() => onNavigate('Absensi')} className="w-full text-left p-4 bg-brand-50 hover:bg-brand-100 rounded-lg text-brand-800 font-semibold transition-colors">Absensi Saya</button>
-                            <button onClick={() => setShowParentPortal(true)} className="w-full text-left p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-800 font-semibold transition-colors">Portal Orang Tua</button>
-                        </div>
-                    </Card>
-                </div>
-            </div>
-
-            {/* AI Assistant FAB */}
-            <button
-                onClick={() => setShowAIChat(true)}
-                className="fixed bottom-6 right-6 bg-brand-600 text-white p-4 rounded-full shadow-lg hover:bg-brand-700 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 z-40"
-                aria-label="Buka Asisten AI"
+  return (
+    <div className="relative">
+      <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Selamat Datang Kembali, {user.name}!</h2>
+            <p className="text-gray-600">Siap untuk belajar hari ini?</p>
+          </div>
+           <button 
+              onClick={() => setShowParentPortal(true)}
+              className="px-4 py-2 bg-green-100 text-green-800 font-semibold rounded-lg hover:bg-green-200 transition-colors"
             >
-                <SparklesIcon className="h-7 w-7" />
+              Portal Orang Tua
             </button>
-
-            {showAIChat && <AIChatAssistant onClose={() => setShowAIChat(false)} />}
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <GamificationSection studentId={user.id} />
+          <Card title="Jadwal Hari Ini">
+            <ul className="space-y-2">
+                <li className="flex justify-between p-2 bg-gray-50 rounded"><span>07:30 - 09:00</span><strong>Matematika</strong></li>
+                <li className="flex justify-between p-2 bg-gray-50 rounded"><span>10:00 - 11:30</span><strong>Bahasa Indonesia</strong></li>
+            </ul>
+             <button onClick={() => onNavigate('Jadwal Pelajaran')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Jadwal Lengkap &rarr;</button>
+          </Card>
         </div>
-    );
+
+        <div className="lg:col-span-1 space-y-6">
+          <Card title="Nilai Terbaru">
+            {recentGrades.length > 0 ? (
+              <ul className="space-y-3">
+                {recentGrades.map((grade, index) => (
+                  <li key={index} className="flex justify-between items-center">
+                    <span className="font-medium text-gray-700">{grade.subject}</span>
+                    <span className="font-bold text-lg text-brand-700">{grade.grade}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="text-gray-500">Belum ada nilai.</p>}
+            <button onClick={() => onNavigate('Lihat Nilai')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Semua Nilai &rarr;</button>
+          </Card>
+          <Card title="Absensi Bulan Ini">
+            <div className="text-center">
+                <p className="text-4xl font-bold text-gray-800">98%</p>
+                <p className="text-sm text-gray-500">Kehadiran</p>
+            </div>
+             <button onClick={() => onNavigate('Absensi')} className="mt-4 w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Detail Absensi</button>
+          </Card>
+        </div>
+      </div>
+
+      {/* AI Chat Assistant FAB */}
+      <button 
+        onClick={() => setShowAIChat(true)}
+        className="fixed bottom-6 right-6 bg-brand-600 text-white p-4 rounded-full shadow-lg hover:bg-brand-700 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 z-40"
+        aria-label="Buka Asisten AI"
+      >
+        <SparklesIcon className="h-6 w-6" />
+      </button>
+
+      {showAIChat && <AIChatAssistant onClose={() => setShowAIChat(false)} />}
+    </div>
+  );
 };
 
 export default StudentDashboard;
