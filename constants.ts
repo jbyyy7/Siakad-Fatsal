@@ -60,8 +60,9 @@ export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | '
       // FIX: Used `as const` to ensure TypeScript infers a literal type for 'status', resolving the type assignment error.
       return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' as const };
     }).filter((v): v is { date: string; status: 'Hadir' } => Boolean(v)),
-    { date: '2024-07-08', status: 'Sakit' },
-    { date: '2024-07-15', status: 'Izin' },
+    // FIX: Used `as const` on status properties to ensure they are typed as literals ('Sakit', 'Izin'), not as a general string, to match the declared type.
+    { date: '2024-07-08', status: 'Sakit' as const },
+    { date: '2024-07-15', status: 'Izin' as const },
   ].sort((a,b) => a.date.localeCompare(b.date)),
 };
 
