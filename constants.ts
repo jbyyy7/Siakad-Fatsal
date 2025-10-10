@@ -57,6 +57,7 @@ export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | '
       if (date.getDay() === 0 || date.getDay() === 6) {
         return null;
       }
+      // FIX: Used `as const` to ensure TypeScript infers a literal type for 'status', resolving the type assignment error.
       return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' as const };
     }).filter((v): v is { date: string; status: 'Hadir' } => Boolean(v)),
     { date: '2024-07-08', status: 'Sakit' },
