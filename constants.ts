@@ -49,9 +49,10 @@ export const MOCK_TEACHER_NOTES: Record<string, string> = {
 
 export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> = {
   'student-01': [
-    // FIX: The `status` property was being inferred as a general 'string' inside the Array.from callback.
-    // By explicitly typing the return value of the callback and updating the type guard in .filter(),
-    // we ensure TypeScript correctly infers 'Hadir' as a literal type, satisfying the union type for status.
+    // FIX: Correctly type the generated attendance data to match the required literal type for the 'status' property.
+    // The original code caused a type error because TypeScript inferred 'Hadir' as a generic 'string'.
+    // By adding an explicit return type to the Array.from callback and using a type guard in the filter,
+    // we ensure the type is correctly inferred as 'Hadir' and satisfies the 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' union type.
     ...Array.from({ length: 24 }, (_, i): { date: string; status: 'Hadir' } | null => {
       const day = i + 1;
       const date = new Date(2024, 6, day); // July
