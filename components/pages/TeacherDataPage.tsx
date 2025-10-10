@@ -48,7 +48,7 @@ const TeacherDataPage: React.FC<TeacherDataPageProps> = ({ user }) => {
                             {teacher.name}
                         </div>
                     </td>
-                  <td className="px-6 py-4">{teacher.username}</td>
+                  <td className="px-6 py-4">{teacher.identityNumber}</td>
                   <td className="px-6 py-4">{teacher.email}</td>
                 </tr>
               ))}

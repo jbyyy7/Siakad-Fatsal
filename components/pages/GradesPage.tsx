@@ -65,7 +65,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Nomor Induk Siswa</p>
-                        <p className="font-bold text-lg text-gray-800">{user.username}</p>
+                        <p className="font-bold text-lg text-gray-800">{user.identityNumber}</p>
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Kelas</p>

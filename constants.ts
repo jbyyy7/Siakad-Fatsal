@@ -7,21 +7,21 @@ export const MOCK_SCHOOLS: School[] = [
 
 export const MOCK_USERS: User[] = [
   // Admin
-  { id: 'admin-01', email: 'admin@siakad.dev', username: 'admin', name: 'Admin Utama', role: UserRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=admin-01' },
+  { id: 'admin-01', email: 'admin@siakad.dev', identityNumber: 'admin', name: 'Admin Utama', role: UserRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=admin-01' },
   // Foundation Head
-  { id: 'head-01', email: 'yayasan@siakad.dev', username: 'kepala.yayasan', name: 'Dr. H. Ahmad Fauzi', role: UserRole.FOUNDATION_HEAD, avatarUrl: 'https://i.pravatar.cc/150?u=head-01' },
+  { id: 'head-01', email: 'yayasan@siakad.dev', identityNumber: 'kepala.yayasan', name: 'Dr. H. Ahmad Fauzi', role: UserRole.FOUNDATION_HEAD, avatarUrl: 'https://i.pravatar.cc/150?u=head-01' },
   // Principals
-  { id: 'principal-ma', email: 'kepsek.ma@siakad.dev', username: 'kepsek.ma', name: 'Budi Santoso, S.Pd.', role: UserRole.PRINCIPAL, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-ma' },
-  { id: 'principal-mts', email: 'kepsek.mts@siakad.dev', username: 'kepsek.mts', name: 'Siti Aminah, M.Pd.', role: UserRole.PRINCIPAL, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-mts' },
+  { id: 'principal-ma', email: 'kepsek.ma@siakad.dev', identityNumber: 'kepsek.ma', name: 'Budi Santoso, S.Pd.', role: UserRole.PRINCIPAL, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-ma' },
+  { id: 'principal-mts', email: 'kepsek.mts@siakad.dev', identityNumber: 'kepsek.mts', name: 'Siti Aminah, M.Pd.', role: UserRole.PRINCIPAL, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=principal-mts' },
   // Teachers
-  { id: 'teacher-01', email: 'eko.wibowo@siakad.dev', username: '198503152010011001', name: 'Eko Wibowo, S.Pd.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-01' },
-  { id: 'teacher-02', email: 'dewi.lestari@siakad.dev', username: '199008202015032002', name: 'Dewi Lestari, S.Si.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-02' },
-   { id: 'teacher-03', email: 'rudi.hartono@siakad.dev', username: '198801012012011003', name: 'Rudi Hartono, S.Kom.', role: UserRole.TEACHER, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-03' },
+  { id: 'teacher-01', email: 'eko.wibowo@siakad.dev', identityNumber: '198503152010011001', name: 'Eko Wibowo, S.Pd.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-01' },
+  { id: 'teacher-02', email: 'dewi.lestari@siakad.dev', identityNumber: '199008202015032002', name: 'Dewi Lestari, S.Si.', role: UserRole.TEACHER, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-02' },
+   { id: 'teacher-03', email: 'rudi.hartono@siakad.dev', identityNumber: '198801012012011003', name: 'Rudi Hartono, S.Kom.', role: UserRole.TEACHER, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', avatarUrl: 'https://i.pravatar.cc/150?u=teacher-03' },
   // Students
-  { id: 'student-01', email: 'ahmad.zain@siakad.dev', username: '1001', name: 'Ahmad Zain', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-01' },
-  { id: 'student-02', email: 'budi.darmawan@siakad.dev', username: '1002', name: 'Budi Darmawan', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-02' },
-  { id: 'student-03', email: 'cindy.putri@siakad.dev', username: '1003', name: 'Cindy Putri', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-03' },
-  { id: 'student-04', email: 'dian.sari@siakad.dev', username: '2001', name: 'Dian Sari', role: UserRole.STUDENT, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', level: 'MTS Kelas 8-B', avatarUrl: 'https://i.pravatar.cc/150?u=student-04' },
+  { id: 'student-01', email: 'ahmad.zain@siakad.dev', identityNumber: '1001', name: 'Ahmad Zain', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-01' },
+  { id: 'student-02', email: 'budi.darmawan@siakad.dev', identityNumber: '1002', name: 'Budi Darmawan', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-02' },
+  { id: 'student-03', email: 'cindy.putri@siakad.dev', identityNumber: '1003', name: 'Cindy Putri', role: UserRole.STUDENT, schoolId: 'ma_fs', schoolName: 'MA Fathus Salafi', level: 'MA Kelas 10-A', avatarUrl: 'https://i.pravatar.cc/150?u=student-03' },
+  { id: 'student-04', email: 'dian.sari@siakad.dev', identityNumber: '2001', name: 'Dian Sari', role: UserRole.STUDENT, schoolId: 'mts_fs', schoolName: 'MTS Fathus Salafi', level: 'MTS Kelas 8-B', avatarUrl: 'https://i.pravatar.cc/150?u=student-04' },
 ];
 
 export const MOCK_GRADES: Record<string, { subject: string, score: number, grade: string }[]> = {
