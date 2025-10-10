@@ -9,7 +9,7 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       .from('profiles')
       .select(`
         id,
-        identity_number,
+        identityNumber: identity_number,
         full_name,
         role,
         avatar_url,
@@ -40,7 +40,7 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
     const appUser: User = {
       id: profile.id,
       email: supabaseUser.email || '',
-      identityNumber: profile.identity_number,
+      identityNumber: profile.identityNumber, // Use the aliased property
       name: profile.full_name,
       role: profile.role as UserRole, // Assuming role in DB matches UserRole enum
       avatarUrl: profile.avatar_url,
