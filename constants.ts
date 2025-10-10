@@ -49,7 +49,10 @@ export const MOCK_TEACHER_NOTES: Record<string, string> = {
 
 export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> = {
   'student-01': [
-    ...Array.from({ length: 24 }, (_, i) => {
+    // FIX: The `status` property was being inferred as a general 'string' inside the Array.from callback.
+    // By explicitly typing the return value of the callback and updating the type guard in .filter(),
+    // we ensure TypeScript correctly infers 'Hadir' as a literal type, satisfying the union type for status.
+    ...Array.from({ length: 24 }, (_, i): { date: string; status: 'Hadir' } | null => {
       const day = i + 1;
       const date = new Date(2024, 6, day); // July
       // Skip weekends
@@ -57,7 +60,7 @@ export const MOCK_ATTENDANCE: Record<string, { date: string, status: 'Hadir' | '
         return null;
       }
       return { date: `2024-07-${day.toString().padStart(2, '0')}`, status: 'Hadir' };
-    }).filter(Boolean) as { date: string, status: 'Hadir' }[],
+    }).filter((v): v is { date: string; status: 'Hadir' } => Boolean(v)),
     { date: '2024-07-08', status: 'Sakit' },
     { date: '2024-07-15', status: 'Izin' },
   ].sort((a,b) => a.date.localeCompare(b.date)),
