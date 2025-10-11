@@ -1,3 +1,6 @@
+
+// FIX: Removed a circular dependency. The `User` type is defined in this file and does not need to be imported.
+
 export enum UserRole {
   ADMIN = 'Admin',
   FOUNDATION_HEAD = 'Ketua Yayasan',
@@ -31,6 +34,7 @@ export interface Class {
   schoolName?: string;
   homeroomTeacherId?: string;
   homeroomTeacherName?: string;
+  studentIds?: string[];
 }
 
 export interface Subject {
@@ -46,10 +50,23 @@ export interface AttendanceRecord {
     id?: number;
     date: string;
     student_id: string;
+    studentName?: string;
     class_id: string;
     subject_id: string;
     teacher_id: string;
+    teacherName?: string;
     status: AttendanceStatus;
+}
+
+export interface Grade {
+    id?: number;
+    student_id: string;
+    studentName?: string;
+    class_id: string;
+    subject_id: string;
+    teacher_id: string;
+    score: number;
+    notes?: string;
 }
 
 export interface JournalEntry { // Used in TeacherDashboard
