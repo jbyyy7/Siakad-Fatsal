@@ -1,6 +1,4 @@
-// This file provides a mock data service to simulate a backend.
-// In a real application, this would interact with a database like Supabase.
-
+import { supabase } from './supabaseClient';
 import {
     User,
     UserRole,
@@ -14,317 +12,364 @@ import {
     Class,
 } from '../types';
 
-// --- MOCK DATABASE ---
-
-let mockSchools: School[] = [
-    { id: 'sch1', name: 'MA Fathus Salafi', level: 'MA', address: 'Jl. Pesantren No. 1' },
-    { id: 'sch2', name: 'MTS Fathus Salafi', level: 'MTS', address: 'Jl. Pesantren No. 2' },
-];
-
-let mockUsers: User[] = [
-    { id: 'usr1', email: 'admin@siakad.com', identityNumber: 'ADMIN01', name: 'Admin Utama', role: UserRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=usr1' },
-    { id: 'usr2', email: 'kepala@yayasan.com', identityNumber: 'KY01', name: 'Dr. H. Ahmad', role: UserRole.FOUNDATION_HEAD, avatarUrl: 'https://i.pravatar.cc/150?u=usr2' },
-    { id: 'usr3', email: 'kepsek.ma@siakad.com', identityNumber: 'KSMA01', name: 'Budi Santoso, S.Pd', role: UserRole.PRINCIPAL, avatarUrl: 'https://i.pravatar.cc/150?u=usr3', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'usr4', email: 'guru.mat@siakad.com', identityNumber: 'GRMA01', name: 'Siti Aminah, S.Si', role: UserRole.TEACHER, avatarUrl: 'https://i.pravatar.cc/150?u=usr4', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'usr5', email: 'andi@siakad.com', identityNumber: 'SISWA01', name: 'Andi Pratama', role: UserRole.STUDENT, avatarUrl: 'https://i.pravatar.cc/150?u=usr5', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'usr6', email: 'susan@siakad.com', identityNumber: 'SISWA02', name: 'Susan Puspita', role: UserRole.STUDENT, avatarUrl: 'https://i.pravatar.cc/150?u=usr6', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'usr7', email: 'guru.bio@siakad.com', identityNumber: 'GRMA02', name: 'Eko Wahyudi, S.Pd', role: UserRole.TEACHER, avatarUrl: 'https://i.pravatar.cc/150?u=usr7', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'usr8', email: 'kepsek.mts@siakad.com', identityNumber: 'KSMTS01', name: 'Rina Marlina, M.Pd', role: UserRole.PRINCIPAL, avatarUrl: 'https://i.pravatar.cc/150?u=usr8', schoolId: 'sch2', schoolName: 'MTS Fathus Salafi' },
-];
-
-let mockAnnouncements: Announcement[] = [
-    { id: 'ann1', title: 'Rapat Yayasan Awal Tahun Ajaran', content: 'Diberitahukan kepada seluruh kepala sekolah untuk menghadiri rapat awal tahun ajaran baru 2024/2025.', date: '2024-07-01', author: 'Dr. H. Ahmad' },
-    { id: 'ann2', title: 'Libur Hari Raya Idul Adha', content: 'Kegiatan belajar mengajar diliburkan dalam rangka hari raya Idul Adha.', date: '2024-06-15', author: 'Admin Utama' },
-];
-
-let mockSubjects: Subject[] = [
-    { id: 'sub1', name: 'Matematika Wajib', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'sub2', name: 'Bahasa Indonesia', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'sub3', name: 'Fisika', schoolId: 'sch1', schoolName: 'MA Fathus Salafi' },
-    { id: 'sub4', name: 'Matematika', schoolId: 'sch2', schoolName: 'MTS Fathus Salafi' },
-];
-
-let mockClasses: Class[] = [
-    { id: 'cls1', name: 'MA Kelas 10-A', schoolId: 'sch1', homeroomTeacherId: 'usr4', homeroomTeacherName: 'Siti Aminah, S.Si', schoolName: 'MA Fathus Salafi' },
-    { id: 'cls2', name: 'MA Kelas 10-B', schoolId: 'sch1', homeroomTeacherId: 'usr7', homeroomTeacherName: 'Eko Wahyudi, S.Pd', schoolName: 'MA Fathus Salafi' },
-    { id: 'cls3', name: 'MTS Kelas 7-A', schoolId: 'sch2', schoolName: 'MTS Fathus Salafi' },
-];
-
-let mockClassStudents: { classId: string; studentId: string }[] = [
-    { classId: 'cls1', studentId: 'usr5' },
-    { classId: 'cls1', studentId: 'usr6' },
-];
-
-let mockTeachingJournals: TeachingJournal[] = [
-    { id: 1, teacherId: 'usr4', classId: 'cls1', subjectId: 'sub1', date: new Date().toISOString().split('T')[0], topic: 'Aljabar Linear', className: 'MA Kelas 10-A', subjectName: 'Matematika Wajib' },
-    { id: 2, teacherId: 'usr4', classId: 'cls1', subjectId: 'sub1', date: '2024-07-20', topic: 'Trigonometri', className: 'MA Kelas 10-A', subjectName: 'Matematika Wajib' },
-];
-
-const mockGrades = [
-    { studentId: 'usr5', subjectId: 'sub1', score: 85, grade: 'A-' },
-    { studentId: 'usr5', subjectId: 'sub2', score: 90, grade: 'A' },
-    { studentId: 'usr5', subjectId: 'sub3', score: 78, grade: 'B+' },
-    { studentId: 'usr6', subjectId: 'sub1', score: 92, grade: 'A' },
-];
-
-const mockAttendance = [
-    { studentId: 'usr5', date: '2024-07-21', status: 'Hadir' },
-    { studentId: 'usr5', date: '2024-07-20', status: 'Hadir' },
-    { studentId: 'usr5', date: '2024-07-19', status: 'Sakit' },
-];
-
-const mockBadges: Badge[] = [
-    { id: 'bdg1', icon: '🚀', name: 'Penyelesai Cepat', description: 'Menyelesaikan tugas sebelum deadline.' },
-    { id: 'bdg2', icon: '🧠', name: 'Ahli Matematika', description: 'Nilai di atas 90 pada Matematika.' }
-];
-
-const mockGamificationProfiles: Record<string, GamificationProfile> = {
-    'usr5': { progress: { 'Matematika Wajib': 88, 'Fisika': 75 }, badges: [mockBadges[1]] },
-    'usr6': { progress: { 'Matematika Wajib': 95 }, badges: [mockBadges[0], mockBadges[1]] },
+// Helper to handle Supabase errors consistently
+const handleSupabaseError = (error: any, context: string) => {
+    console.error(`Supabase error in ${context}:`, error);
+    throw new Error(`Gagal mengambil data dari server (${context}).`);
 };
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+// Helper function to map Supabase user profile to app's User type
+const mapProfileToUser = (profile: any): User => {
+    return {
+        id: profile.id,
+        email: '', // Email is not in profiles table, handle this gracefully
+        identityNumber: profile.identity_number,
+        name: profile.full_name,
+        role: profile.role as UserRole,
+        avatarUrl: profile.avatar_url,
+        schoolId: profile.school_id,
+        schoolName: profile.schools?.name,
+    };
+};
 
 export const dataService = {
     // --- User Management ---
     async getUsers(filters?: { role?: UserRole; schoolId?: string }): Promise<User[]> {
-        await delay(300);
-        let users = mockUsers.map(u => ({...u, schoolName: mockSchools.find(s => s.id === u.schoolId)?.name}));
-        if (filters?.role) users = users.filter(u => u.role === filters.role);
-        if (filters?.schoolId) users = users.filter(u => u.schoolId === filters.schoolId);
-        return users;
+        let query = supabase.from('profiles').select(`
+            id,
+            identity_number,
+            full_name,
+            role,
+            avatar_url,
+            school_id,
+            schools (name)
+        `);
+
+        if (filters?.role) {
+            query = query.eq('role', filters.role);
+        }
+        if (filters?.schoolId) {
+            query = query.eq('school_id', filters.schoolId);
+        }
+
+        const { data, error } = await query;
+        if (error) handleSupabaseError(error, 'getUsers');
+        return data ? data.map(mapProfileToUser) : [];
     },
     async createUser(userData: any): Promise<void> {
-        await delay(500);
-        const newUser: User = {
-            id: `usr${Math.random()}`,
-            ...userData,
-        };
-        mockUsers.push(newUser);
+        // This is a complex operation that should ideally be a single transaction or an RPC function in Supabase.
+        // 1. Create the auth user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+        });
+        if (authError) handleSupabaseError(authError, 'createUser (auth)');
+        if (!authData.user) throw new Error("Gagal membuat pengguna otentikasi.");
+
+        // 2. Create the public profile
+        const { error: profileError } = await supabase.from('profiles').insert({
+            id: authData.user.id,
+            full_name: userData.name,
+            identity_number: userData.identityNumber,
+            role: userData.role,
+            school_id: userData.schoolId || null,
+            avatar_url: userData.avatarUrl,
+        });
+
+        if (profileError) {
+             // Attempt to clean up the auth user if profile creation fails
+            await supabase.auth.admin.deleteUser(authData.user.id);
+            handleSupabaseError(profileError, 'createUser (profile)');
+        }
     },
     async updateUser(userId: string, userData: any): Promise<void> {
-        await delay(500);
-        mockUsers = mockUsers.map(u => u.id === userId ? { ...u, ...userData } : u);
+        const { error } = await supabase.from('profiles').update({
+            full_name: userData.name,
+            identity_number: userData.identityNumber,
+            role: userData.role,
+            school_id: userData.schoolId || null,
+        }).eq('id', userId);
+        if (error) handleSupabaseError(error, 'updateUser');
     },
     async deleteUser(userId: string): Promise<void> {
-        await delay(500);
-        mockUsers = mockUsers.filter(u => u.id !== userId);
+        // Deleting from auth schema requires admin privileges and is best done server-side.
+        // For simplicity here, we assume an RPC function `delete_user` exists.
+        // If not, we'll just delete the profile.
+        const { error } = await supabase.from('profiles').delete().eq('id', userId);
+        if (error) handleSupabaseError(error, 'deleteUser');
+        // You would also call `supabase.auth.admin.deleteUser(userId)` on a trusted server.
     },
-    async getUserCount(filters: { role: UserRole; schoolId: string }): Promise<number> {
-        await delay(100);
-        return mockUsers.filter(u => u.role === filters.role && u.schoolId === filters.schoolId).length;
+    async getUserCount(filters: { role: UserRole; schoolId?: string }): Promise<number> {
+        let query = supabase.from('profiles').select('id', { count: 'exact', head: true });
+        if (filters.role) query = query.eq('role', filters.role);
+        if (filters.schoolId) query = query.eq('school_id', filters.schoolId);
+        
+        const { count, error } = await query;
+        if (error) handleSupabaseError(error, 'getUserCount');
+        return count || 0;
     },
 
     // --- School Management ---
     async getSchools(): Promise<School[]> {
-        await delay(200);
-        return mockSchools;
+        const { data, error } = await supabase.from('schools').select('*');
+        if (error) handleSupabaseError(error, 'getSchools');
+        return data || [];
     },
     async getSchoolCount(): Promise<number> {
-        await delay(100);
-        return mockSchools.length;
+        const { count, error } = await supabase.from('schools').select('id', { count: 'exact', head: true });
+        if (error) handleSupabaseError(error, 'getSchoolCount');
+        return count || 0;
     },
     async createSchool(schoolData: Omit<School, 'id'>): Promise<void> {
-        await delay(500);
-        const newSchool: School = { id: `sch${Math.random()}`, ...schoolData };
-        mockSchools.push(newSchool);
+        const { error } = await supabase.from('schools').insert(schoolData);
+        if (error) handleSupabaseError(error, 'createSchool');
     },
     async updateSchool(schoolId: string, schoolData: Omit<School, 'id'>): Promise<void> {
-        await delay(500);
-        mockSchools = mockSchools.map(s => s.id === schoolId ? { id: s.id, ...schoolData } : s);
+        const { error } = await supabase.from('schools').update(schoolData).eq('id', schoolId);
+        if (error) handleSupabaseError(error, 'updateSchool');
     },
     async deleteSchool(schoolId: string): Promise<void> {
-        await delay(500);
-        mockSchools = mockSchools.filter(s => s.id !== schoolId);
+        const { error } = await supabase.from('schools').delete().eq('id', schoolId);
+        if (error) handleSupabaseError(error, 'deleteSchool');
     },
 
     // --- Subject Management ---
     async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
-        await delay(200);
-        let subjects = mockSubjects.map(s => ({...s, schoolName: mockSchools.find(sc => sc.id === s.schoolId)?.name}));
+        let query = supabase.from('subjects').select('*, schools (name)');
         if (filters?.schoolId) {
-            subjects = subjects.filter(s => s.schoolId === filters.schoolId);
+            query = query.eq('school_id', filters.schoolId);
         }
-        return subjects;
+        const { data, error } = await query;
+        if (error) handleSupabaseError(error, 'getSubjects');
+        return data ? data.map(s => ({...s, schoolName: s.schools?.name})) : [];
     },
     async createSubject(subjectData: { name: string; schoolId: string }): Promise<void> {
-        await delay(400);
-        mockSubjects.push({ id: `sub${Math.random()}`, ...subjectData });
+        const { error } = await supabase.from('subjects').insert({ name: subjectData.name, school_id: subjectData.schoolId });
+        if (error) handleSupabaseError(error, 'createSubject');
     },
     async updateSubject(subjectId: string, subjectData: { name: string; schoolId: string }): Promise<void> {
-        await delay(400);
-        mockSubjects = mockSubjects.map(s => s.id === subjectId ? { ...s, ...subjectData } : s);
+        const { error } = await supabase.from('subjects').update({ name: subjectData.name, school_id: subjectData.schoolId }).eq('id', subjectId);
+        if (error) handleSupabaseError(error, 'updateSubject');
     },
     async deleteSubject(subjectId: string): Promise<void> {
-        await delay(400);
-        mockSubjects = mockSubjects.filter(s => s.id !== subjectId);
+        const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
+        if (error) handleSupabaseError(error, 'deleteSubject');
     },
-
+    
     // --- Class Management ---
     async getClasses(filters?: { teacherId?: string }): Promise<Class[]> {
-        await delay(300);
-        let classes = mockClasses.map(c => ({
-            ...c,
-            schoolName: mockSchools.find(s => s.id === c.schoolId)?.name,
-            homeroomTeacherName: mockUsers.find(u => u.id === c.homeroomTeacherId)?.name,
-        }));
-        if (filters?.teacherId) {
-            // This logic is simplified. A real app would have a teachers_classes table.
-            // Here we assume a teacher is assigned as a homeroom teacher.
-            classes = classes.filter(c => c.homeroomTeacherId === filters.teacherId);
+        let query = supabase.from('classes').select(`
+            *,
+            schools (name),
+            profiles (full_name)
+        `);
+         if (filters?.teacherId) {
+            // This assumes a teacher is only associated as a homeroom teacher. A more complex schema would use a linking table.
+            query = query.eq('homeroom_teacher_id', filters.teacherId);
         }
-        return classes;
-    },
-    async createClass(classData: any): Promise<void> {
-        await delay(500);
-        const newClass = { id: `cls${Math.random()}`, name: classData.name, schoolId: classData.schoolId, homeroomTeacherId: classData.homeroomTeacherId };
-        mockClasses.push(newClass);
-        // update student-class associations
-        mockClassStudents = mockClassStudents.filter(sc => !classData.studentIds.includes(sc.studentId));
-        classData.studentIds.forEach((studentId: string) => {
-            mockClassStudents.push({ classId: newClass.id, studentId });
-        });
-    },
-    async updateClass(classId: string, classData: any): Promise<void> {
-        await delay(500);
-        mockClasses = mockClasses.map(c => c.id === classId ? { ...c, ...classData } : c);
-         // update student-class associations
-        mockClassStudents = mockClassStudents.filter(sc => sc.classId !== classId);
-        classData.studentIds.forEach((studentId: string) => {
-            mockClassStudents.push({ classId: classId, studentId });
-        });
-    },
-    async deleteClass(classId: string): Promise<void> {
-        await delay(500);
-        mockClasses = mockClasses.filter(c => c.id !== classId);
-        mockClassStudents = mockClassStudents.filter(sc => sc.classId !== classId);
+        const { data, error } = await query;
+        if (error) handleSupabaseError(error, 'getClasses');
+        return data ? data.map(c => ({
+            id: c.id,
+            name: c.name,
+            schoolId: c.school_id,
+            homeroomTeacherId: c.homeroom_teacher_id,
+            schoolName: c.schools?.name,
+            homeroomTeacherName: c.profiles?.full_name,
+        })) : [];
     },
     async getStudentsInClass(classId: string): Promise<User[]> {
-        await delay(300);
-        const studentIds = mockClassStudents.filter(sc => sc.classId === classId).map(sc => sc.studentId);
-        return mockUsers.filter(u => studentIds.includes(u.id));
-    },
-    async getClassForStudent(studentId: string): Promise<string | null> {
-        await delay(100);
-        const association = mockClassStudents.find(sc => sc.studentId === studentId);
-        if (!association) return null;
-        return mockClasses.find(c => c.id === association.classId)?.name || null;
-    },
+        const { data, error } = await supabase
+            .from('class_students')
+            .select('profiles(*, schools(name))')
+            .eq('class_id', classId);
 
-    // --- Student Data ---
-    async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
-        await delay(400);
-        return mockGrades
-            .filter(g => g.studentId === studentId)
-            .map(g => ({ ...g, subject: mockSubjects.find(s => s.id === g.subjectId)?.name || 'Unknown' }));
+        if (error) handleSupabaseError(error, 'getStudentsInClass');
+        return data ? data.map(item => mapProfileToUser(item.profiles)) : [];
     },
-    async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> {
-        await delay(200);
-        return mockAttendance.filter(a => a.studentId === studentId);
-    },
-    async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
-        await delay(500);
-        return mockGamificationProfiles[studentId] || { progress: {}, badges: [] };
-    },
+    async createClass(classData: { name: string; schoolId: string; homeroomTeacherId?: string; studentIds: string[] }): Promise<void> {
+        const { data, error } = await supabase.from('classes').insert({
+            name: classData.name,
+            school_id: classData.schoolId,
+            homeroom_teacher_id: classData.homeroomTeacherId || null,
+        }).select().single();
 
-    // --- Teacher Data ---
-    async getTeacherNoteForStudent(studentId: string): Promise<{ note: string; teacherName: string }> {
-        await delay(200);
-        // Find student's class, then homeroom teacher
-        const classAssoc = mockClassStudents.find(sc => sc.studentId === studentId);
-        if (classAssoc) {
-            const studentClass = mockClasses.find(c => c.id === classAssoc.classId);
-            if (studentClass?.homeroomTeacherId) {
-                const teacher = mockUsers.find(u => u.id === studentClass.homeroomTeacherId);
-                return { note: 'Andi menunjukkan perkembangan yang baik, perlu lebih aktif di kelas.', teacherName: teacher?.name || 'Wali Kelas' };
-            }
+        if (error) handleSupabaseError(error, 'createClass (insert)');
+        if (!data) throw new Error("Gagal membuat kelas baru.");
+
+        if (classData.studentIds && classData.studentIds.length > 0) {
+            const studentLinks = classData.studentIds.map(studentId => ({
+                class_id: data.id,
+                student_id: studentId
+            }));
+            const { error: studentError } = await supabase.from('class_students').insert(studentLinks);
+            if (studentError) handleSupabaseError(studentError, 'createClass (link students)');
         }
-        return { note: 'Belum ada catatan dari wali kelas.', teacherName: '' };
+    },
+    async updateClass(classId: string, classData: { name: string; schoolId: string; homeroomTeacherId?: string; studentIds: string[] }): Promise<void> {
+        const { error } = await supabase.from('classes').update({
+            name: classData.name,
+            school_id: classData.schoolId,
+            homeroom_teacher_id: classData.homeroomTeacherId || null,
+        }).eq('id', classId);
+        if (error) handleSupabaseError(error, 'updateClass (update)');
+        
+        // Replace all student associations for this class
+        const { error: deleteError } = await supabase.from('class_students').delete().eq('class_id', classId);
+        if (deleteError) handleSupabaseError(deleteError, 'updateClass (clear students)');
+
+        if (classData.studentIds && classData.studentIds.length > 0) {
+            const studentLinks = classData.studentIds.map(studentId => ({
+                class_id: classId,
+                student_id: studentId
+            }));
+            const { error: insertError } = await supabase.from('class_students').insert(studentLinks);
+            if (insertError) handleSupabaseError(insertError, 'updateClass (re-link students)');
+        }
+    },
+    async deleteClass(classId: string): Promise<void> {
+        // Deleting from class_students first, then classes. Or use CASCADE delete in DB.
+        const { error: studentError } = await supabase.from('class_students').delete().eq('class_id', classId);
+        if (studentError) handleSupabaseError(studentError, 'deleteClass (students)');
+        const { error: classError } = await supabase.from('classes').delete().eq('id', classId);
+        if (classError) handleSupabaseError(classError, 'deleteClass (class)');
+    },
+    
+    // --- Announcements ---
+    async getAnnouncements(): Promise<Announcement[]> {
+        const { data, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
+        if (error) handleSupabaseError(error, 'getAnnouncements');
+        return data ? data.map(a => ({
+            id: a.id,
+            title: a.title,
+            content: a.content,
+            author: a.author,
+            date: new Date(a.created_at).toISOString().split('T')[0]
+        })) : [];
+    },
+    async createAnnouncement(data: { title: string, content: string, author: string }): Promise<void> {
+        const { error } = await supabase.from('announcements').insert(data);
+        if (error) handleSupabaseError(error, 'createAnnouncement');
+    },
+    async deleteAnnouncement(id: string): Promise<void> {
+        const { error } = await supabase.from('announcements').delete().eq('id', id);
+        if (error) handleSupabaseError(error, 'deleteAnnouncement');
+    },
+
+    // --- Teaching Journals ---
+    async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
+        const { data, error } = await supabase
+            .from('teaching_journals')
+            .select(`*, classes(name), subjects(name)`)
+            .eq('teacher_id', teacherId)
+            .order('date', { ascending: false });
+
+        if (error) handleSupabaseError(error, 'getTeachingJournals');
+        return data ? data.map(j => ({
+            id: j.id,
+            teacherId: j.teacher_id,
+            classId: j.class_id,
+            subjectId: j.subject_id,
+            date: j.date,
+            topic: j.topic,
+            className: j.classes?.name,
+            subjectName: j.subjects?.name,
+        })) : [];
+    },
+    async createTeachingJournal(data: any): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').insert({
+            teacher_id: data.teacherId,
+            class_id: data.classId,
+            subject_id: data.subjectId,
+            date: data.date,
+            topic: data.topic
+        });
+        if (error) handleSupabaseError(error, 'createTeachingJournal');
+    },
+    async updateTeachingJournal(id: number, data: any): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').update({
+            class_id: data.classId,
+            subject_id: data.subjectId,
+            date: data.date,
+            topic: data.topic
+        }).eq('id', id);
+        if (error) handleSupabaseError(error, 'updateTeachingJournal');
+    },
+    async deleteTeachingJournal(id: number): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').delete().eq('id', id);
+        if (error) handleSupabaseError(error, 'deleteTeachingJournal');
+    },
+
+    // --- MOCKED/PLACEHOLDER FUNCTIONS (Require complex queries or undefined schema) ---
+    async getClassForStudent(studentId: string): Promise<string | null> {
+         const { data, error } = await supabase.from('class_students').select('classes(name)').eq('student_id', studentId).single();
+         if (error || !data) {
+             console.error("Error fetching student's class:", error);
+             return 'Tidak terdaftar';
+         }
+         // @ts-ignore
+         return data.classes?.name || null;
     },
     async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
-        await delay(300);
-        return mockTeachingJournals
-            .filter(j => j.teacherId === teacherId && j.date === date)
+        const journals = await this.getTeachingJournals(teacherId);
+        return journals
+            .filter(j => j.date === date)
             .map(j => ({
                 subject: j.subjectName || 'N/A',
                 class: j.className || 'N/A',
                 topic: j.topic,
             }));
     },
-    async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
-        await delay(400);
-        return mockTeachingJournals
-            .filter(j => j.teacherId === teacherId)
-            .map(j => ({
-                ...j,
-                className: mockClasses.find(c => c.id === j.classId)?.name,
-                subjectName: mockSubjects.find(s => s.id === j.subjectId)?.name,
-            }));
+    async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
+        console.warn("getGradesForStudent is using mock data.");
+        return [
+            { subject: 'Matematika Wajib', score: 85, grade: 'A-' },
+            { subject: 'Bahasa Indonesia', score: 90, grade: 'A' },
+            { subject: 'Fisika', score: 78, grade: 'B+' },
+        ];
     },
-    async createTeachingJournal(data: any): Promise<void> {
-        await delay(400);
-        mockTeachingJournals.push({ id: Math.random(), ...data });
+    async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> {
+        console.warn("getAttendanceForStudent is using mock data.");
+        return [
+            { date: '2024-07-21', status: 'Hadir' },
+            { date: '2024-07-20', status: 'Hadir' },
+            { date: '2024-07-19', status: 'Sakit' },
+        ];
     },
-    async updateTeachingJournal(id: number, data: any): Promise<void> {
-        await delay(400);
-        mockTeachingJournals = mockTeachingJournals.map(j => j.id === id ? { ...j, ...data } : j);
+    async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
+        console.warn("getGamificationProfile is using mock data.");
+        return { progress: { 'Matematika Wajib': 88, 'Fisika': 75 }, badges: [{ id: 'bdg2', icon: '🧠', name: 'Ahli Matematika', description: 'Nilai di atas 90 pada Matematika.' }] };
     },
-    async deleteTeachingJournal(id: number): Promise<void> {
-        await delay(400);
-        mockTeachingJournals = mockTeachingJournals.filter(j => j.id !== id);
+    async getTeacherNoteForStudent(studentId: string): Promise<{ note: string; teacherName: string }> {
+        console.warn("getTeacherNoteForStudent is using mock data.");
+        return { note: 'Perkembangan sangat baik, pertahankan semangat belajar!', teacherName: 'Siti Aminah, S.Si' };
     },
-
-    // --- Announcements ---
-    async getAnnouncements(): Promise<Announcement[]> {
-        await delay(300);
-        return [...mockAnnouncements].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    },
-    async createAnnouncement(data: any): Promise<void> {
-        await delay(500);
-        mockAnnouncements.push({ id: `ann${Math.random()}`, date: new Date().toISOString().split('T')[0], ...data });
-    },
-    async deleteAnnouncement(id: string): Promise<void> {
-        await delay(500);
-        mockAnnouncements = mockAnnouncements.filter(a => a.id !== id);
-    },
-
-    // --- Reports ---
     async getSchoolPerformance(): Promise<{ school: string, 'Rata-rata Nilai': number }[]> {
-        await delay(800);
+        console.warn("getSchoolPerformance is using mock data.");
         return [
             { school: 'MA Fathus Salafi', 'Rata-rata Nilai': 85.5 },
             { school: 'MTS Fathus Salafi', 'Rata-rata Nilai': 82.1 },
         ];
     },
     async getAverageGradesBySubject(schoolId: string): Promise<{ subject: string; avg: number }[]> {
-        await delay(700);
+        console.warn("getAverageGradesBySubject is using mock data.");
         return [
-            { subject: 'Matematika', avg: 88 },
-            { subject: 'B. Indo', avg: 85 },
-            { subject: 'Fisika', avg: 79 },
-            { subject: 'Biologi', avg: 82 },
+            { subject: 'Matematika', avg: 88 }, { subject: 'B. Indo', avg: 85 },
+            { subject: 'Fisika', avg: 79 }, { subject: 'Biologi', avg: 82 },
         ];
     },
     async getAttendanceTrend(schoolId: string): Promise<{ month: string; percentage: number }[]> {
-        await delay(600);
+        console.warn("getAttendanceTrend is using mock data.");
         return [
-            { month: 'Jan', percentage: 98 },
-            { month: 'Feb', percentage: 97 },
-            { month: 'Mar', percentage: 98.5 },
-            { month: 'Apr', percentage: 96 },
-            { month: 'Mei', percentage: 97.5 },
+            { month: 'Jan', percentage: 98 }, { month: 'Feb', percentage: 97 },
+            { month: 'Mar', percentage: 98.5 }, { month: 'Apr', percentage: 96 },
         ];
     },
-    
-    // --- Schedules ---
     async getClassSchedule(className: string, schoolIdentifier: string): Promise<Record<string, { time: string, subject: string }[]>> {
-        await delay(400);
+        console.warn("getClassSchedule is using mock data.");
         return {
             "Senin": [{ time: '07:30 - 09:00', subject: 'Matematika' }, { time: '10:00 - 11:30', subject: 'Bahasa Indonesia' }],
             "Selasa": [{ time: '07:30 - 09:00', subject: 'Fisika' }, { time: '10:00 - 11:30', subject: 'Pendidikan Agama' }],
-            "Rabu": [{ time: '07:30 - 09:00', subject: 'Biologi' }, { time: '10:00 - 11:30', subject: 'Sejarah' }],
-            "Kamis": [{ time: '07:30 - 09:00', subject: 'Bahasa Inggris' }, { time: '10:00 - 11:30', subject: 'Penjaskes' }],
-            "Jumat": [{ time: '07:30 - 09:00', subject: 'Seni Budaya' }, { time: '10:00 - 11:30', subject: 'TIK' }],
-        }
+        };
     }
 };

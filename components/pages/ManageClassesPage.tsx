@@ -16,8 +16,8 @@ const ManageClassesPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedClass, setSelectedClass] = useState<Class | null>(null);
     const [selectedClassWithStudents, setSelectedClassWithStudents] = useState<any>(null);
+    const [initialSchoolIdForNewClass, setInitialSchoolIdForNewClass] = useState<string | undefined>();
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -45,28 +45,30 @@ const ManageClassesPage: React.FC = () => {
         fetchData();
     }, []);
 
-    const openModal = async (classItem: Class | null = null) => {
-        setSelectedClass(classItem);
+    const openModal = async (classItem: Class | null = null, schoolId?: string) => {
         if (classItem) {
-            // Fetch students for the selected class to populate the form
+            // Editing existing class
             const studentsInClass = await dataService.getStudentsInClass(classItem.id);
             setSelectedClassWithStudents({ ...classItem, studentIds: studentsInClass.map(s => s.id) });
+            setInitialSchoolIdForNewClass(undefined);
         } else {
+            // Creating new class
             setSelectedClassWithStudents(null);
+            setInitialSchoolIdForNewClass(schoolId);
         }
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setSelectedClass(null);
         setSelectedClassWithStudents(null);
+        setInitialSchoolIdForNewClass(undefined);
     };
 
     const handleSave = async (formData: any) => {
         try {
-            if (selectedClass) {
-                await dataService.updateClass(selectedClass.id, formData);
+            if (selectedClassWithStudents?.id) {
+                await dataService.updateClass(selectedClassWithStudents.id, formData);
             } else {
                 await dataService.createClass(formData);
             }
@@ -113,7 +115,7 @@ const ManageClassesPage: React.FC = () => {
                             <div className="flex justify-between items-center p-4 border-b">
                                 <h3 className="text-lg font-semibold">{school.name}</h3>
                                 <button
-                                    onClick={() => openModal()}
+                                    onClick={() => openModal(null, school.id)}
                                     className="flex items-center text-sm px-3 py-1.5 bg-brand-100 text-brand-700 font-semibold rounded-md hover:bg-brand-200"
                                 >
                                     <PlusIcon className="h-4 w-4 mr-1" />
@@ -152,7 +154,7 @@ const ManageClassesPage: React.FC = () => {
             )}
             
             {isModalOpen && (
-                <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedClass ? "Edit Kelas" : "Tambah Kelas"}>
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedClassWithStudents ? "Edit Kelas" : "Tambah Kelas"}>
                     <ClassForm 
                         classData={selectedClassWithStudents}
                         schools={schools}
@@ -160,6 +162,7 @@ const ManageClassesPage: React.FC = () => {
                         allStudents={allStudents}
                         onClose={closeModal}
                         onSave={handleSave}
+                        initialSchoolId={initialSchoolIdForNewClass}
                     />
                 </Modal>
             )}

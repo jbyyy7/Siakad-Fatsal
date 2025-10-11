@@ -8,9 +8,10 @@ interface ClassFormProps {
   allStudents: User[];
   onClose: () => void;
   onSave: (formData: any) => Promise<void>;
+  initialSchoolId?: string;
 }
 
-const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, allStudents, onClose, onSave }) => {
+const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, allStudents, onClose, onSave, initialSchoolId }) => {
   const [formData, setFormData] = useState({
     name: '',
     schoolId: '',
@@ -27,8 +28,10 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
         homeroomTeacherId: classData.homeroomTeacherId || '',
         studentIds: classData.studentIds || [],
       });
+    } else if (initialSchoolId) {
+      setFormData(prev => ({ ...prev, schoolId: initialSchoolId }));
     }
-  }, [classData]);
+  }, [classData, initialSchoolId]);
 
   const availableTeachers = useMemo(() => {
     if (!formData.schoolId) return [];
@@ -41,7 +44,6 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
   }, [formData.schoolId, allStudents]);
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // FIX: Use currentTarget for safer type inference.
     const newSchoolId = e.currentTarget.value;
     setFormData(prev => ({
       ...prev,
@@ -52,19 +54,22 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    // FIX: Use currentTarget for safer type inference.
     const { name, value } = e.currentTarget;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // FIX: Use currentTarget for safer type inference.
-    const selectedIds = Array.from(e.currentTarget.selectedOptions, option => option.value);
+    // FIX: Explicitly cast the `option` type to `HTMLOptionElement` within the `Array.from` map function to resolve a TypeScript type inference issue where it was being treated as `unknown`.
+    const selectedIds = Array.from(e.currentTarget.selectedOptions, (option: HTMLOptionElement) => option.value);
     setFormData(prev => ({ ...prev, studentIds: selectedIds }));
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.schoolId) {
+        alert("Nama kelas dan sekolah harus diisi.");
+        return;
+    }
     setIsLoading(true);
     await onSave(formData);
     setIsLoading(false);
