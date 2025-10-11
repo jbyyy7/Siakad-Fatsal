@@ -1,9 +1,9 @@
 export enum UserRole {
+  STUDENT = 'Student',
+  TEACHER = 'Teacher',
+  PRINCIPAL = 'Principal',
+  FOUNDATION_HEAD = 'Foundation Head',
   ADMIN = 'Admin',
-  FOUNDATION_HEAD = 'Kepala Yayasan',
-  PRINCIPAL = 'Kepala Sekolah',
-  TEACHER = 'Guru',
-  STUDENT = 'Siswa',
 }
 
 export interface User {
@@ -12,45 +12,31 @@ export interface User {
   identityNumber: string;
   name: string;
   role: UserRole;
-  avatarUrl?: string;
+  avatarUrl: string;
   schoolId?: string;
   schoolName?: string;
-  level?: string;
+  level?: string; // e.g., 'MA Kelas 10-A'
 }
 
 export interface School {
-  id: string;
-  name: string;
-  level: string;
-  address: string;
+    id: string;
+    name: string;
+    level: string;
+    address: string;
 }
 
-export interface Subject {
-  id: string;
-  name: string;
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-}
-
-export interface GamificationProfile {
-  studentId: string;
-  points: number;
-  level: number;
-  progress: { [subject: string]: number };
-  badges: Badge[];
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    author: string;
 }
 
 export interface JournalEntry {
-  teacherId: string;
-  classId: string;
-  subject: string;
-  date: string;
-  topic: string;
+    subject: string;
+    classId: string;
+    topic: string;
 }
 
 export interface NotificationSettings {
@@ -60,10 +46,27 @@ export interface NotificationSettings {
     dailyReport: boolean;
 }
 
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  author: string;
+export interface Badge {
+    id: string;
+    icon: string;
+    description: string;
+}
+
+export interface GamificationProfile {
+    progress: Record<string, number>;
+    badges: Badge[];
+}
+
+export interface Subject {
+    id: string;
+    name: string;
+}
+
+export interface Class {
+    id: string;
+    name: string;
+    schoolId: string;
+    teacherId?: string;
+    schoolName?: string;
+    teacherName?: string;
 }
