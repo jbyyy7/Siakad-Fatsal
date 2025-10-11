@@ -146,18 +146,25 @@ export const dataService = {
     
     // Student Data
     async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
-        const { data, error } = await supabase
+        const { data: gradesData, error: gradesError } = await supabase
             .from('grades')
-            .select('score, subjects ( name )')
+            .select('score, subject_id')
             .eq('student_id', studentId);
+        handleSupabaseError(gradesError, 'getGradesForStudent (grades)');
 
-        handleSupabaseError(error, 'getGradesForStudent');
+        if (!gradesData || gradesData.length === 0) return [];
 
-        return data?.map((g: any) => ({
-            subject: g.subjects.name,
+        const subjectIds = gradesData.map(g => g.subject_id);
+        const { data: subjectsData, error: subjectsError } = await supabase.from('subjects').select('id, name').in('id', subjectIds);
+        handleSupabaseError(subjectsError, 'getGradesForStudent (subjects)');
+
+        const subjectMap = new Map<string, string>(subjectsData?.map(s => [s.id, s.name]) || []);
+
+        return gradesData.map(g => ({
+            subject: subjectMap.get(g.subject_id) || 'Unknown Subject',
             score: g.score,
             grade: getGradeFromScore(g.score),
-        })) || [];
+        }));
     },
     
     async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> {
@@ -172,13 +179,13 @@ export const dataService = {
     async getTeacherNoteForStudent(studentId: string): Promise<{ note: string, teacherName: string }> {
         const { data, error } = await supabase
             .from('teacher_notes')
-            .select('note, profiles ( full_name )')
+            .select('note, teacher_id')
             .eq('student_id', studentId)
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
 
-        if (error && error.code !== 'PGRST116') {
+        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is not an error
              handleSupabaseError(error, 'getTeacherNoteForStudent');
         }
        
@@ -186,24 +193,40 @@ export const dataService = {
             return { note: 'Belum ada catatan dari wali kelas.', teacherName: '' };
         }
         
+        const { data: teacher, error: teacherError } = await supabase.from('profiles').select('full_name').eq('id', data.teacher_id).single();
+        handleSupabaseError(teacherError, 'getTeacherNoteForStudent (teacher)');
+
         return {
-            // @ts-ignore
             note: data.note,
-            // @ts-ignore
-            teacherName: data.profiles.full_name,
+            teacherName: teacher?.full_name || 'Unknown Teacher',
         }
     },
     
     async getJournalForTeacher(teacherId: string, date: string): Promise<{ subject: string; classId: string; topic: string; }[]> {
         const { data, error } = await supabase
             .from('teacher_journals')
-            .select('topic, subjects(name), classes(name)')
+            .select('topic, subject_id, class_id')
             .eq('teacher_id', teacherId)
             .eq('date', date);
-        
         handleSupabaseError(error, 'getJournalForTeacher');
-        // @ts-ignore
-        return data?.map(j => ({ subject: j.subjects.name, classId: j.classes.name, topic: j.topic })) || [];
+        if (!data || data.length === 0) return [];
+        
+        const subjectIds = [...new Set(data.map(d => d.subject_id))];
+        const classIds = [...new Set(data.map(d => d.class_id))];
+
+        const { data: subjects, error: sError } = await supabase.from('subjects').select('id, name').in('id', subjectIds);
+        const { data: classes, error: cError } = await supabase.from('classes').select('id, name').in('id', classIds);
+        handleSupabaseError(sError, 'getJournalForTeacher (subjects)');
+        handleSupabaseError(cError, 'getJournalForTeacher (classes)');
+
+        const subjectMap = new Map(subjects?.map(s => [s.id, s.name]));
+        const classMap = new Map(classes?.map(c => [c.id, c.name]));
+        
+        return data.map(j => ({
+            subject: subjectMap.get(j.subject_id) || 'Unknown',
+            classId: classMap.get(j.class_id) || 'Unknown',
+            topic: j.topic
+        }));
     },
 
     // Gamification
@@ -267,19 +290,22 @@ export const dataService = {
 
     // Subject Management
     async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
-        let query = supabase.from('subjects').select('*, schools(name)');
+        const { data: schools, error: schoolsError } = await supabase.from('schools').select('id, name');
+        handleSupabaseError(schoolsError, 'getSubjects (schools)');
+        const schoolMap = new Map(schools?.map(s => [s.id, s.name]));
+
+        let query = supabase.from('subjects').select('*');
         if (filters?.schoolId) {
             query = query.eq('school_id', filters.schoolId);
         }
         const { data, error } = await query;
         handleSupabaseError(error, 'getSubjects');
-        // @ts-ignore
+        
         return data?.map(s => ({
             id: s.id,
             name: s.name,
             schoolId: s.school_id,
-            // @ts-ignore
-            schoolName: s.schools.name,
+            schoolName: schoolMap.get(s.school_id) || 'N/A',
         })) || [];
     },
     async getSubjectCount(): Promise<number> {
@@ -302,41 +328,49 @@ export const dataService = {
 
     // Class Management
     async getClasses(filters?: { teacherId?: string }): Promise<Class[]> {
-        let query = supabase.from('classes').select(`
-            id, name, school_id, teacher_id,
-            schools (name),
-            profiles (full_name)
-        `);
+        // Step 1: Fetch all related data into maps for efficient lookup
+        const { data: schools, error: sError } = await supabase.from('schools').select('id, name');
+        handleSupabaseError(sError, 'getClasses (schools)');
+        const schoolMap = new Map(schools?.map(s => [s.id, s.name]));
+
+        const { data: teachers, error: tError } = await supabase.from('profiles').select('id, full_name').eq('role', 'Teacher');
+        handleSupabaseError(tError, 'getClasses (teachers)');
+        const teacherMap = new Map(teachers?.map(t => [t.id, t.full_name]));
+
+        // Step 2: Fetch the main classes data
+        let query = supabase.from('classes').select('id, name, school_id, teacher_id');
         if (filters?.teacherId) {
             query = query.eq('teacher_id', filters.teacherId);
         }
         const { data, error } = await query;
         handleSupabaseError(error, 'getClasses');
-        // @ts-ignore
+
+        // Step 3: Map and combine the data
         return data?.map(c => ({
             id: c.id,
             name: c.name,
             schoolId: c.school_id,
             teacherId: c.teacher_id,
-            // @ts-ignore
-            schoolName: c.schools.name,
-            // @ts-ignore
-            teacherName: c.profiles.full_name,
+            schoolName: schoolMap.get(c.school_id) || 'N/A',
+            teacherName: teacherMap.get(c.teacher_id) || 'N/A',
         })) || [];
     },
     async getStudentsInClass(classId: string): Promise<User[]> {
         const { data, error } = await supabase
             .from('class_members')
-            .select('profiles(*)')
+            .select('profiles(id, identity_number, full_name, role, avatar_url, school_id)')
             .eq('class_id', classId);
+
         handleSupabaseError(error, 'getStudentsInClass');
+
+        // The join might return a complex object, so we normalize it
         // @ts-ignore
-        return data?.map(m => m.profiles).map(p => ({
+        return data?.map(m => m.profiles).filter(Boolean).map(p => ({
             id: p.id,
             email: '',
             identityNumber: p.identity_number,
             name: p.full_name,
-            role: p.role,
+            role: p.role as UserRole,
             avatarUrl: p.avatar_url,
             schoolId: p.school_id,
         })) || [];
