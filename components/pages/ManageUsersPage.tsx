@@ -6,6 +6,7 @@ import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
+import UserForm from '../forms/UserForm';
 
 const ManageUsersPage: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -46,6 +47,26 @@ const ManageUsersPage: React.FC = () => {
         setIsModalOpen(false);
         setSelectedUser(null);
     };
+    
+    const handleSaveUser = async (formData: any) => {
+        try {
+            if (selectedUser) {
+                // Update existing user
+                const updatedUser = await dataService.updateUser(selectedUser.id, formData);
+                setUsers(users.map(u => u.id === updatedUser.id ? {...u, ...updatedUser} : u));
+            } else {
+                // Create new user
+                const newUser = await dataService.createUser(formData);
+                setUsers([...users, newUser]);
+            }
+            closeModal();
+        } catch (error: any) {
+            console.error('Failed to save user:', error);
+            // Optionally, display error in the form
+            alert(`Gagal menyimpan pengguna: ${error.message}`);
+        }
+    };
+
 
     const filteredUsers = useMemo(() => {
         return users
@@ -103,7 +124,7 @@ const ManageUsersPage: React.FC = () => {
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3">Nama</th>
-                                <th className="px-6 py-3">Email</th>
+                                <th className="px-6 py-3">No. Induk</th>
                                 <th className="px-6 py-3">Peran</th>
                                 <th className="px-6 py-3">Sekolah</th>
                                 <th className="px-6 py-3 text-right">Aksi</th>
@@ -114,11 +135,11 @@ const ManageUsersPage: React.FC = () => {
                                 <tr key={user.id} className="bg-white border-b hover:bg-gray-50">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3"/>
+                                            <img src={user.avatarUrl} alt={user.name} className="h-8 w-8 rounded-full mr-3 object-cover"/>
                                             {user.name}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">{user.email}</td>
+                                    <td className="px-6 py-4">{user.identityNumber}</td>
                                     <td className="px-6 py-4">{user.role}</td>
                                     <td className="px-6 py-4">{user.schoolName || '-'}</td>
                                     <td className="px-6 py-4 text-right">
@@ -133,10 +154,16 @@ const ManageUsersPage: React.FC = () => {
                 </div>
             </Card>
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedUser ? "Edit Pengguna" : "Tambah Pengguna"}>
-                <p>Formulir untuk menambah atau mengedit pengguna akan ditampilkan di sini.</p>
-                {/* Placeholder for form fields */}
-            </Modal>
+            {isModalOpen && (
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedUser ? "Edit Pengguna" : "Tambah Pengguna"}>
+                   <UserForm
+                        user={selectedUser}
+                        schools={schools}
+                        onClose={closeModal}
+                        onSave={handleSaveUser}
+                   />
+                </Modal>
+            )}
         </div>
     );
 };

@@ -6,6 +6,7 @@ import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
+import SchoolForm from '../forms/SchoolForm';
 
 const ManageSchoolsPage: React.FC = () => {
     const [schools, setSchools] = useState<School[]>([]);
@@ -37,6 +38,22 @@ const ManageSchoolsPage: React.FC = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedSchool(null);
+    };
+    
+    const handleSaveSchool = async (formData: Omit<School, 'id'>) => {
+        try {
+            if (selectedSchool) {
+                const updatedSchool = await dataService.updateSchool(selectedSchool.id, formData);
+                setSchools(schools.map(s => s.id === updatedSchool.id ? updatedSchool : s));
+            } else {
+                const newSchool = await dataService.createSchool(formData);
+                setSchools([...schools, newSchool]);
+            }
+            closeModal();
+        } catch (error: any) {
+             console.error('Failed to save school:', error);
+             alert(`Gagal menyimpan sekolah: ${error.message}`);
+        }
     };
 
     return (
@@ -82,9 +99,15 @@ const ManageSchoolsPage: React.FC = () => {
                 </div>
             </Card>
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedSchool ? "Edit Sekolah" : "Tambah Sekolah"}>
-                <p>Formulir untuk menambah atau mengedit sekolah akan ditampilkan di sini.</p>
-            </Modal>
+            {isModalOpen && (
+                <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedSchool ? "Edit Sekolah" : "Tambah Sekolah"}>
+                    <SchoolForm 
+                        school={selectedSchool}
+                        onClose={closeModal}
+                        onSave={handleSaveSchool}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };

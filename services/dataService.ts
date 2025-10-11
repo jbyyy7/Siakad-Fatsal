@@ -27,6 +27,28 @@ export const dataService = {
         handleSupabaseError(error, 'getSchools');
         return data || [];
     },
+    
+    async createSchool(schoolData: Omit<School, 'id'>): Promise<School> {
+        const { data, error } = await supabase
+            .from('schools')
+            .insert(schoolData)
+            .select()
+            .single();
+        handleSupabaseError(error, 'createSchool');
+        return data;
+    },
+
+    async updateSchool(schoolId: string, schoolData: Partial<Omit<School, 'id'>>): Promise<School> {
+        const { data, error } = await supabase
+            .from('schools')
+            .update(schoolData)
+            .eq('id', schoolId)
+            .select()
+            .single();
+        handleSupabaseError(error, 'updateSchool');
+        return data;
+    },
+
 
     async getSchoolCount(): Promise<number> {
         const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
@@ -77,6 +99,64 @@ export const dataService = {
         }));
     },
     
+    async createUser(userData: any): Promise<User> {
+        // Step 1: Create the auth user. This sends a confirmation email.
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+        });
+
+        if (authError || !authData.user) {
+            console.error('Supabase auth error in createUser:', authError);
+            throw new Error(authError?.message || 'Gagal membuat pengguna otentikasi.');
+        }
+
+        // Step 2: Create the user's profile in the 'profiles' table.
+        const profileData = {
+            id: authData.user.id, // Link to the auth user
+            full_name: userData.name,
+            identity_number: userData.identityNumber,
+            role: userData.role,
+            school_id: userData.schoolId,
+            avatar_url: userData.avatarUrl,
+        };
+
+        const { data: newProfile, error: profileError } = await supabase
+            .from('profiles')
+            .insert(profileData)
+            .select()
+            .single();
+
+        if (profileError) {
+            console.error('Supabase profile error in createUser:', profileError);
+            // Optional: Clean up the created auth user if profile creation fails
+            // await supabase.auth.admin.deleteUser(authData.user.id);
+            throw new Error('Gagal membuat profil pengguna.');
+        }
+
+        return { ...newProfile, name: newProfile.full_name, identityNumber: newProfile.identity_number, schoolId: newProfile.school_id, avatarUrl: newProfile.avatar_url, email: authData.user.email ?? '' };
+    },
+
+    async updateUser(userId: string, userData: Partial<User>): Promise<User> {
+         const profileData = {
+            full_name: userData.name,
+            identity_number: userData.identityNumber,
+            role: userData.role,
+            school_id: userData.schoolId,
+            avatar_url: userData.avatarUrl,
+        };
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(profileData)
+            .eq('id', userId)
+            .select()
+            .single();
+        
+        handleSupabaseError(error, 'updateUser');
+        return { ...data, name: data.full_name, identityNumber: data.identity_number, schoolId: data.school_id, avatarUrl: data.avatar_url };
+    },
+
     async getUserCount(filters: { role?: UserRole; schoolId?: string } = {}): Promise<number> {
         let query = supabase.from('profiles').select('*', { count: 'exact', head: true });
         if (filters.role) {
