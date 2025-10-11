@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
-import { Class } from '../../types';
+import { Class, School } from '../../types';
 import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
@@ -10,6 +10,7 @@ import ClassForm from '../forms/ClassForm';
 
 const ManageClassesPage: React.FC = () => {
     const [classes, setClasses] = useState<Class[]>([]);
+    const [schools, setSchools] = useState<School[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,11 +18,16 @@ const ManageClassesPage: React.FC = () => {
 
     const fetchData = async () => {
         setIsLoading(true);
+        setError(null);
         try {
-            const data = await dataService.getClasses();
-            setClasses(data);
+            const [classesData, schoolsData] = await Promise.all([
+                dataService.getClasses(),
+                dataService.getSchools(),
+            ]);
+            setClasses(classesData);
+            setSchools(schoolsData);
         } catch (err) {
-            setError('Gagal memuat data kelas.');
+            setError('Gagal memuat data.');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -58,7 +64,7 @@ const ManageClassesPage: React.FC = () => {
     };
     
     const handleDeleteClass = async (classId: string) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus kelas ini?')) {
+        if (window.confirm('Apakah Anda yakin ingin menghapus kelas ini? Ini akan menghapus semua data pendaftaran siswa di kelas ini.')) {
             try {
                 await dataService.deleteClass(classId);
                 await fetchData();
@@ -69,48 +75,66 @@ const ManageClassesPage: React.FC = () => {
         }
     };
 
+    const classesBySchool: Record<string, Class[]> = classes.reduce((acc, cls) => {
+        const schoolId = cls.schoolId || 'unassigned';
+        if (!acc[schoolId]) {
+            acc[schoolId] = [];
+        }
+        acc[schoolId].push(cls);
+        return acc;
+    }, {} as Record<string, Class[]>);
+
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Kelola Kelas</h2>
-                <button
-                    onClick={() => openModal()}
-                    className="flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-                >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Tambah Kelas
-                </button>
-            </div>
-            <Card>
-                <div className="overflow-x-auto">
-                    {isLoading ? <p className="p-4">Memuat data kelas...</p> :
-                     error ? <p className="p-4 text-red-500">{error}</p> :
-                    <table className="w-full text-sm text-left text-gray-500">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3">Nama Kelas</th>
-                                <th className="px-6 py-3">Sekolah</th>
-                                <th className="px-6 py-3">Wali Kelas</th>
-                                <th className="px-6 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {classes.map(c => (
-                                <tr key={c.id} className="bg-white border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
-                                    <td className="px-6 py-4">{c.schoolName || '-'}</td>
-                                    <td className="px-6 py-4">{c.homeroomTeacherName || '-'}</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button onClick={() => openModal(c)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
-                                        <button onClick={() => handleDeleteClass(c.id)} className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    }
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Kelas</h2>
+            
+             {isLoading && <p>Memuat...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+
+            {!isLoading && !error && (
+                <div className="space-y-6">
+                    {schools.map(school => (
+                        <Card key={school.id}>
+                            <div className="flex justify-between items-center p-4 border-b">
+                                <h3 className="text-lg font-semibold">{school.name}</h3>
+                                <button
+                                    onClick={() => openModal()}
+                                    className="flex items-center text-sm px-3 py-1.5 bg-brand-100 text-brand-700 font-semibold rounded-md hover:bg-brand-200"
+                                >
+                                    <PlusIcon className="h-4 w-4 mr-1" />
+                                    Tambah Kelas
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3">Nama Kelas</th>
+                                            <th className="px-6 py-3">Wali Kelas</th>
+                                            <th className="px-6 py-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(classesBySchool[school.id] || []).map(c => (
+                                            <tr key={c.id} className="bg-white border-b hover:bg-gray-50 last:border-b-0">
+                                                <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
+                                                <td className="px-6 py-4">{c.homeroomTeacherName || '-'}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button onClick={() => openModal(c)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
+                                                    <button onClick={() => handleDeleteClass(c.id)} className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {(!classesBySchool[school.id] || classesBySchool[school.id].length === 0) && (
+                                            <tr><td colSpan={3} className="text-center text-gray-500 py-4">Belum ada kelas untuk sekolah ini.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Card>
+                    ))}
                 </div>
-            </Card>
+            )}
 
             {isModalOpen && (
                 <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedClass ? "Edit Kelas" : "Tambah Kelas"}>

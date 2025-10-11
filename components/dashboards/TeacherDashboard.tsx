@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, JournalEntry } from '../../types';
 import Card from '../Card';
@@ -50,19 +51,27 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
            </Card>
 
            <Card title="Jurnal Mengajar Hari Ini" icon={BookOpenIcon}>
-                {isLoading ? <p className="text-gray-500">Memuat jurnal...</p> :
-                  journalToday.length > 0 ? (
-                    <ul className="space-y-3">
-                        {journalToday.map((entry, index) => (
-                            <li key={index} className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-400">
-                                <p className="font-bold text-blue-800">{entry.subject} - {entry.class}</p>
-                                <p className="text-sm text-blue-700">Materi: {entry.topic}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-gray-500">Belum ada jurnal mengajar yang diisi untuk hari ini.</p>
-                )}
+                <div className="flex justify-between items-start">
+                    {isLoading ? <p className="text-gray-500">Memuat jurnal...</p> :
+                      journalToday.length > 0 ? (
+                        <ul className="space-y-3">
+                            {journalToday.map((entry, index) => (
+                                <li key={index} className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-400">
+                                    <p className="font-bold text-blue-800">{entry.subject} - {entry.class}</p>
+                                    <p className="text-sm text-blue-700">Materi: {entry.topic}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-500">Belum ada jurnal mengajar yang diisi untuk hari ini.</p>
+                    )}
+                    <button 
+                        onClick={() => onNavigate('Jurnal Mengajar')}
+                        className="ml-4 flex-shrink-0 px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors"
+                    >
+                        Isi Jurnal
+                    </button>
+                </div>
            </Card>
 
            <Card title="Jadwal Mengajar Hari Ini" icon={CalendarIcon}>

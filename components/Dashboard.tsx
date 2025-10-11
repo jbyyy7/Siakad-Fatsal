@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
 import Sidebar from './Sidebar';
@@ -24,6 +25,7 @@ import StudentDataPage from './pages/StudentDataPage';
 import SchoolReportPage from './pages/SchoolReportPage';
 import ManageSubjectsPage from './pages/ManageSubjectsPage';
 import ManageClassesPage from './pages/ManageClassesPage';
+import TeachingJournalPage from './pages/TeachingJournalPage';
 
 interface DashboardProps {
   user: User;
@@ -92,6 +94,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <StudentAttendancePage user={user} />;
       case 'Kelas Saya':
         return <MyClassPage user={user} />;
+      case 'Jurnal Mengajar':
+        return <TeachingJournalPage user={user} />;
       
       // Student Pages
       case 'Jadwal Pelajaran':

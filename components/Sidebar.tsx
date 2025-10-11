@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User, UserRole } from '../types';
 import { HomeIcon } from './icons/HomeIcon';
@@ -13,6 +14,7 @@ import { BookOpenIcon } from './icons/BookOpenIcon';
 import { PencilIcon } from './icons/PencilIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { EnvelopeIcon } from './icons/EnvelopeIcon';
+import { PencilSquareIcon } from './icons/PencilSquareIcon';
 
 
 interface SidebarProps {
@@ -56,6 +58,7 @@ const getNavLinks = (role: UserRole) => {
         case UserRole.TEACHER:
             return [
                 ...baseLinks,
+                { label: 'Jurnal Mengajar', icon: <PencilSquareIcon className="w-5 h-5" /> },
                 { label: 'Input Nilai', icon: <PencilIcon className="w-5 h-5" /> },
                 { label: 'Absensi Siswa', icon: <IdentificationIcon className="w-5 h-5" /> },
                 { label: 'Kelas Saya', icon: <UserGroupIcon className="w-5 h-5" /> },

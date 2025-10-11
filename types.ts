@@ -1,3 +1,4 @@
+
 // FIX: Removed self-import of UserRole from './types' to prevent a circular dependency and resolve a name conflict with the enum declaration below.
 export enum UserRole {
   STUDENT = 'Student',
@@ -37,6 +38,17 @@ export interface JournalEntry {
     subject: string;
     class: string;
     topic: string;
+}
+
+export interface TeachingJournal {
+    id: number;
+    teacherId: string;
+    classId: string;
+    subjectId: string;
+    date: string;
+    topic: string;
+    className?: string;
+    subjectName?: string;
 }
 
 export interface NotificationSettings {

@@ -1,6 +1,7 @@
+
 import { supabase } from './supabaseClient';
 // FIX: Imported JournalEntry type to resolve reference error.
-import { User, UserRole, School, Announcement, GamificationProfile, Subject, Class, Badge, JournalEntry } from '../types';
+import { User, UserRole, School, Announcement, GamificationProfile, Subject, Class, Badge, JournalEntry, TeachingJournal } from '../types';
 import { PostgrestError } from '@supabase/supabase-js';
 
 // Centralized error handler
@@ -197,6 +198,56 @@ export const dataService = {
         return { note: 'Fitur catatan guru sedang dalam pengembangan.', teacherName: '' };
     },
     
+    // Teacher Data & Journals
+    async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
+        const { data, error } = await supabase
+            .from('teaching_journals')
+            .select('id, date, topic_taught, subject_id, class_id, classes(name), subjects(name)')
+            .eq('teacher_id', teacherId)
+            .order('date', { ascending: false });
+
+        handleSupabaseError(error, 'getTeachingJournals');
+        
+        return data?.map(j => ({
+            id: j.id,
+            teacherId: teacherId,
+            classId: j.class_id,
+            subjectId: j.subject_id,
+            date: j.date,
+            topic: j.topic_taught,
+            // @ts-ignore
+            className: j.classes?.name || 'Unknown',
+            // @ts-ignore
+            subjectName: j.subjects?.name || 'Unknown',
+        })) || [];
+    },
+
+    async createTeachingJournal(journalData: Omit<TeachingJournal, 'id' | 'className' | 'subjectName'>): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').insert({
+            teacher_id: journalData.teacherId,
+            class_id: journalData.classId,
+            subject_id: journalData.subjectId,
+            date: journalData.date,
+            topic_taught: journalData.topic,
+        });
+        handleSupabaseError(error, 'createTeachingJournal');
+    },
+
+    async updateTeachingJournal(journalId: number, journalData: Partial<Omit<TeachingJournal, 'id'>>): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').update({
+            class_id: journalData.classId,
+            subject_id: journalData.subjectId,
+            date: journalData.date,
+            topic_taught: journalData.topic,
+        }).eq('id', journalId);
+        handleSupabaseError(error, 'updateTeachingJournal');
+    },
+
+    async deleteTeachingJournal(journalId: number): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').delete().eq('id', journalId);
+        handleSupabaseError(error, 'deleteTeachingJournal');
+    },
+
     async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
         const { data, error } = await supabase
             .from('teaching_journals')
