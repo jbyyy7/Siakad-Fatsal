@@ -49,7 +49,7 @@ export const dataService = {
             role,
             avatar_url,
             school_id,
-            class_level
+            level
         `);
         
         if (filters.role) {
@@ -74,7 +74,7 @@ export const dataService = {
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
             schoolName: profile.school_id ? schoolMap.get(profile.school_id) : undefined,
-            level: profile.class_level,
+            level: profile.level,
         }));
     },
     

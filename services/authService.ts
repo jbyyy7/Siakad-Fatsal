@@ -14,7 +14,7 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
         role,
         avatar_url,
         school_id,
-        class_level
+        level
       `)
       .eq('id', supabaseUser.id)
       .single();
@@ -46,7 +46,7 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       avatarUrl: profile.avatar_url,
       schoolId: profile.school_id,
       schoolName: schoolName,
-      level: profile.class_level,
+      level: profile.level,
     };
 
     return appUser;
