@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User, JournalEntry } from '../../types';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
@@ -10,10 +10,9 @@ import { BookOpenIcon } from '../icons/BookOpenIcon';
 
 interface TeacherDashboardProps {
   user: User;
-  onNavigate: (page: string) => void;
 }
 
-const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate }) => {
+const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
   const [journalToday, setJournalToday] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,14 +38,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
         <div className="lg:col-span-2 space-y-6">
            <Card title="Akses Cepat" icon={ClipboardDocumentListIcon}>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button onClick={() => onNavigate('Input Nilai')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                <Link to="/input-nilai" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
                   <h4 className="font-semibold text-gray-800">Input Nilai</h4>
                   <p className="text-sm text-gray-600">Masukkan nilai siswa untuk ujian terakhir.</p>
-                </button>
-                <button onClick={() => onNavigate('Absensi Siswa')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+                </Link>
+                <Link to="/absensi-siswa" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
                   <h4 className="font-semibold text-gray-800">Absensi Siswa</h4>
                   <p className="text-sm text-gray-600">Catat kehadiran siswa hari ini.</p>
-                </button>
+                </Link>
              </div>
            </Card>
 
@@ -65,12 +64,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
                     ) : (
                         <p className="text-gray-500">Belum ada jurnal mengajar yang diisi untuk hari ini.</p>
                     )}
-                    <button 
-                        onClick={() => onNavigate('Jurnal Mengajar')}
+                    <Link
+                        to="/jurnal-mengajar"
                         className="ml-4 flex-shrink-0 px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors"
                     >
                         Isi Jurnal
-                    </button>
+                    </Link>
                 </div>
            </Card>
 
@@ -88,7 +87,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
                 <li className="p-2 bg-brand-50 rounded text-brand-800 font-semibold">MA Kelas 10-B</li>
                 <li className="p-2 bg-brand-50 rounded text-brand-800 font-semibold">MA Kelas 11-A</li>
             </ul>
-            <button onClick={() => onNavigate('Kelas Saya')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Semua Kelas &rarr;</button>
+            <Link to="/kelas-saya" className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800 inline-block">Lihat Semua Kelas &rarr;</Link>
           </Card>
         </div>
       </div>

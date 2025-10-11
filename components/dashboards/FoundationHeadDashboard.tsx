@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Announcement, User } from '../../types';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
@@ -8,10 +9,9 @@ import { EnvelopeIcon } from '../icons/EnvelopeIcon';
 
 interface FoundationHeadDashboardProps {
   user: User;
-  onNavigate: (page: string) => void;
 }
 
-const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user, onNavigate }) => {
+const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user }) => {
   const [stats, setStats] = useState<{ schoolCount: number; latestAnnouncement: Announcement | null }>({ schoolCount: 0, latestAnnouncement: null });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,18 +69,18 @@ const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user,
       <div className="mt-8">
         <Card title="Akses Cepat">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button onClick={() => onNavigate('Laporan Akademik')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            <Link to="/laporan-akademik" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Laporan Akademik</h4>
               <p className="text-sm text-gray-600">Lihat laporan performa akademik.</p>
-            </button>
-            <button onClick={() => onNavigate('Data Sekolah')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            </Link>
+            <Link to="/data-sekolah" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Data Sekolah</h4>
               <p className="text-sm text-gray-600">Kelola informasi sekolah di bawah yayasan.</p>
-            </button>
-            <button onClick={() => onNavigate('Pengumuman')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            </Link>
+            <Link to="/pengumuman" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Pengumuman</h4>
               <p className="text-sm text-gray-600">Buat dan lihat pengumuman yayasan.</p>
-            </button>
+            </Link>
           </div>
         </Card>
       </div>

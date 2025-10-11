@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User } from '../../types';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
@@ -9,10 +10,9 @@ import { SparklesIcon } from '../icons/SparklesIcon';
 
 interface StudentDashboardProps {
   user: User;
-  onNavigate: (page: string) => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
   const [showParentPortal, setShowParentPortal] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [grades, setGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
@@ -74,7 +74,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                 <li className="flex justify-between p-2 bg-gray-50 rounded"><span>07:30 - 09:00</span><strong>Matematika</strong></li>
                 <li className="flex justify-between p-2 bg-gray-50 rounded"><span>10:00 - 11:30</span><strong>Bahasa Indonesia</strong></li>
             </ul>
-             <button onClick={() => onNavigate('Jadwal Pelajaran')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Jadwal Lengkap &rarr;</button>
+             <Link to="/jadwal-pelajaran" className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800 inline-block">Lihat Jadwal Lengkap &rarr;</Link>
           </Card>
         </div>
 
@@ -91,14 +91,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                 ))}
               </ul>
             ) : <p className="text-gray-500">Belum ada nilai.</p>}
-            <button onClick={() => onNavigate('Lihat Nilai')} className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Semua Nilai &rarr;</button>
+            <Link to="/lihat-nilai" className="mt-4 text-sm font-semibold text-brand-600 hover:text-brand-800 inline-block">Lihat Semua Nilai &rarr;</Link>
           </Card>
           <Card title="Absensi Bulan Ini">
             <div className="text-center">
                 <p className="text-4xl font-bold text-gray-800">{isLoading ? '...' : `${attendancePercentage}%`}</p>
                 <p className="text-sm text-gray-500">Kehadiran</p>
             </div>
-             <button onClick={() => onNavigate('Absensi')} className="mt-4 w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Detail Absensi</button>
+             <Link to="/absensi" className="mt-4 w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-800 inline-block">Lihat Detail Absensi</Link>
           </Card>
         </div>
       </div>

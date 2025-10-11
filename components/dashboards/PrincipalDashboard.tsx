@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User, UserRole } from '../../types';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
@@ -8,10 +9,9 @@ import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 
 interface PrincipalDashboardProps {
   user: User;
-  onNavigate: (page: string) => void;
 }
 
-const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user, onNavigate }) => {
+const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user }) => {
   const [stats, setStats] = useState({ teacherCount: 0, studentCount: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -74,18 +74,18 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user, onNavigat
        <div className="mt-8">
         <Card title="Akses Cepat">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button onClick={() => onNavigate('Data Guru')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            <Link to="/data-guru" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Data Guru</h4>
               <p className="text-sm text-gray-600">Lihat dan kelola data guru.</p>
-            </button>
-            <button onClick={() => onNavigate('Data Siswa')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            </Link>
+            <Link to="/data-siswa" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Data Siswa</h4>
               <p className="text-sm text-gray-600">Lihat dan kelola data siswa.</p>
-            </button>
-            <button onClick={() => onNavigate('Laporan Sekolah')} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors">
+            </Link>
+            <Link to="/laporan-sekolah" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
               <h4 className="font-semibold text-gray-800">Laporan Sekolah</h4>
               <p className="text-sm text-gray-600">Lihat laporan absensi dan nilai.</p>
-            </button>
+            </Link>
           </div>
         </Card>
       </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { User } from '../types';
 import { LogoutIcon } from './icons/LogoutIcon';
 import { MenuIcon } from './icons/MenuIcon';
@@ -6,11 +7,19 @@ import { MenuIcon } from './icons/MenuIcon';
 interface HeaderProps {
   user: User;
   onLogout: () => void;
-  pageTitle: string;
   onMenuClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, onLogout, pageTitle, onMenuClick }) => {
+const pathToPage = (path: string): string => {
+    if (path === '/') return 'Dashboard';
+    // Hapus garis miring di awal, ganti tanda hubung dengan spasi, dan kapitalisasi setiap kata
+    return path.substring(1).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
+  const location = useLocation();
+  const pageTitle = pathToPage(location.pathname);
+
   return (
     <header className="flex items-center justify-between h-16 px-4 sm:px-6 bg-white border-b border-gray-200 flex-shrink-0">
       <div className="flex items-center">

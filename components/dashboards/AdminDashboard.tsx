@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User } from '../../types';
 import Card from '../Card';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
@@ -10,7 +11,6 @@ import { dataService } from '../../services/dataService';
 
 interface AdminDashboardProps {
   user: User;
-  onNavigate: (page: string) => void;
 }
 
 const StatCard: React.FC<{ title: string; value: number | string; icon: React.ComponentType<{ className?: string }> }> = ({ title, value, icon: Icon }) => (
@@ -25,8 +25,9 @@ const StatCard: React.FC<{ title: string; value: number | string; icon: React.Co
   </Card>
 );
 
+const pageToPath = (pageName: string): string => `/${pageName.toLowerCase().replace(/\s+/g, '-')}`;
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onNavigate }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [stats, setStats] = useState({ userCount: '...', schoolCount: '...', subjectCount: '...', classCount: '...' });
 
   useEffect(() => {
@@ -74,15 +75,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onNavigate }) => 
       <Card title="Panel Administrasi">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickAccessItems.map(item => (
-            <button
+            <Link
               key={item.page}
-              onClick={() => onNavigate(item.page)}
-              className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors shadow-sm hover:shadow-md border"
+              to={pageToPath(item.page)}
+              className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors shadow-sm hover:shadow-md border block"
             >
               <item.icon className="h-8 w-8 text-brand-600 mb-2" />
               <h4 className="font-semibold text-gray-800">{item.title}</h4>
               <p className="text-sm text-gray-600">{item.description}</p>
-            </button>
+            </Link>
           ))}
         </div>
       </Card>

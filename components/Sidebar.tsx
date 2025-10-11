@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { NavLink as RouterNavLink } from 'react-router-dom';
 import { User, UserRole } from '../types';
 import { HomeIcon } from './icons/HomeIcon';
 import { CogIcon } from './icons/CogIcon';
@@ -16,24 +16,27 @@ import { ChartBarIcon } from './icons/ChartBarIcon';
 import { EnvelopeIcon } from './icons/EnvelopeIcon';
 import { PencilSquareIcon } from './icons/PencilSquareIcon';
 
-
 interface SidebarProps {
   user: User;
-  currentPage: string;
-  onNavigate: (page: string) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+}
+
+const pageToPath = (pageName: string): string => {
+    if (pageName === 'Dashboard') return '/';
+    return `/${pageName.toLowerCase().replace(/\s+/g, '-')}`;
 }
 
 const NavLink: React.FC<{
   label: string;
   icon: React.ReactNode;
-  isActive: boolean;
+  to: string;
   onClick: () => void;
-}> = ({ label, icon, isActive, onClick }) => (
-  <button
+}> = ({ label, icon, to, onClick }) => (
+  <RouterNavLink
+    to={to}
     onClick={onClick}
-    className={`flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+    className={({ isActive }) => `flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
       isActive
         ? 'bg-brand-700 text-white shadow'
         : 'text-gray-200 hover:bg-brand-800 hover:text-white'
@@ -41,7 +44,7 @@ const NavLink: React.FC<{
   >
     {icon}
     <span className="ml-4">{label}</span>
-  </button>
+  </RouterNavLink>
 );
 
 const getNavLinks = (role: UserRole) => {
@@ -91,7 +94,7 @@ const getNavLinks = (role: UserRole) => {
     }
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, currentPage, onNavigate, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setIsOpen }) => {
   const navLinks = getNavLinks(user.role);
 
   return (
@@ -120,8 +123,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, currentPage, onNavigate, isOpen
                 <NavLink
                   label={label}
                   icon={icon}
-                  isActive={currentPage === label}
-                  onClick={() => onNavigate(label)}
+                  to={pageToPath(label)}
+                  onClick={() => { if (isOpen) setIsOpen(false); }}
                 />
               </li>
             ))}

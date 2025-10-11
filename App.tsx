@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { User } from './types';
 import { authService } from './services/authService';
 import LoginPage from './components/LoginPage';
@@ -44,13 +45,19 @@ const App: React.FC = () => {
   }
 
   return (
-    <>
-      {currentUser ? (
-        <Dashboard user={currentUser} onLogout={handleLogout} />
+    <Routes>
+      {!currentUser ? (
+        <>
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </>
       ) : (
-        <LoginPage onLogin={handleLogin} />
+        <>
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/*" element={<Dashboard user={currentUser} onLogout={handleLogout} />} />
+        </>
       )}
-    </>
+    </Routes>
   );
 };
 

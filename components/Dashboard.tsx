@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { User, UserRole } from '../types';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -33,78 +33,20 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
-  const [currentPage, setCurrentPage] = useState('Dashboard');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  const onNavigate = (page: string) => {
-    setCurrentPage(page);
-    if(isSidebarOpen) setSidebarOpen(false); // Close sidebar on navigation on mobile
-  };
-
-  const renderContent = () => {
-    switch (currentPage) {
-      // Common
-      case 'Dashboard':
-        switch (user.role) {
-          case UserRole.STUDENT:
-            return <StudentDashboard user={user} onNavigate={onNavigate} />;
-          case UserRole.TEACHER:
-            return <TeacherDashboard user={user} onNavigate={onNavigate} />;
-          case UserRole.PRINCIPAL:
-            return <PrincipalDashboard user={user} onNavigate={onNavigate} />;
-          case UserRole.FOUNDATION_HEAD:
-            return <FoundationHeadDashboard user={user} onNavigate={onNavigate} />;
-          case UserRole.ADMIN:
-              return <AdminDashboard user={user} onNavigate={onNavigate} />;
-          default:
-            return <WelcomePlaceholder user={user} />;
-        }
-      // Admin Pages
-      case 'Kelola Pengguna':
-        return <ManageUsersPage />;
-      case 'Kelola Sekolah':
-        return <ManageSchoolsPage />;
-      case 'Kelola Mata Pelajaran':
-        return <ManageSubjectsPage />;
-       case 'Kelola Kelas':
-        return <ManageClassesPage />;
-      case 'Pengaturan Sistem':
-        return <SystemSettingsPage />;
-      
-      // Foundation Head Pages
-      case 'Laporan Akademik':
-        return <AcademicReportPage />;
-      case 'Data Sekolah': // Re-use manage schools page, maybe with read-only view in future
-        return <ManageSchoolsPage />;
-      case 'Pengumuman':
-        return <AnnouncementsPage user={user} />;
-
-      // Principal Pages
-      case 'Data Guru':
-        return <TeacherDataPage user={user} />;
-      case 'Data Siswa':
-        return <StudentDataPage user={user} />;
-      case 'Laporan Sekolah':
-        return <SchoolReportPage user={user} />;
-
-      // Teacher Pages
-      case 'Input Nilai':
-        return <InputGradesPage user={user}/>;
-      case 'Absensi Siswa':
-        return <StudentAttendancePage user={user} />;
-      case 'Kelas Saya':
-        return <MyClassPage user={user} />;
-      case 'Jurnal Mengajar':
-        return <TeachingJournalPage user={user} />;
-      
-      // Student Pages
-      case 'Jadwal Pelajaran':
-        return <ClassSchedulePage />;
-      case 'Lihat Nilai':
-        return <GradesPage user={user} />;
-      case 'Absensi':
-        return <MyAttendancePage user={user} />;
-
+  const renderDashboardByRole = () => {
+    switch (user.role) {
+      case UserRole.STUDENT:
+        return <StudentDashboard user={user} />;
+      case UserRole.TEACHER:
+        return <TeacherDashboard user={user} />;
+      case UserRole.PRINCIPAL:
+        return <PrincipalDashboard user={user} />;
+      case UserRole.FOUNDATION_HEAD:
+        return <FoundationHeadDashboard user={user} />;
+      case UserRole.ADMIN:
+        return <AdminDashboard user={user} />;
       default:
         return <WelcomePlaceholder user={user} />;
     }
@@ -112,11 +54,43 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar user={user} currentPage={currentPage} onNavigate={onNavigate} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} />
+      <Sidebar user={user} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={user} onLogout={onLogout} pageTitle={currentPage} onMenuClick={() => setSidebarOpen(!isSidebarOpen)} />
+        <Header user={user} onLogout={onLogout} onMenuClick={() => setSidebarOpen(!isSidebarOpen)} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-          {renderContent()}
+          <Routes>
+            <Route path="/" element={renderDashboardByRole()} />
+            
+            {/* Admin Pages */}
+            <Route path="/kelola-pengguna" element={<ManageUsersPage />} />
+            <Route path="/kelola-sekolah" element={<ManageSchoolsPage />} />
+            <Route path="/kelola-mata-pelajaran" element={<ManageSubjectsPage />} />
+            <Route path="/kelola-kelas" element={<ManageClassesPage />} />
+            <Route path="/pengaturan-sistem" element={<SystemSettingsPage />} />
+
+            {/* Foundation Head Pages */}
+            <Route path="/laporan-akademik" element={<AcademicReportPage />} />
+            <Route path="/data-sekolah" element={<ManageSchoolsPage />} />
+            <Route path="/pengumuman" element={<AnnouncementsPage user={user} />} />
+
+            {/* Principal Pages */}
+            <Route path="/data-guru" element={<TeacherDataPage user={user} />} />
+            <Route path="/data-siswa" element={<StudentDataPage user={user} />} />
+            <Route path="/laporan-sekolah" element={<SchoolReportPage user={user} />} />
+
+            {/* Teacher Pages */}
+            <Route path="/input-nilai" element={<InputGradesPage user={user} />} />
+            <Route path="/absensi-siswa" element={<StudentAttendancePage user={user} />} />
+            <Route path="/kelas-saya" element={<MyClassPage user={user} />} />
+            <Route path="/jurnal-mengajar" element={<TeachingJournalPage user={user} />} />
+
+            {/* Student Pages */}
+            <Route path="/jadwal-pelajaran" element={<ClassSchedulePage />} />
+            <Route path="/lihat-nilai" element={<GradesPage user={user} />} />
+            <Route path="/absensi" element={<MyAttendancePage user={user} />} />
+
+            <Route path="*" element={<WelcomePlaceholder user={user} />} />
+          </Routes>
         </main>
       </div>
     </div>
