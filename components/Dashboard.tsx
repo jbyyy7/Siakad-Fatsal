@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 // FIX: Import User and UserRole types
@@ -36,6 +33,7 @@ import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
 
 
 interface DashboardProps {
@@ -71,6 +69,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
           <Routes>
             <Route path="/" element={renderDashboardByRole()} />
+            
+            {/* Universal Routes */}
+            <Route path="/pengaturan-akun" element={<ProfileSettingsPage user={user} />} />
             
             {/* Admin Routes */}
             <Route path="/kelola-pengguna" element={<ManageUsersPage />} />

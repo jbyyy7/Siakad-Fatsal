@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '../types';
 import { supabase } from './supabaseClient';
 import { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
@@ -150,4 +149,12 @@ export const authService = {
 
     return null;
   },
+  
+  async updatePassword(newPassword: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+        console.error("Error updating password:", error);
+        throw new Error(`Gagal memperbarui kata sandi: ${error.message}`);
+    }
+  }
 };

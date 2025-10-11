@@ -14,6 +14,7 @@ import { PencilSquareIcon } from './icons/PencilSquareIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
+import { UserCircleIcon } from './icons/UserCircleIcon';
 
 interface SidebarProps {
   user: User;
@@ -57,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/pantau-absensi" icon={<CalendarIcon className="h-5 w-5" />}>Pantau Absensi</NavItem>
       <NavItem to="/pantau-nilai" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Pantau Nilai</NavItem>
       <hr className="my-2 border-gray-600" />
-      <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan</NavItem>
+      <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan Sistem</NavItem>
     </>
   );
 
@@ -118,6 +119,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
           </div>
           <nav className="space-y-2">
               <NavItem to="/" icon={<HomeIcon className="h-5 w-5" />} end={true}>Dashboard</NavItem>
+              <NavItem to="/pengaturan-akun" icon={<UserCircleIcon className="h-5 w-5" />}>Pengaturan Akun</NavItem>
+              <hr className="my-2 border-gray-600" />
               {renderLinksByRole()}
           </nav>
         </div>
