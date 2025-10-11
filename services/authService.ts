@@ -9,14 +9,12 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       .from('profiles')
       .select(`
         id,
-        identityNumber: identity_number,
+        identity_number,
         full_name,
         role,
         avatar_url,
         school_id,
-        schools (
-          name
-        )
+        level
       `)
       .eq('id', supabaseUser.id)
       .single();
@@ -33,19 +31,28 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
         role: UserRole.STUDENT, // Default role
       };
     }
+    
+    let schoolName: string | undefined = undefined;
+    if (profile.school_id) {
+        const { data: school } = await supabase
+            .from('schools')
+            .select('name')
+            .eq('id', profile.school_id)
+            .single();
+        schoolName = school?.name;
+    }
 
-    // Explicitly type casting for nested 'schools' object
-    const schoolData = profile.schools as { name: string } | null;
 
     const appUser: User = {
       id: profile.id,
       email: supabaseUser.email || '',
-      identityNumber: profile.identityNumber, // Use the aliased property
+      identityNumber: profile.identity_number,
       name: profile.full_name,
       role: profile.role as UserRole, // Assuming role in DB matches UserRole enum
       avatarUrl: profile.avatar_url,
       schoolId: profile.school_id,
-      schoolName: schoolData?.name,
+      schoolName: schoolName,
+      level: profile.level,
     };
 
     return appUser;
