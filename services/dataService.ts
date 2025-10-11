@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 import {
     User,
@@ -19,8 +18,8 @@ const fromDbToUser = (profile: any): User => ({
     email: profile.email || '', // Email might not be in profiles table
     identityNumber: profile.identity_number,
     name: profile.full_name,
-    // FIX: Map lowercase db role to capitalized enum value
-    role: (Object.values(UserRole).find(role => role.toLowerCase() === profile.role) || profile.role) as UserRole,
+    // Map db role to capitalized enum value for consistency, handles if db has lowercase
+    role: (Object.values(UserRole).find(role => role.toLowerCase() === profile.role?.toLowerCase()) || profile.role) as UserRole,
     avatarUrl: profile.avatar_url,
     schoolId: profile.school_id,
     schoolName: profile.schools?.name,
@@ -41,7 +40,8 @@ export const dataService = {
         `);
 
         if (filters?.role) {
-            query = query.eq('role', filters.role.toLowerCase());
+            // FIX: Removed .toLowerCase(). The database enum expects capitalized roles.
+            query = query.eq('role', filters.role);
         }
         if (filters?.schoolId) {
             query = query.eq('school_id', filters.schoolId);
@@ -61,7 +61,8 @@ export const dataService = {
          const { count, error } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', filters.role.toLowerCase())
+            // FIX: Removed .toLowerCase(). The database enum expects capitalized roles.
+            .eq('role', filters.role)
             .eq('school_id', filters.schoolId);
 
         if (error) {
@@ -91,7 +92,8 @@ export const dataService = {
             id: authData.user.id,
             full_name: userData.name,
             identity_number: userData.identityNumber,
-            role: userData.role.toLowerCase(),
+            // FIX: Removed .toLowerCase(). The database enum expects capitalized roles.
+            role: userData.role,
             school_id: userData.schoolId || null,
             avatar_url: userData.avatarUrl,
         });
@@ -108,7 +110,8 @@ export const dataService = {
         const { error } = await supabase.from('profiles').update({
             full_name: userData.name,
             identity_number: userData.identityNumber,
-            role: userData.role.toLowerCase(),
+            // FIX: Removed .toLowerCase(). The database enum expects capitalized roles.
+            role: userData.role,
             school_id: userData.schoolId || null,
         }).eq('id', userId);
         if (error) throw error;
