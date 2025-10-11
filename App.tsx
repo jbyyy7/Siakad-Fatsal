@@ -1,6 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+// FIX: Import User type
 import { User } from './types';
 import { authService } from './services/authService';
 import LoginPage from './components/LoginPage';

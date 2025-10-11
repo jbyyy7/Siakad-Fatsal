@@ -1,7 +1,9 @@
 
 
+
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+// FIX: Import User and UserRole types
 import { User, UserRole } from '../types';
 import Sidebar from './Sidebar';
 import Header from './Header';

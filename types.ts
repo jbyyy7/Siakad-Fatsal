@@ -1,7 +1,7 @@
 
 export enum UserRole {
-  ADMIN = 'Admin',
-  FOUNDATION_HEAD = 'Kepala Yayasan',
+  ADMIN = 'Administrator',
+  FOUNDATION_HEAD = 'Ketua Yayasan',
   PRINCIPAL = 'Kepala Sekolah',
   TEACHER = 'Guru',
   STUDENT = 'Murid',
@@ -13,7 +13,7 @@ export interface User {
   identityNumber: string;
   name: string;
   role: UserRole;
-  avatarUrl?: string;
+  avatarUrl: string;
   schoolId?: string;
   schoolName?: string;
 }
@@ -25,31 +25,18 @@ export interface School {
   address: string;
 }
 
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  date: string; // YYYY-MM-DD
-}
-
-export interface JournalEntry {
-    subject: string;
-    class: string;
-    topic: string;
-}
-
 export interface Class {
     id: string;
     name: string;
     schoolId: string;
     homeroomTeacherId?: string;
     homeroomTeacherName?: string;
+    studentIds?: string[]; // for form
 }
 
 export interface Subject {
     id: string;
-    name: string;
+    name:string;
     schoolId: string;
 }
 
@@ -57,7 +44,7 @@ export type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
 
 export interface AttendanceRecord {
     id?: number;
-    date: string; // YYYY-MM-DD
+    date: string;
     student_id: string;
     class_id: string;
     subject_id: string;
@@ -72,25 +59,35 @@ export interface NotificationSettings {
     dailyReport: boolean;
 }
 
-export interface Badge {
-  id: string;
-  icon: string;
-  description: string;
-}
-
 export interface GamificationProfile {
-  studentId: string;
-  progress: Record<string, number>; // subject: percentage
-  badges: Badge[];
+    progress: Record<string, number>;
+    badges: { id: string; icon: string; description: string }[];
 }
 
 export interface TeachingJournal {
-  id: number;
+    id: number;
+    date: string;
+    classId: string;
+    className?: string;
+    subjectId: string;
+    subjectName?: string;
+    topic: string;
+    teacherId?: string;
+}
+
+export interface JournalEntry {
+    subject: string;
+    class: string;
+    topic: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: string; // This is author's full name from profiles table
+  author_id: string;
   date: string; // YYYY-MM-DD
-  teacherId: string;
-  classId: string;
-  subjectId: string;
-  topic: string;
-  className?: string; // from join
-  subjectName?: string; // from join
+  schoolId?: string;
+  schoolName?: string;
 }

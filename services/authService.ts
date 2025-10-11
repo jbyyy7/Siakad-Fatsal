@@ -8,8 +8,10 @@ import { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
 const toUserRoleEnum = (dbRole: any): UserRole => {
     // Find the entry in UserRole enum (e.g., ['STUDENT', 'Murid'])
     // whose value's lowercase version matches the dbRole.
+    // FIX: Safely convert dbRole to a string before calling toLowerCase to prevent runtime errors.
+    const roleString = String(dbRole || '').toLowerCase();
     const roleEntry = Object.entries(UserRole).find(
-        ([, value]) => value.toLowerCase() === dbRole?.toLowerCase()
+        ([, value]) => value.toLowerCase() === roleString
     );
     // If an entry is found, return the enum value (e.g., 'Murid').
     // Otherwise, fallback to the original dbRole (though this shouldn't happen with correct data).
