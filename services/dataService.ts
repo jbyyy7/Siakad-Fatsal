@@ -19,6 +19,18 @@ const handleSupabaseError = (error: any, context: string) => {
         }
         throw new Error("Data yang Anda masukkan sudah ada (duplikat).");
     }
+    // Handle specific auth errors for createUser
+    if (context === 'createUser' && error.message) {
+        if (error.message.includes('unique constraint')) {
+            throw new Error('Email atau Nomor Induk ini sudah terdaftar.');
+        }
+        if (error.message.includes('should be a valid email')) {
+            throw new Error('Format email tidak valid.');
+        }
+         if (error.message.includes('Password should be at least 6 characters')) {
+            throw new Error('Kata sandi harus terdiri dari minimal 6 karakter.');
+        }
+    }
     throw new Error(`Gagal mengambil data dari server (${context}).`);
 };
 
@@ -103,15 +115,20 @@ export const dataService = {
     },
     
     async createUser(userData: any): Promise<void> {
-        // Assumes a Supabase RPC function for creating user and profile securely
-        const { error } = await supabase.rpc('create_new_user', {
-            p_email: userData.email,
-            p_password: userData.password,
-            p_identity_number: userData.identityNumber,
-            p_full_name: userData.name,
-            p_role: userData.role,
-            p_school_id: userData.schoolId || null,
-            p_avatar_url: userData.avatarUrl,
+        // Use the standard Supabase auth.signUp method
+        // This relies on a database trigger to create the profile from auth.users
+        const { error } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+            options: {
+                data: {
+                    full_name: userData.name,
+                    identity_number: userData.identityNumber,
+                    role: userData.role,
+                    school_id: userData.schoolId || null,
+                    avatar_url: userData.avatarUrl,
+                }
+            }
         });
         if (error) handleSupabaseError(error, 'createUser');
     },
