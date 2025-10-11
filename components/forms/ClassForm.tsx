@@ -41,7 +41,8 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
   }, [formData.schoolId, allStudents]);
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSchoolId = e.target.value;
+    // FIX: Use currentTarget for safer type inference.
+    const newSchoolId = e.currentTarget.value;
     setFormData(prev => ({
       ...prev,
       schoolId: newSchoolId,
@@ -51,12 +52,14 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    // FIX: Use currentTarget for safer type inference.
+    const { name, value } = e.currentTarget;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
+    // FIX: Use currentTarget for safer type inference.
+    const selectedIds = Array.from(e.currentTarget.selectedOptions, option => option.value);
     setFormData(prev => ({ ...prev, studentIds: selectedIds }));
   }
 
