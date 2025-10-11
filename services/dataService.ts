@@ -28,6 +28,15 @@ const handleSupabaseError = (error: PostgrestError | null, context: string): nev
     throw new Error(message);
 };
 
+// FIX: Added a helper function to map database roles (e.g., 'murid') to the UserRole enum (e.g., 'Murid') for type safety.
+const toUserRoleEnum = (dbRole: string): UserRole => {
+    const roleEntry = Object.entries(UserRole).find(
+        ([, value]) => value.toLowerCase() === dbRole?.toLowerCase()
+    );
+    return roleEntry ? roleEntry[1] : dbRole as UserRole;
+};
+
+
 // --- DATA SERVICE IMPLEMENTATION ---
 
 export const dataService = {
@@ -57,7 +66,8 @@ export const dataService = {
             id: profile.id,
             name: profile.full_name,
             identityNumber: profile.identity_number,
-            role: profile.role,
+            // FIX: Use the role mapping helper to ensure type correctness.
+            role: toUserRoleEnum(profile.role),
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
             schoolName: profile.school?.name,
@@ -109,8 +119,11 @@ export const dataService = {
     async deleteUser(userId: string): Promise<void> {
         // Deleting a user requires elevated privileges and should be done via an RPC function
         // that uses the `service_role` key on the server-side for security.
+        // FIX: Corrected RPC call to ensure the function name is a string literal and parameters are in a single object.
         const { error } = await supabase.rpc('delete_user', { user_id: userId });
-        if (error) handleSupabaseError(error, 'deleteUser RPC. Pastikan fungsi 'delete_user' ada di database Anda.');
+        if (error) {
+            handleSupabaseError(error, 'deleteUser RPC. Pastikan fungsi \'delete_user\' ada di database Anda.');
+        }
     },
 
     async getUserCount(filters?: { role?: UserRole; schoolId?: string }): Promise<number> {
@@ -250,7 +263,8 @@ export const dataService = {
             name: item.student.full_name,
             identityNumber: item.student.identity_number,
             avatarUrl: item.student.avatar_url,
-            role: item.student.role,
+            // FIX: Use the role mapping helper to ensure type correctness.
+            role: toUserRoleEnum(item.student.role),
             email: ''
         }));
     },
