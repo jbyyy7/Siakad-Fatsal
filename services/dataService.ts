@@ -209,20 +209,27 @@ export const dataService = {
   
   // TEACHER DATA
    async getClasses(filters?: { teacherId?: string, schoolId?: string }): Promise<Class[]> {
-    let query = supabase.from('classes').select('*, school:schools(name), homeroom_teacher:profiles(full_name)');
-    if (filters?.teacherId) {
-        query = query.eq('homeroom_teacher_id', filters.teacherId);
-    }
-    if (filters?.schoolId) {
-        query = query.eq('school_id', filters.schoolId);
-    }
-    const { data, error } = await query;
-    if (error) throw error;
-    return data.map(c => ({
-        ...c,
-        schoolName: c.school?.name,
-        homeroomTeacherName: c.homeroom_teacher?.full_name,
-    }));
+  let query = supabase.from('classes').select('*, school:schools(name), homeroom_teacher:profiles(full_name)');
+  if (filters?.teacherId) {
+    query = query.eq('homeroom_teacher_id', filters.teacherId);
+  }
+  if (filters?.schoolId) {
+    query = query.eq('school_id', filters.schoolId);
+  }
+  const { data, error } = await query;
+  if (error) {
+    console.error('[Supabase][getClasses] Error:', error);
+    throw error;
+  }
+  if (!data) {
+    console.error('[Supabase][getClasses] Data is null or undefined');
+    throw new Error('Data kelas tidak ditemukan');
+  }
+  return data.map(c => ({
+    ...c,
+    schoolName: c.school?.name,
+    homeroomTeacherName: c.homeroom_teacher?.full_name,
+  }));
   },
   async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
       let query = supabase.from('subjects').select('*, school:schools(name)');
@@ -289,18 +296,28 @@ export const dataService = {
     if (error) throw error;
   },
   async createClass(data: any): Promise<void> { 
-    const { studentIds, ...classData } = data;
-    const { data: newClass, error } = await supabase.from('classes').insert({
-        name: classData.name,
-        school_id: classData.schoolId,
-        homeroom_teacher_id: classData.homeroomTeacherId || null
-    }).select().single();
-    if (error) throw error;
-    if (studentIds && studentIds.length > 0) {
-        const members = studentIds.map((sid: string) => ({ class_id: newClass.id, student_id: sid }));
-        const { error: memberError } = await supabase.from('class_members').insert(members);
-        if (memberError) throw memberError;
+  const { studentIds, ...classData } = data;
+  const { data: newClass, error } = await supabase.from('classes').insert({
+    name: classData.name,
+    school_id: classData.schoolId,
+    homeroom_teacher_id: classData.homeroomTeacherId || null
+  }).select().single();
+  if (error) {
+    console.error('[Supabase][createClass] Error:', error);
+    throw error;
+  }
+  if (!newClass) {
+    console.error('[Supabase][createClass] Inserted class is null or undefined');
+    throw new Error('Kelas gagal dibuat');
+  }
+  if (studentIds && studentIds.length > 0) {
+    const members = studentIds.map((sid: string) => ({ class_id: newClass.id, student_id: sid }));
+    const { error: memberError } = await supabase.from('class_members').insert(members);
+    if (memberError) {
+      console.error('[Supabase][createClass] Error inserting class_members:', memberError);
+      throw memberError;
     }
+  }
   },
   async updateClass(id: string, data: any): Promise<void> { 
     const { studentIds, ...classData } = data;
