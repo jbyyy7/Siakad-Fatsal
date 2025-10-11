@@ -1,4 +1,5 @@
 
+
 import { supabase } from './supabaseClient';
 // FIX: Imported JournalEntry type to resolve reference error.
 import { User, UserRole, School, Announcement, GamificationProfile, Subject, Class, Badge, JournalEntry, TeachingJournal } from '../types';
@@ -360,11 +361,12 @@ export const dataService = {
         handleSupabaseError(sError, 'getClasses (schools)');
         const schoolMap = new Map(schools?.map(s => [s.id, s.name]));
 
-        const { data: teachers, error: tError } = await supabase.from('profiles').select('id, full_name').eq('role', 'Teacher');
-        handleSupabaseError(tError, 'getClasses (teachers)');
-        const teacherMap = new Map(teachers?.map(t => [t.id, t.full_name]));
-
-        let query = supabase.from('classes').select('id, name, school_id, homeroom_teacher_id');
+        // FIX: Replaced the failing separate teacher query with a more efficient relational query.
+        // This fetches the homeroom teacher's name directly with the class data, avoiding the 400 Bad Request error.
+        let query = supabase
+            .from('classes')
+            .select('id, name, school_id, homeroom_teacher_id, profiles(full_name)');
+            
         if (filters?.teacherId) {
             query = query.eq('homeroom_teacher_id', filters.teacherId);
         }
@@ -377,7 +379,8 @@ export const dataService = {
             schoolId: c.school_id,
             homeroomTeacherId: c.homeroom_teacher_id,
             schoolName: schoolMap.get(c.school_id) || 'N/A',
-            homeroomTeacherName: teacherMap.get(c.homeroom_teacher_id) || 'N/A',
+            // @ts-ignore - Accessing the joined profile data.
+            homeroomTeacherName: c.profiles?.full_name || 'N/A',
         })) || [];
     },
     async getStudentsInClass(classId: string): Promise<User[]> {
