@@ -10,34 +10,47 @@ const toUserRoleEnum = (dbRole: string): UserRole => {
     return roleEntry ? roleEntry[1] : dbRole as UserRole;
 };
 
+// Centralized error handler
+const handleSupabaseError = (error: any, context: string) => {
+    console.error(`Supabase error in ${context}:`, error);
+    if (error.code === '23505') { // Unique violation
+        if (context.toLowerCase().includes('subject')) {
+             throw new Error("Mata pelajaran dengan nama ini sudah ada untuk sekolah yang dipilih.");
+        }
+        throw new Error("Data yang Anda masukkan sudah ada (duplikat).");
+    }
+    throw new Error(`Gagal mengambil data dari server (${context}).`);
+};
+
+
 export const dataService = {
 
     // School methods
     async getSchools(): Promise<School[]> {
         const { data, error } = await supabase.from('schools').select('*').order('name');
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'getSchools');
         return data as School[];
     },
 
     async getSchoolCount(): Promise<number> {
         const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'getSchoolCount');
         return count || 0;
     },
 
     async createSchool(schoolData: Omit<School, 'id'>): Promise<void> {
         const { error } = await supabase.from('schools').insert([schoolData]);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createSchool');
     },
 
     async updateSchool(id: string, schoolData: Partial<Omit<School, 'id'>>): Promise<void> {
         const { error } = await supabase.from('schools').update(schoolData).eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'updateSchool');
     },
 
     async deleteSchool(id: string): Promise<void> {
         const { error } = await supabase.from('schools').delete().eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteSchool');
     },
 
     // User methods
@@ -46,7 +59,6 @@ export const dataService = {
             id,
             identity_number,
             full_name,
-            email,
             role,
             avatar_url,
             school_id,
@@ -54,20 +66,20 @@ export const dataService = {
         `);
 
         if (filters.role) {
-            query = query.eq('role', filters.role.toLowerCase());
+            query = query.eq('role', filters.role);
         }
         if (filters.schoolId) {
             query = query.eq('school_id', filters.schoolId);
         }
 
         const { data, error } = await query.order('full_name');
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'getUsers');
 
         return data.map((profile: any) => ({
             id: profile.id,
             identityNumber: profile.identity_number,
             name: profile.full_name,
-            email: profile.email,
+            email: '', // Email is not publicly available for lists
             role: toUserRoleEnum(profile.role),
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
@@ -75,13 +87,18 @@ export const dataService = {
         }));
     },
     
-    async getUserCount(filters: { role: UserRole; schoolId: string }): Promise<number> {
-         const { count, error } = await supabase
+    async getUserCount(filters: { role: UserRole; schoolId?: string }): Promise<number> {
+         let query = supabase
             .from('profiles')
             .select('id', { count: 'exact', head: true })
-            .eq('role', filters.role.toLowerCase())
-            .eq('school_id', filters.schoolId);
-        if (error) throw error;
+            .eq('role', filters.role)
+        
+        if (filters.schoolId) {
+            query = query.eq('school_id', filters.schoolId);
+        }
+
+        const { count, error } = await query;
+        if (error) handleSupabaseError(error, `getUserCount (${filters.role})`);
         return count || 0;
     },
     
@@ -92,29 +109,29 @@ export const dataService = {
             p_password: userData.password,
             p_identity_number: userData.identityNumber,
             p_full_name: userData.name,
-            p_role: userData.role.toLowerCase(),
+            p_role: userData.role,
             p_school_id: userData.schoolId || null,
             p_avatar_url: userData.avatarUrl,
         });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createUser');
     },
 
     async updateUser(id: string, userData: any): Promise<void> {
          const profileData = {
             full_name: userData.name,
             identity_number: userData.identityNumber,
-            role: userData.role.toLowerCase(),
+            role: userData.role,
             school_id: userData.schoolId,
             avatar_url: userData.avatarUrl,
         };
         const { error } = await supabase.from('profiles').update(profileData).eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'updateUser');
     },
 
     async deleteUser(id: string): Promise<void> {
         // Assumes a Supabase RPC function for deleting user from auth and profiles
         const { error } = await supabase.rpc('delete_user_and_profile', { p_user_id: id });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteUser');
     },
     
     // Subject methods
@@ -124,7 +141,7 @@ export const dataService = {
             query = query.eq('school_id', filters.schoolId);
         }
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'getSubjects');
         return data.map((s: any) => ({
             id: s.id,
             name: s.name,
@@ -135,25 +152,25 @@ export const dataService = {
 
     async createSubject(subjectData: { name: string, schoolId: string }): Promise<void> {
         const { error } = await supabase.from('subjects').insert([{ name: subjectData.name, school_id: subjectData.schoolId }]);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createSubject');
     },
 
     async updateSubject(id: string, subjectData: { name: string, schoolId: string }): Promise<void> {
         const { error } = await supabase.from('subjects').update({ name: subjectData.name, school_id: subjectData.schoolId }).eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'updateSubject');
     },
 
     async deleteSubject(id: string): Promise<void> {
         const { error } = await supabase.from('subjects').delete().eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteSubject');
     },
 
     // Class methods
     async getClasses(filters: { teacherId?: string } = {}): Promise<Class[]> {
         if (filters.teacherId) {
              const { data, error } = await supabase.rpc('get_teacher_classes', { p_teacher_id: filters.teacherId });
-             if (error) throw error;
-             return data.map((c: any) => ({
+             if (error) handleSupabaseError(error, 'getClasses (teacher)');
+             return (data || []).map((c: any) => ({
                  id: c.id,
                  name: c.name,
                  schoolId: c.school_id,
@@ -162,26 +179,35 @@ export const dataService = {
              }));
         }
 
-        const { data, error } = await supabase.rpc('get_all_classes_with_details');
-        if (error) throw error;
-        return data.map((c: any) => ({
+        // Standard query, replacing the missing RPC
+        const { data, error } = await supabase.from('classes').select(`
+            id,
+            name,
+            school_id,
+            schools ( name ),
+            homeroom_teacher_id,
+            profiles ( full_name )
+        `);
+        if (error) handleSupabaseError(error, 'getClasses (all)');
+
+        return (data || []).map((c: any) => ({
             id: c.id,
             name: c.name,
             schoolId: c.school_id,
-            schoolName: c.school_name,
+            schoolName: c.schools?.name,
             homeroomTeacherId: c.homeroom_teacher_id,
-            homeroomTeacherName: c.homeroom_teacher_name,
+            homeroomTeacherName: c.profiles?.full_name,
         }));
     },
     
     async getStudentsInClass(classId: string): Promise<User[]> {
         const { data, error } = await supabase.rpc('get_students_in_class', { p_class_id: classId });
-        if (error) throw error;
-        return data.map((profile: any) => ({
+        if (error) handleSupabaseError(error, 'getStudentsInClass');
+        return (data || []).map((profile: any) => ({
             id: profile.id,
             identityNumber: profile.identity_number,
             name: profile.full_name,
-            email: profile.email,
+            email: '', // Email is not public
             role: toUserRoleEnum(profile.role),
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
@@ -196,7 +222,7 @@ export const dataService = {
             p_homeroom_teacher_id: classData.homeroomTeacherId || null,
             p_student_ids: classData.studentIds || [],
         });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createClass');
     },
 
     async updateClass(id: string, classData: any): Promise<void> {
@@ -207,18 +233,18 @@ export const dataService = {
             p_homeroom_teacher_id: classData.homeroomTeacherId || null,
             p_student_ids: classData.studentIds || [],
         });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'updateClass');
     },
 
     async deleteClass(id: string): Promise<void> {
         const { error } = await supabase.rpc('delete_class', { p_class_id: id });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteClass');
     },
 
     // Announcements
     async getAnnouncements(): Promise<Announcement[]> {
         const { data, error } = await supabase.from('announcements').select('*').order('date', { ascending: false });
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'getAnnouncements');
         return data as Announcement[];
     },
 
@@ -228,14 +254,15 @@ export const dataService = {
             date: new Date().toISOString().split('T')[0],
         };
         const { error } = await supabase.from('announcements').insert([payload]);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createAnnouncement');
     },
 
     async deleteAnnouncement(id: string): Promise<void> {
         const { error } = await supabase.from('announcements').delete().eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteAnnouncement');
     },
     
+    // MOCKED DATA - TO BE REPLACED
     async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
         return Promise.resolve([
             { subject: 'Matematika Wajib', score: 88, grade: 'A-' },
@@ -288,13 +315,15 @@ export const dataService = {
     },
 
     async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
-        if (date === new Date().toISOString().split('T')[0]) {
-            return Promise.resolve([
-                { subject: 'Matematika', class: 'MA Kelas 10-A', topic: 'Fungsi Kuadrat' },
-                { subject: 'Matematika', class: 'MA Kelas 10-B', topic: 'Persamaan Linear' },
-            ]);
-        }
-        return Promise.resolve([]);
+        // This is a simplified mock. A real implementation would query the database.
+        const allJournals = await this.getTeachingJournals(teacherId);
+        return allJournals
+            .filter(j => j.date === date)
+            .map(j => ({
+                subject: j.subjectName || 'N/A',
+                class: j.className || 'N/A',
+                topic: j.topic,
+            }));
     },
 
     async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
@@ -353,8 +382,8 @@ export const dataService = {
 
     async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
         const { data, error } = await supabase.rpc('get_teaching_journals_for_teacher', { p_teacher_id: teacherId });
-        if (error) throw error;
-        return data.map((j: any) => ({
+        if (error) handleSupabaseError(error, 'getTeachingJournals');
+        return (data || []).map((j: any) => ({
             id: j.id,
             teacherId: j.teacher_id,
             classId: j.class_id,
@@ -374,7 +403,7 @@ export const dataService = {
             date: journalData.date,
             topic: journalData.topic,
         }]);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'createTeachingJournal');
     },
 
     async updateTeachingJournal(id: number, journalData: any): Promise<void> {
@@ -384,11 +413,11 @@ export const dataService = {
             date: journalData.date,
             topic: journalData.topic,
         }).eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'updateTeachingJournal');
     },
 
     async deleteTeachingJournal(id: number): Promise<void> {
         const { error } = await supabase.from('teaching_journals').delete().eq('id', id);
-        if (error) throw error;
+        if (error) handleSupabaseError(error, 'deleteTeachingJournal');
     },
 };
