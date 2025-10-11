@@ -20,16 +20,10 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       .single();
 
     if (error || !profile) {
-      console.error('Error fetching user profile:', error?.message);
-      // Even if profile fetch fails, we know who is logged in.
-      // Return a basic user object to prevent total failure.
-      return {
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        identityNumber: 'N/A',
-        name: supabaseUser.email || 'Pengguna',
-        role: UserRole.STUDENT, // Default role
-      };
+      // CRITICAL FIX: Do not default to a 'Student'. If the profile cannot be loaded
+      // after a successful authentication, it's a critical error. Abort the login.
+      console.error('Error fetching user profile after login:', error?.message);
+      throw new Error('Autentikasi berhasil, tetapi profil pengguna tidak dapat dimuat. Hubungi administrator.');
     }
     
     let schoolName: string | undefined = undefined;
@@ -56,9 +50,10 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
     };
 
     return appUser;
-  } catch (e) {
+  } catch (e: any) {
     console.error('Exception in getAppUser:', e);
-    return null;
+    // Re-throw the error to be caught by the calling login function
+    throw e;
   }
 };
 
@@ -100,10 +95,10 @@ export const authService = {
         throw new Error('Login gagal, pengguna tidak ditemukan.');
     }
 
-    // Step 3: Get the full user profile
+    // Step 3: Get the full user profile. This will now throw an error if it fails.
     const appUser = await getAppUser(data.user);
     if (!appUser) {
-        // Sign out if profile doesn't exist to prevent being in a broken state
+        // This case is less likely now, but as a safeguard, sign out.
         await supabase.auth.signOut();
         throw new Error('Profil pengguna tidak dapat dimuat.');
     }
@@ -127,7 +122,14 @@ export const authService = {
     }
 
     if (session?.user) {
-      return await getAppUser(session.user);
+      try {
+        return await getAppUser(session.user);
+      } catch (e) {
+        // If profile fetch fails on session check, treat as logged out.
+        console.error("Session valid but could not fetch profile, logging out.", e)
+        await this.logout();
+        return null;
+      }
     }
 
     return null;
