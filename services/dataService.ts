@@ -1,46 +1,34 @@
-// services/dataService.ts
+
 import { supabase } from './supabaseClient';
 import {
-    User, UserRole, School, Announcement, TeachingJournal, Subject, Class, GamificationProfile, JournalEntry
+    User,
+    UserRole,
+    School,
+    Announcement,
+    JournalEntry,
+    TeachingJournal,
+    GamificationProfile,
+    Subject,
+    Class,
+    Badge,
 } from '../types';
-import { PostgrestError } from '@supabase/supabase-js';
 
-// --- HELPER FUNCTIONS ---
+// Helper to convert DB user to App User
+const fromDbToUser = (profile: any): User => ({
+    id: profile.id,
+    email: profile.email || '', // Email might not be in profiles table
+    identityNumber: profile.identity_number,
+    name: profile.full_name,
+    // FIX: Map lowercase db role to capitalized enum value
+    role: (Object.values(UserRole).find(role => role.toLowerCase() === profile.role) || profile.role) as UserRole,
+    avatarUrl: profile.avatar_url,
+    schoolId: profile.school_id,
+    schoolName: profile.schools?.name,
+});
 
-// Centralized error handler to provide user-friendly messages
-const handleSupabaseError = (error: PostgrestError | null, context: string): never => {
-    console.error(`Supabase error in ${context}:`, error);
-    let message = `Gagal mengambil data dari server (${context}).`;
-
-    if (error) {
-        if (error.code === '23505') { // Unique constraint violation
-            if (context.includes('Subject')) {
-                 message = 'Mata pelajaran dengan nama ini sudah ada untuk sekolah yang dipilih.';
-            } else {
-                 message = 'Data yang Anda masukkan sudah ada (duplikat).';
-            }
-        } else if (error.message.includes('violates row-level security policy')) {
-            message = `Akses ditolak. Anda tidak memiliki izin untuk melakukan aksi ini pada '${context}'. Periksa kebijakan RLS di Supabase.`;
-        } else {
-            message = error.message;
-        }
-    }
-    throw new Error(message);
-};
-
-// FIX: Added a helper function to map database roles (e.g., 'murid') to the UserRole enum (e.g., 'Murid') for type safety.
-const toUserRoleEnum = (dbRole: string): UserRole => {
-    const roleEntry = Object.entries(UserRole).find(
-        ([, value]) => value.toLowerCase() === dbRole?.toLowerCase()
-    );
-    return roleEntry ? roleEntry[1] : dbRole as UserRole;
-};
-
-
-// --- DATA SERVICE IMPLEMENTATION ---
 
 export const dataService = {
-    // --- Users ---
+    // USER MANAGEMENT
     async getUsers(filters?: { role?: UserRole; schoolId?: string }): Promise<User[]> {
         let query = supabase.from('profiles').select(`
             id,
@@ -49,59 +37,70 @@ export const dataService = {
             role,
             avatar_url,
             school_id,
-            school:schools(name)
-        `).order('full_name', { ascending: true });
+            schools ( name )
+        `);
 
         if (filters?.role) {
-            query = query.eq('role', filters.role);
+            query = query.eq('role', filters.role.toLowerCase());
         }
         if (filters?.schoolId) {
             query = query.eq('school_id', filters.schoolId);
         }
 
         const { data, error } = await query;
-        if (error) handleSupabaseError(error, 'getUsers');
-        
-        return data.map((profile: any) => ({
-            id: profile.id,
-            name: profile.full_name,
-            identityNumber: profile.identity_number,
-            // FIX: Use the role mapping helper to ensure type correctness.
-            role: toUserRoleEnum(profile.role),
-            avatarUrl: profile.avatar_url,
-            schoolId: profile.school_id,
-            schoolName: profile.school?.name,
-            email: '' // Email is not exposed for privacy
-        }));
+
+        if (error) {
+            console.error('Error fetching users:', error);
+            throw error;
+        }
+
+        return data.map(fromDbToUser);
+    },
+
+    async getUserCount(filters: { role: UserRole; schoolId: string }): Promise<number> {
+         const { count, error } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', filters.role.toLowerCase())
+            .eq('school_id', filters.schoolId);
+
+        if (error) {
+            console.error('Error counting users:', error);
+            throw error;
+        }
+        return count ?? 0;
     },
 
     async createUser(userData: any): Promise<void> {
-        // Step 1: Sign up the user in Supabase Auth.
-        // A trigger in Supabase should then copy this data to the public.profiles table.
-        const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-            email: userData.email.trim(),
+        // This is complex because it involves auth.users and profiles.
+        // For now, a simplified version.
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
             password: userData.password,
             options: {
                 data: {
                     full_name: userData.name,
-                    identity_number: userData.identityNumber,
-                    role: userData.role,
-                    school_id: userData.schoolId || null,
                     avatar_url: userData.avatarUrl,
-                },
-            },
+                }
+            }
+        });
+        if (authError) throw authError;
+        if (!authData.user) throw new Error("User creation failed in auth");
+
+        const { error: profileError } = await supabase.from('profiles').insert({
+            id: authData.user.id,
+            full_name: userData.name,
+            identity_number: userData.identityNumber,
+            role: userData.role.toLowerCase(),
+            school_id: userData.schoolId || null,
+            avatar_url: userData.avatarUrl,
         });
 
-        if (signUpError) {
-            console.error('Supabase signup error:', signUpError);
-             if (signUpError.message.toLowerCase().includes('email address is invalid')) {
-                throw new Error('Format email tidak valid. Pastikan tidak ada spasi.');
-            }
-            throw new Error(signUpError.message);
-        }
-
-        if (!user) {
-            throw new Error('Gagal mendaftarkan pengguna, tidak ada data pengguna yang dikembalikan.');
+        if (profileError) {
+            // Cleanup auth user if profile fails
+            // await supabase.auth.admin.deleteUser(authData.user.id); // Requires admin privileges
+            console.error('Error creating profile:', profileError);
+            throw profileError;
         }
     },
 
@@ -109,287 +108,329 @@ export const dataService = {
         const { error } = await supabase.from('profiles').update({
             full_name: userData.name,
             identity_number: userData.identityNumber,
-            role: userData.role,
+            role: userData.role.toLowerCase(),
             school_id: userData.schoolId || null,
         }).eq('id', userId);
-
-        if (error) handleSupabaseError(error, 'updateUser');
-    },
-
-    async deleteUser(userId: string): Promise<void> {
-        // Deleting a user requires elevated privileges and should be done via an RPC function
-        // that uses the `service_role` key on the server-side for security.
-        // FIX: Corrected RPC call to ensure the function name is a string literal and parameters are in a single object.
-        const { error } = await supabase.rpc('delete_user', { user_id: userId });
-        if (error) {
-            handleSupabaseError(error, 'deleteUser RPC. Pastikan fungsi \'delete_user\' ada di database Anda.');
-        }
-    },
-
-    async getUserCount(filters?: { role?: UserRole; schoolId?: string }): Promise<number> {
-        let query = supabase.from('profiles').select('id', { count: 'exact', head: true });
-        if (filters?.role) {
-            query = query.eq('role', filters.role);
-        }
-        if (filters?.schoolId) {
-            query = query.eq('school_id', filters.schoolId);
-        }
-        const { count, error } = await query;
-        if (error) handleSupabaseError(error, 'getUserCount');
-        return count ?? 0;
-    },
-
-    // --- Schools ---
-    async getSchools(): Promise<School[]> {
-        const { data, error } = await supabase.from('schools').select('*').order('name');
-        if (error) handleSupabaseError(error, 'getSchools');
-        return data;
-    },
-    async createSchool(schoolData: Omit<School, 'id'>): Promise<void> {
-        const { error } = await supabase.from('schools').insert([schoolData]);
-        if (error) handleSupabaseError(error, 'createSchool');
-    },
-    async updateSchool(schoolId: string, schoolData: Omit<School, 'id'>): Promise<void> {
-        const { error } = await supabase.from('schools').update(schoolData).eq('id', schoolId);
-        if (error) handleSupabaseError(error, 'updateSchool');
-    },
-    async deleteSchool(schoolId: string): Promise<void> {
-        const { error } = await supabase.from('schools').delete().eq('id', schoolId);
-        if (error) handleSupabaseError(error, 'deleteSchool');
-    },
-    async getSchoolCount(): Promise<number> {
-        const { count, error } = await supabase.from('schools').select('id', { count: 'exact', head: true });
-        if (error) handleSupabaseError(error, 'getSchoolCount');
-        return count ?? 0;
+        if (error) throw error;
     },
     
-    // --- Subjects ---
+    async deleteUser(userId: string): Promise<void> {
+        // This is also complex. Deleting from profiles first.
+        // In a real app, you'd need an admin client to delete from auth.users.
+        const { error } = await supabase.from('profiles').delete().eq('id', userId);
+        if (error) throw error;
+    },
+    
+    // SCHOOL MANAGEMENT
+    async getSchools(): Promise<School[]> {
+        const { data, error } = await supabase.from('schools').select('*');
+        if (error) throw error;
+        return data;
+    },
+    
+    async getSchoolCount(): Promise<number> {
+        const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
+        if (error) throw error;
+        return count ?? 0;
+    },
+
+    async createSchool(schoolData: Omit<School, 'id'>): Promise<void> {
+        const { error } = await supabase.from('schools').insert(schoolData);
+        if (error) throw error;
+    },
+
+    async updateSchool(schoolId: string, schoolData: Omit<School, 'id'>): Promise<void> {
+        const { error } = await supabase.from('schools').update(schoolData).eq('id', schoolId);
+        if (error) throw error;
+    },
+    
+    async deleteSchool(schoolId: string): Promise<void> {
+        const { error } = await supabase.from('schools').delete().eq('id', schoolId);
+        if (error) throw error;
+    },
+
+    // SUBJECT MANAGEMENT
     async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
-        let query = supabase.from('subjects').select(`*, school:schools(name)`).order('name');
-        if (filters?.schoolId) {
+        let query = supabase.from('subjects').select(`*, schools ( name )`);
+        if(filters?.schoolId) {
             query = query.eq('school_id', filters.schoolId);
         }
         const { data, error } = await query;
-        if (error) handleSupabaseError(error, 'getSubjects');
-        return data.map((d: any) => ({ ...d, schoolName: d.school?.name }));
+        if (error) throw error;
+        return data.map(s => ({ ...s, schoolName: s.schools?.name, schoolId: s.school_id }));
     },
+    
     async createSubject(subjectData: { name: string, schoolId: string }): Promise<void> {
-        const { error } = await supabase.from('subjects').insert([{ name: subjectData.name, school_id: subjectData.schoolId }]);
-        if (error) handleSupabaseError(error, 'createSubject');
-    },
-    async updateSubject(subjectId: string, subjectData: { name: string, schoolId: string }): Promise<void> {
-        const { error } = await supabase.from('subjects').update({ name: subjectData.name, school_id: subjectData.schoolId }).eq('id', subjectId);
-        if (error) handleSupabaseError(error, 'updateSubject');
-    },
-    async deleteSubject(subjectId: string): Promise<void> {
-        const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
-        if (error) handleSupabaseError(error, 'deleteSubject');
+        const { error } = await supabase.from('subjects').insert({ name: subjectData.name, school_id: subjectData.schoolId });
+        if (error) throw error;
     },
 
-    // --- Classes ---
+    async updateSubject(subjectId: string, subjectData: { name: string, schoolId: string }): Promise<void> {
+        const { error } = await supabase.from('subjects').update({ name: subjectData.name, school_id: subjectData.schoolId }).eq('id', subjectId);
+        if (error) throw error;
+    },
+    
+    async deleteSubject(subjectId: string): Promise<void> {
+        const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
+        if (error) throw error;
+    },
+
+    // CLASS MANAGEMENT
     async getClasses(filters?: { teacherId?: string }): Promise<Class[]> {
-        let query = supabase.from('classes').select(`
-            id, name, school_id, homeroom_teacher_id,
-            school:schools(name),
-            teacher:profiles(full_name)
-        `).order('name');
-        
+        // This is tricky. Let's assume homeroom teacher is the filter.
+         let query = supabase.from('classes').select(`
+            *,
+            profiles ( full_name )
+         `);
+
         if (filters?.teacherId) {
             query = query.eq('homeroom_teacher_id', filters.teacherId);
         }
         
         const { data, error } = await query;
-        if (error) handleSupabaseError(error, 'getClasses');
-        return data.map((cls: any) => ({
-            id: cls.id,
-            name: cls.name,
-            schoolId: cls.school_id,
-            homeroomTeacherId: cls.homeroom_teacher_id,
-            schoolName: cls.school?.name,
-            homeroomTeacherName: cls.teacher?.full_name,
-        }));
+        if (error) throw error;
+        return data.map(c => ({...c, homeroomTeacherId: c.homeroom_teacher_id, schoolId: c.school_id, homeroomTeacherName: c.profiles?.full_name }));
     },
-    async createClass(classData: any): Promise<void> {
-        const { data, error } = await supabase.from('classes').insert({
-            name: classData.name,
-            school_id: classData.schoolId,
-            homeroom_teacher_id: classData.homeroomTeacherId || null,
-        }).select('id').single();
 
-        if (error) handleSupabaseError(error, 'createClass (insert)');
-        if (!data) throw new Error("Gagal membuat kelas, tidak ada ID yang dikembalikan.");
-
-        if (classData.studentIds && classData.studentIds.length > 0) {
-            const studentLinks = classData.studentIds.map((studentId: string) => ({
-                class_id: data.id,
-                student_id: studentId,
-            }));
-            const { error: studentError } = await supabase.from('class_students').insert(studentLinks);
-            if (studentError) handleSupabaseError(studentError, 'createClass (link students)');
-        }
-    },
-    async updateClass(classId: string, classData: any): Promise<void> {
-        const { error } = await supabase.from('classes').update({
-            name: classData.name,
-            school_id: classData.schoolId,
-            homeroom_teacher_id: classData.homeroomTeacherId || null,
-        }).eq('id', classId);
-        if (error) handleSupabaseError(error, 'updateClass (update)');
-
-        const { error: deleteError } = await supabase.from('class_students').delete().eq('class_id', classId);
-        if (deleteError) handleSupabaseError(deleteError, 'updateClass (unlink students)');
-        
-        if (classData.studentIds && classData.studentIds.length > 0) {
-            const studentLinks = classData.studentIds.map((studentId: string) => ({
-                class_id: classId,
-                student_id: studentId,
-            }));
-            const { error: insertError } = await supabase.from('class_students').insert(studentLinks);
-            if (insertError) handleSupabaseError(insertError, 'updateClass (relink students)');
-        }
-    },
-    async deleteClass(classId: string): Promise<void> {
-        const { error } = await supabase.from('classes').delete().eq('id', classId);
-        if (error) handleSupabaseError(error, 'deleteClass');
-    },
     async getStudentsInClass(classId: string): Promise<User[]> {
-        const { data, error } = await supabase.from('class_students').select(`
-            student:profiles(id, full_name, identity_number, avatar_url, role)
-        `).eq('class_id', classId);
-        
-        if (error) handleSupabaseError(error, 'getStudentsInClass');
-        return data.map((item: any) => ({
-            id: item.student.id,
-            name: item.student.full_name,
-            identityNumber: item.student.identity_number,
-            avatarUrl: item.student.avatar_url,
-            // FIX: Use the role mapping helper to ensure type correctness.
-            role: toUserRoleEnum(item.student.role),
-            email: ''
-        }));
-    },
-
-    // --- Teaching Journals ---
-    async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
+        // Assumes a junction table `student_classes`
         const { data, error } = await supabase
-            .from('teaching_journals')
-            .select(`
-                id, date, topic, class_id, subject_id,
-                class:classes(name),
-                subject:subjects(name)
-            `)
-            .eq('teacher_id', teacherId)
-            .order('date', { ascending: false });
-        if (error) handleSupabaseError(error, 'getTeachingJournals');
-        return data.map((j: any) => ({
-            id: j.id,
-            teacherId: teacherId,
-            classId: j.class_id,
-            subjectId: j.subject_id,
-            date: j.date,
-            topic: j.topic,
-            className: j.class?.name,
-            subjectName: j.subject?.name,
-        }));
-    },
-    async createTeachingJournal(data: any): Promise<void> {
-        const { error } = await supabase.from('teaching_journals').insert([{
-            teacher_id: data.teacherId,
-            class_id: data.classId,
-            subject_id: data.subjectId,
-            date: data.date,
-            topic: data.topic
-        }]);
-        if (error) handleSupabaseError(error, 'createTeachingJournal');
-    },
-    async updateTeachingJournal(journalId: number, data: any): Promise<void> {
-        const { error } = await supabase.from('teaching_journals').update({
-            class_id: data.classId,
-            subject_id: data.subjectId,
-            date: data.date,
-            topic: data.topic
-        }).eq('id', journalId);
-        if (error) handleSupabaseError(error, 'updateTeachingJournal');
-    },
-    async deleteTeachingJournal(journalId: number): Promise<void> {
-        const { error } = await supabase.from('teaching_journals').delete().eq('id', journalId);
-        if (error) handleSupabaseError(error, 'deleteTeachingJournal');
+            .from('student_classes')
+            .select('profiles (*, schools(name))')
+            .eq('class_id', classId);
+
+        if (error) throw error;
+        return data.map(item => fromDbToUser(item.profiles));
     },
 
-    // --- Announcements ---
-    async getAnnouncements(): Promise<Announcement[]> {
-        const { data, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
-        if (error) handleSupabaseError(error, 'getAnnouncements');
-        return data.map((a: any) => ({
-            id: a.id,
-            title: a.title,
-            content: a.content,
-            date: a.created_at.split('T')[0],
-            author: a.author_name,
-        }));
-    },
-    async createAnnouncement(data: { title: string, content: string, author: string }): Promise<void> {
-        const { error } = await supabase.from('announcements').insert([{
-            title: data.title,
-            content: data.content,
-            author_name: data.author,
-        }]);
-        if (error) handleSupabaseError(error, 'createAnnouncement');
-    },
-    async deleteAnnouncement(id: string): Promise<void> {
-        const { error } = await supabase.from('announcements').delete().eq('id', id);
-        if (error) handleSupabaseError(error, 'deleteAnnouncement');
+     async createClass(classData: any): Promise<void> {
+        const { studentIds, ...rest } = classData;
+        const { data, error } = await supabase.from('classes').insert({
+            name: rest.name,
+            school_id: rest.schoolId,
+            homeroom_teacher_id: rest.homeroomTeacherId || null,
+        }).select().single();
+
+        if (error) throw error;
+        
+        if (studentIds && studentIds.length > 0) {
+            const studentClassRelations = studentIds.map((studentId: string) => ({
+                class_id: data.id,
+                student_id: studentId
+            }));
+            const { error: junctionError } = await supabase.from('student_classes').insert(studentClassRelations);
+            if (junctionError) throw junctionError;
+        }
     },
 
-    // --- MOCKED/PLACEHOLDER SECTIONS (For complex features not yet implemented in DB) ---
+    async updateClass(classId: string, classData: any): Promise<void> {
+        const { studentIds, ...rest } = classData;
+
+        const { error } = await supabase.from('classes').update({
+            name: rest.name,
+            school_id: rest.schoolId,
+            homeroom_teacher_id: rest.homeroomTeacherId || null,
+        }).eq('id', classId);
+        if (error) throw error;
+
+        // Sync students
+        const { error: deleteError } = await supabase.from('student_classes').delete().eq('class_id', classId);
+        if(deleteError) throw deleteError;
+        
+        if (studentIds && studentIds.length > 0) {
+            const studentClassRelations = studentIds.map((studentId: string) => ({
+                class_id: classId,
+                student_id: studentId
+            }));
+            const { error: insertError } = await supabase.from('student_classes').insert(studentClassRelations);
+            if (insertError) throw insertError;
+        }
+    },
+
+    async deleteClass(classId: string): Promise<void> {
+        // Also need to delete from junction table
+        await supabase.from('student_classes').delete().eq('class_id', classId);
+        const { error } = await supabase.from('classes').delete().eq('id', classId);
+        if(error) throw error;
+    },
+
+    // STUDENT DATA
     async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
+        // Mocking this as it can be complex
+        await new Promise(res => setTimeout(res, 500));
         return [
             { subject: 'Matematika', score: 85, grade: 'A-' },
             { subject: 'Bahasa Indonesia', score: 92, grade: 'A' },
             { subject: 'Fisika', score: 78, grade: 'B+' },
+            { subject: 'Kimia', score: 88, grade: 'A-' },
         ];
     },
+    
     async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> {
-        return [
-            { date: '2024-07-01', status: 'Hadir' }, { date: '2024-07-02', status: 'Hadir' },
-            { date: '2024-07-03', status: 'Sakit' }, { date: '2024-07-04', status: 'Hadir' },
-        ];
+        await new Promise(res => setTimeout(res, 500));
+         return [
+            { date: '2024-07-01', status: 'Hadir' },
+            { date: '2024-07-02', status: 'Hadir' },
+            { date: '2024-07-03', status: 'Sakit' },
+            { date: '2024-07-04', status: 'Hadir' },
+            { date: '2024-07-05', status: 'Hadir' },
+         ];
     },
+
     async getTeacherNoteForStudent(studentId: string): Promise<{ note: string; teacherName: string; }> {
-        return { note: "Siswa menunjukkan kemajuan yang sangat baik. Terus tingkatkan!", teacherName: "Wali Kelas" };
+        await new Promise(res => setTimeout(res, 300));
+        return { note: 'Ahmad menunjukkan perkembangan yang sangat baik di semester ini, terutama dalam mata pelajaran Sains. Terus tingkatkan semangat belajarnya!', teacherName: 'Budi Santoso, S.Pd.' };
     },
+
     async getClassForStudent(studentId: string): Promise<string | null> {
         const { data, error } = await supabase
-            .from('class_students').select('class:classes(name)').eq('student_id', studentId).single();
+            .from('student_classes')
+            .select('classes(name)')
+            .eq('student_id', studentId)
+            .single();
         if (error || !data) return null;
-        return data.class?.name || null;
+        return data.classes?.name || null;
     },
+
+    // TEACHER DATA
     async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
-        const { data, error } = await supabase.from('teaching_journals')
-            .select(`*, class:classes(name), subject:subjects(name)`)
-            .eq('teacher_id', teacherId).eq('date', date);
-        if (error) handleSupabaseError(error, 'getJournalForTeacher');
-        return data.map(j => ({ subject: j.subject.name, class: j.class.name, topic: j.topic }));
+        const { data, error } = await supabase
+            .from('teaching_journals')
+            .select('topic, classes(name), subjects(name)')
+            .eq('teacher_id', teacherId)
+            .eq('date', date);
+
+        if (error) throw error;
+        return data.map(j => ({
+            topic: j.topic,
+            class: j.classes.name,
+            subject: j.subjects.name,
+        }));
     },
-    async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
-        return {
-            progress: { 'Matematika': 85, 'Fisika': 78, 'B. Indo': 92 },
-            badges: [{ id: 'b1', icon: '🚀', name: 'Penyelesai Cepat', description: 'Tugas selesai sebelum deadline' }]
-        };
+    
+    async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> {
+        const { data, error } = await supabase
+            .from('teaching_journals')
+            .select('*, classes(name), subjects(name)')
+            .eq('teacher_id', teacherId);
+        
+        if (error) throw error;
+        
+        return data.map(j => ({
+            id: j.id,
+            teacherId: j.teacher_id,
+            classId: j.class_id,
+            subjectId: j.subject_id,
+            date: j.date,
+            topic: j.topic,
+            className: j.classes?.name,
+            subjectName: j.subjects?.name,
+        }));
     },
+
+    async createTeachingJournal(journalData: any): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').insert({
+            date: journalData.date,
+            class_id: journalData.classId,
+            subject_id: journalData.subjectId,
+            topic: journalData.topic,
+            teacher_id: journalData.teacherId,
+        });
+        if (error) throw error;
+    },
+
+    async updateTeachingJournal(journalId: number, journalData: any): Promise<void> {
+         const { error } = await supabase.from('teaching_journals').update({
+            date: journalData.date,
+            class_id: journalData.classId,
+            subject_id: journalData.subjectId,
+            topic: journalData.topic,
+         }).eq('id', journalId);
+        if (error) throw error;
+    },
+    
+    async deleteTeachingJournal(journalId: number): Promise<void> {
+        const { error } = await supabase.from('teaching_journals').delete().eq('id', journalId);
+        if (error) throw error;
+    },
+
+    // OTHERS
+    async getAnnouncements(): Promise<Announcement[]> {
+        const { data, error } = await supabase.from('announcements').select('*').order('date', { ascending: false });
+        if (error) throw error;
+        return data;
+    },
+
+    async createAnnouncement(announcementData: { title: string, content: string, author: string }): Promise<void> {
+        const { error } = await supabase.from('announcements').insert({
+            ...announcementData,
+            date: new Date().toISOString().split('T')[0],
+        });
+        if (error) throw error;
+    },
+
+    async deleteAnnouncement(id: string): Promise<void> {
+        const { error } = await supabase.from('announcements').delete().eq('id', id);
+        if (error) throw error;
+    },
+
     async getClassSchedule(className: string, schoolId: string): Promise<Record<string, {time: string, subject: string}[]>> {
+        // Mocking
+        await new Promise(res => setTimeout(res, 500));
         return {
-            'Senin': [{ time: '07:30 - 09:00', subject: 'Matematika' }],
-            'Selasa': [{ time: '07:30 - 09:00', subject: 'Fisika' }],
+            "Senin": [{ time: "07:30 - 09:00", subject: "Matematika" }, { time: "10:00 - 11:30", subject: "Bahasa Indonesia" }],
+            "Selasa": [{ time: "07:30 - 09:00", subject: "Fisika" }, { time: "10:00 - 11:30", subject: "Kimia" }],
+            "Rabu": [{ time: "07:30 - 09:00", subject: "Biologi" }, { time: "10:00 - 11:30", subject: "Sejarah" }],
+            "Kamis": [{ time: "07:30 - 09:00", subject: "Geografi" }, { time: "10:00 - 11:30", subject: "Pendidikan Agama" }],
+            "Jumat": [{ time: "07:30 - 09:00", subject: "Olahraga" }, { time: "10:00 - 11:30", subject: "Seni Budaya" }],
         };
     },
-    async getSchoolPerformance(): Promise<{ school: string, 'Rata-rata Nilai': number }[]> {
-        return [{ school: 'MA Fathus Salafi', 'Rata-rata Nilai': 85.2 }];
+
+    async getSchoolPerformance(): Promise<{ school: string; 'Rata-rata Nilai': number; }[]> {
+        // Mocking
+        await new Promise(res => setTimeout(res, 800));
+        return [
+            { school: 'MA Fathus Salafi', 'Rata-rata Nilai': 85.2 },
+            { school: 'MTs Fathus Salafi', 'Rata-rata Nilai': 82.1 },
+            { school: 'MI Fathus Salafi', 'Rata-rata Nilai': 88.4 },
+        ];
     },
+
     async getAverageGradesBySubject(schoolId: string): Promise<{ subject: string; avg: number; }[]> {
-        return [{ subject: 'Matematika', avg: 82 }];
+        await new Promise(res => setTimeout(res, 600));
+        return [
+            { subject: 'Matematika', avg: 82 },
+            { subject: 'Fisika', avg: 78 },
+            { subject: 'Kimia', avg: 85 },
+            { subject: 'Biologi', avg: 88 },
+            { subject: 'B. Indo', avg: 90 },
+        ];
     },
+
     async getAttendanceTrend(schoolId: string): Promise<{ month: string; percentage: number; }[]> {
-        return [{ month: 'Jan', percentage: 98 }];
-    }
+        await new Promise(res => setTimeout(res, 600));
+        return [
+            { month: 'Jan', percentage: 98 },
+            { month: 'Feb', percentage: 97 },
+            { month: 'Mar', percentage: 98.5 },
+            { month: 'Apr', percentage: 96 },
+            { month: 'Mei', percentage: 97.5 },
+        ];
+    },
+
+    async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
+        await new Promise(res => setTimeout(res, 400));
+        const badges: Badge[] = [
+            { id: '1', icon: '🚀', name: 'Pejuang Pagi', description: 'Hadir tepat waktu 10 kali berturut-turut' },
+            { id: '2', icon: '🧠', name: 'Master Matematika', description: 'Mendapat nilai A di 3 ujian Matematika' },
+        ];
+        return {
+            progress: {
+                'Matematika': 85,
+                'Fisika': 70,
+                'Kimia': 80,
+            },
+            badges,
+        };
+    },
 };
