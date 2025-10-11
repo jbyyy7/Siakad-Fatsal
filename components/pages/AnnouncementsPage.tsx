@@ -3,7 +3,8 @@ import Card from '../Card';
 import { dataService } from '../../services/dataService';
 import { User, Announcement, UserRole } from '../../types';
 import Modal from '../ui/Modal';
-import { PlusIcon, TrashIcon } from '../icons';
+import { PlusIcon } from '../icons/PlusIcon';
+import { TrashIcon } from '../icons/TrashIcon';
 
 interface AnnouncementsPageProps {
   user: User;
