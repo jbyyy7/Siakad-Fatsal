@@ -15,18 +15,20 @@ const ManageSchoolsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
+    const fetchSchools = async () => {
+        setIsLoading(true);
+        try {
+            const data = await dataService.getSchools();
+            setSchools(data);
+        } catch (err) {
+            setError('Gagal memuat data sekolah.');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchSchools = async () => {
-            try {
-                const data = await dataService.getSchools();
-                setSchools(data);
-            } catch (err) {
-                setError('Gagal memuat data sekolah.');
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchSchools();
     }, []);
 
@@ -43,16 +45,27 @@ const ManageSchoolsPage: React.FC = () => {
     const handleSaveSchool = async (formData: Omit<School, 'id'>) => {
         try {
             if (selectedSchool) {
-                const updatedSchool = await dataService.updateSchool(selectedSchool.id, formData);
-                setSchools(schools.map(s => s.id === updatedSchool.id ? updatedSchool : s));
+                await dataService.updateSchool(selectedSchool.id, formData);
             } else {
-                const newSchool = await dataService.createSchool(formData);
-                setSchools([...schools, newSchool]);
+                await dataService.createSchool(formData);
             }
+            fetchSchools();
             closeModal();
         } catch (error: any) {
              console.error('Failed to save school:', error);
              alert(`Gagal menyimpan sekolah: ${error.message}`);
+        }
+    };
+    
+    const handleDeleteSchool = async (schoolId: string) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus sekolah ini? Pengguna yang terhubung dengan sekolah ini tidak akan terhapus.')) {
+            try {
+                await dataService.deleteSchool(schoolId);
+                fetchSchools();
+            } catch (error: any) {
+                console.error('Failed to delete school:', error);
+                alert(`Gagal menghapus sekolah: ${error.message}`);
+            }
         }
     };
 
@@ -89,7 +102,7 @@ const ManageSchoolsPage: React.FC = () => {
                                     <td className="px-6 py-4">{school.address}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button onClick={() => openModal(school)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
-                                        <button className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
+                                        <button onClick={() => handleDeleteSchool(school.id)} className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
                                     </td>
                                 </tr>
                             ))}

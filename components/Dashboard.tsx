@@ -12,6 +12,7 @@ import WelcomePlaceholder from './dashboards/WelcomePlaceholder';
 // Page components
 import ManageUsersPage from './pages/ManageUsersPage';
 import ManageSchoolsPage from './pages/ManageSchoolsPage';
+import ManageSubjectsPage from './pages/ManageSubjectsPage';
 import InputGradesPage from './pages/InputGradesPage';
 import StudentAttendancePage from './pages/StudentAttendancePage';
 import MyClassPage from './pages/MyClassPage';
@@ -61,6 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       // Admin
       case 'Kelola Pengguna': return <ManageUsersPage />;
       case 'Kelola Sekolah': return <ManageSchoolsPage />;
+      case 'Kelola Mata Pelajaran': return <ManageSubjectsPage />;
       case 'Pengaturan Sistem': return <SystemSettingsPage />;
       
       // Foundation Head

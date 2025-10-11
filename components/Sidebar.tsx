@@ -9,6 +9,7 @@ import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { EnvelopeIcon } from './icons/EnvelopeIcon';
 import { XIcon } from './icons/XIcon';
+import { TagIcon } from './icons/TagIcon';
 
 interface SidebarProps {
   user: User;
@@ -29,6 +30,7 @@ const getNavItems = (role: UserRole) => {
                 ...baseItems,
                 { name: 'Kelola Sekolah', icon: BuildingLibraryIcon, href: '#' },
                 { name: 'Kelola Pengguna', icon: UserGroupIcon, href: '#' },
+                { name: 'Kelola Mata Pelajaran', icon: TagIcon, href: '#' },
                 { name: 'Pengaturan Sistem', icon: CogIcon, href: '#' },
             ];
         case UserRole.FOUNDATION_HEAD:
@@ -55,6 +57,7 @@ const getNavItems = (role: UserRole) => {
             ];
         case UserRole.STUDENT:
             return [
+                ...baseItems,
                 ...baseItems,
                 { name: 'Jadwal Pelajaran', icon: ClipboardDocumentListIcon, href: '#' },
                 { name: 'Lihat Nilai', icon: ChartBarIcon, href: '#' },

@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient';
 import { 
     User, School, UserRole, Announcement, JournalEntry, 
-    Badge, GamificationProfile
+    Badge, GamificationProfile, Subject
 } from '../types';
 
 // Helper to handle Supabase errors
@@ -48,7 +48,11 @@ export const dataService = {
         handleSupabaseError(error, 'updateSchool');
         return data;
     },
-
+    
+    async deleteSchool(schoolId: string): Promise<void> {
+        const { error } = await supabase.from('schools').delete().eq('id', schoolId);
+        handleSupabaseError(error, 'deleteSchool');
+    },
 
     async getSchoolCount(): Promise<number> {
         const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
@@ -156,6 +160,14 @@ export const dataService = {
         handleSupabaseError(error, 'updateUser');
         return { ...data, name: data.full_name, identityNumber: data.identity_number, schoolId: data.school_id, avatarUrl: data.avatar_url };
     },
+    
+    async deleteUser(userId: string): Promise<void> {
+        // Note: This only deletes the user's profile data, not their auth entry.
+        // This is a security measure as deleting auth users requires admin privileges
+        // not suitable for the client-side. The user will no longer be able to log in.
+        const { error } = await supabase.from('profiles').delete().eq('id', userId);
+        handleSupabaseError(error, 'deleteUser');
+    },
 
     async getUserCount(filters: { role?: UserRole; schoolId?: string } = {}): Promise<number> {
         let query = supabase.from('profiles').select('*', { count: 'exact', head: true });
@@ -167,6 +179,45 @@ export const dataService = {
         }
         const { count, error } = await query;
         handleSupabaseError(error, 'getUserCount');
+        return count || 0;
+    },
+
+    // Subjects data
+    async getSubjects(): Promise<Subject[]> {
+        const { data, error } = await supabase.from('subjects').select('*');
+        handleSupabaseError(error, 'getSubjects');
+        return data || [];
+    },
+
+    async createSubject(subjectData: Omit<Subject, 'id'>): Promise<Subject> {
+        const { data, error } = await supabase
+            .from('subjects')
+            .insert(subjectData)
+            .select()
+            .single();
+        handleSupabaseError(error, 'createSubject');
+        return data;
+    },
+
+    async updateSubject(subjectId: string, subjectData: Partial<Omit<Subject, 'id'>>): Promise<Subject> {
+        const { data, error } = await supabase
+            .from('subjects')
+            .update(subjectData)
+            .eq('id', subjectId)
+            .select()
+            .single();
+        handleSupabaseError(error, 'updateSubject');
+        return data;
+    },
+
+    async deleteSubject(subjectId: string): Promise<void> {
+        const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
+        handleSupabaseError(error, 'deleteSubject');
+    },
+
+    async getSubjectCount(): Promise<number> {
+        const { count, error } = await supabase.from('subjects').select('*', { count: 'exact', head: true });
+        handleSupabaseError(error, 'getSubjectCount');
         return count || 0;
     },
 

@@ -19,22 +19,24 @@ const ManageUsersPage: React.FC = () => {
     const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
     const [schoolFilter, setSchoolFilter] = useState<string | 'all'>('all');
 
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [usersData, schoolsData] = await Promise.all([
+                dataService.getUsers(),
+                dataService.getSchools(),
+            ]);
+            setUsers(usersData);
+            setSchools(schoolsData);
+        } catch (err) {
+            setError('Gagal memuat data pengguna.');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [usersData, schoolsData] = await Promise.all([
-                    dataService.getUsers(),
-                    dataService.getSchools(),
-                ]);
-                setUsers(usersData);
-                setSchools(schoolsData);
-            } catch (err) {
-                setError('Gagal memuat data pengguna.');
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchData();
     }, []);
 
@@ -52,18 +54,29 @@ const ManageUsersPage: React.FC = () => {
         try {
             if (selectedUser) {
                 // Update existing user
-                const updatedUser = await dataService.updateUser(selectedUser.id, formData);
-                setUsers(users.map(u => u.id === updatedUser.id ? {...u, ...updatedUser} : u));
+                await dataService.updateUser(selectedUser.id, formData);
             } else {
                 // Create new user
-                const newUser = await dataService.createUser(formData);
-                setUsers([...users, newUser]);
+                await dataService.createUser(formData);
             }
+            fetchData(); // Refetch data
             closeModal();
         } catch (error: any) {
             console.error('Failed to save user:', error);
             // Optionally, display error in the form
             alert(`Gagal menyimpan pengguna: ${error.message}`);
+        }
+    };
+    
+    const handleDeleteUser = async (userId: string) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
+            try {
+                await dataService.deleteUser(userId);
+                fetchData(); // Refetch data
+            } catch (error: any) {
+                console.error('Failed to delete user:', error);
+                alert(`Gagal menghapus pengguna: ${error.message}`);
+            }
         }
     };
 
@@ -144,7 +157,7 @@ const ManageUsersPage: React.FC = () => {
                                     <td className="px-6 py-4">{user.schoolName || '-'}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button onClick={() => openModal(user)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
-                                        <button className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
+                                        <button onClick={() => handleDeleteUser(user.id)} className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>
                                     </td>
                                 </tr>
                             ))}

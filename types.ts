@@ -25,6 +25,11 @@ export interface School {
   address: string;
 }
 
+export interface Subject {
+  id: string;
+  name: string;
+}
+
 export interface Badge {
   id: string;
   name: string;
