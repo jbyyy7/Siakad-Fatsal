@@ -13,26 +13,41 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
     name: '',
     schoolId: '',
     teacherId: '',
+    studentIds: [] as string[],
   });
   const [schools, setSchools] = useState<School[]>([]);
   const [teachers, setTeachers] = useState<User[]>([]);
+  const [availableStudents, setAvailableStudents] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch initial data for form dropdowns
   useEffect(() => {
     const fetchData = async () => {
-        const [schoolsData, teachersData] = await Promise.all([
-            dataService.getSchools(),
-            dataService.getUsers({ role: UserRole.TEACHER })
-        ]);
-        setSchools(schoolsData);
-        setTeachers(teachersData);
+        setIsLoading(true);
+        try {
+            const [schoolsData, teachersData, studentsData] = await Promise.all([
+                dataService.getSchools(),
+                dataService.getUsers({ role: UserRole.TEACHER }),
+                // A more advanced query would be to fetch students without a class
+                dataService.getUsers({ role: UserRole.STUDENT }), 
+            ]);
+            setSchools(schoolsData);
+            setTeachers(teachersData);
+            setAvailableStudents(studentsData);
 
-        if (classData) {
-            setFormData({
-                name: classData.name || '',
-                schoolId: classData.schoolId || '',
-                teacherId: classData.teacherId || '',
-            });
+            if (classData) {
+                const classStudents = await dataService.getStudentsInClass(classData.id);
+                setFormData({
+                    name: classData.name || '',
+                    schoolId: classData.schoolId || '',
+                    teacherId: classData.teacherId || '',
+                    studentIds: classStudents.map(s => s.id),
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch data for class form", error);
+        } finally {
+            setIsLoading(false);
         }
     };
     fetchData();
@@ -44,6 +59,12 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // FIX: Explicitly type the `option` parameter as HTMLOptionElement to resolve the type inference issue.
+    const selectedIds = Array.from(e.target.selectedOptions, (option: HTMLOptionElement) => option.value);
+    setFormData(prev => ({...prev, studentIds: selectedIds}));
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -52,6 +73,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
   };
 
   const filteredTeachers = teachers.filter(t => t.schoolId === formData.schoolId);
+  const filteredStudents = availableStudents.filter(s => s.schoolId === formData.schoolId);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -97,6 +119,23 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
           <option value="">Pilih Wali Kelas</option>
           {filteredTeachers.map(teacher => (
             <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+          ))}
+        </select>
+      </div>
+       <div>
+        <label htmlFor="studentIds" className="block text-sm font-medium text-gray-700">Siswa di Kelas</label>
+        <p className="text-xs text-gray-500">Tahan Ctrl/Cmd untuk memilih beberapa siswa.</p>
+        <select
+          id="studentIds"
+          name="studentIds"
+          multiple
+          value={formData.studentIds}
+          onChange={handleStudentSelect}
+          disabled={!formData.schoolId}
+          className="mt-1 block w-full h-40 p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+        >
+          {filteredStudents.map(student => (
+            <option key={student.id} value={student.id}>{student.name}</option>
           ))}
         </select>
       </div>

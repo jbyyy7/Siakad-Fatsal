@@ -24,7 +24,6 @@ const getGradeFromScore = (score: number): string => {
 export const dataService = {
     // User Management
     async getUsers(filters?: { role?: UserRole; schoolId?: string }): Promise<User[]> {
-        // More robust query: Fetch schools first, then profiles
         const { data: schoolsData, error: schoolsError } = await supabase.from('schools').select('id, name');
         handleSupabaseError(schoolsError, 'getUsers (schools)');
         const schoolMap = new Map<string, string>(schoolsData?.map(s => [s.id, s.name]) || []);
@@ -64,8 +63,6 @@ export const dataService = {
     },
 
     async createUser(formData: any): Promise<void> {
-        // This is a sensitive operation. For full security, this should be a trusted server-side call.
-        // As per request, implementing client-side. The user created will need to verify their email.
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
@@ -90,16 +87,11 @@ export const dataService = {
         
         if (profileError) {
              console.error('Supabase Profile Error in createUser:', profileError);
-             // Attempt to clean up the auth user if profile creation fails
-             // This needs an admin client, which is not secure on the client-side.
-             // Manual cleanup in Supabase dashboard might be needed on failure.
              throw new Error(`Autentikasi berhasil dibuat, tetapi gagal menyimpan profil: ${profileError.message}`);
         }
     },
 
     async deleteUser(userId: string): Promise<void> {
-        // Client-side can only safely delete the profile, not the auth user.
-        // This effectively 'deactivates' the user as they won't have a profile on login.
         const { error } = await supabase.from('profiles').delete().eq('id', userId);
         handleSupabaseError(error, 'deleteUser');
     },
@@ -178,7 +170,6 @@ export const dataService = {
     },
 
     async getTeacherNoteForStudent(studentId: string): Promise<{ note: string, teacherName: string }> {
-        // Assuming a table `teacher_notes` exists
         const { data, error } = await supabase
             .from('teacher_notes')
             .select('note, profiles ( full_name )')
@@ -187,7 +178,7 @@ export const dataService = {
             .limit(1)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // Ignore 'exact one row' error if no notes exist
+        if (error && error.code !== 'PGRST116') {
              handleSupabaseError(error, 'getTeacherNoteForStudent');
         }
        
@@ -203,9 +194,7 @@ export const dataService = {
         }
     },
     
-     // Teacher Data
     async getJournalForTeacher(teacherId: string, date: string): Promise<{ subject: string; classId: string; topic: string; }[]> {
-         // Assuming a table `teacher_journals` exists
         const { data, error } = await supabase
             .from('teacher_journals')
             .select('topic, subjects(name), classes(name)')
@@ -219,7 +208,6 @@ export const dataService = {
 
     // Gamification
     async getGamificationProfile(studentId: string): Promise<GamificationProfile> {
-        // This requires multiple queries as the relationships can be complex
         const { data: profile, error: profileError } = await supabase.from('gamification_profiles').select('points, level').eq('student_id', studentId).single();
         handleSupabaseError(profileError, 'getGamificationProfile (profile)');
 
@@ -237,7 +225,7 @@ export const dataService = {
         };
     },
 
-    // Academic Reports (requires RPC calls for aggregation)
+    // Academic Reports
     async getSchoolPerformance(): Promise<{ school: string, 'Rata-rata Nilai': number }[]> {
         const { data, error } = await supabase.rpc('get_school_average_scores');
         handleSupabaseError(error, 'getSchoolPerformance');
@@ -278,17 +266,33 @@ export const dataService = {
     },
 
     // Subject Management
-    async getSubjects(): Promise<Subject[]> {
-        const { data, error } = await supabase.from('subjects').select('*');
+    async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
+        let query = supabase.from('subjects').select('*, schools(name)');
+        if (filters?.schoolId) {
+            query = query.eq('school_id', filters.schoolId);
+        }
+        const { data, error } = await query;
         handleSupabaseError(error, 'getSubjects');
-        return data || [];
+        // @ts-ignore
+        return data?.map(s => ({
+            id: s.id,
+            name: s.name,
+            schoolId: s.school_id,
+            // @ts-ignore
+            schoolName: s.schools.name,
+        })) || [];
     },
-    async createSubject(formData: Omit<Subject, 'id'>): Promise<void> {
-        const { error } = await supabase.from('subjects').insert(formData);
+    async getSubjectCount(): Promise<number> {
+        const { count, error } = await supabase.from('subjects').select('*', { count: 'exact', head: true });
+        handleSupabaseError(error, 'getSubjectCount');
+        return count || 0;
+    },
+    async createSubject(formData: { name: string, schoolId: string }): Promise<void> {
+        const { error } = await supabase.from('subjects').insert({ name: formData.name, school_id: formData.schoolId });
         handleSupabaseError(error, 'createSubject');
     },
-    async updateSubject(id: string, formData: Omit<Subject, 'id'>): Promise<void> {
-        const { error } = await supabase.from('subjects').update(formData).eq('id', id);
+    async updateSubject(id: string, formData: { name: string, schoolId: string }): Promise<void> {
+        const { error } = await supabase.from('subjects').update({ name: formData.name, school_id: formData.schoolId }).eq('id', id);
         handleSupabaseError(error, 'updateSubject');
     },
     async deleteSubject(id: string): Promise<void> {
@@ -297,12 +301,16 @@ export const dataService = {
     },
 
     // Class Management
-    async getClasses(): Promise<Class[]> {
-        const { data, error } = await supabase.from('classes').select(`
+    async getClasses(filters?: { teacherId?: string }): Promise<Class[]> {
+        let query = supabase.from('classes').select(`
             id, name, school_id, teacher_id,
             schools (name),
             profiles (full_name)
         `);
+        if (filters?.teacherId) {
+            query = query.eq('teacher_id', filters.teacherId);
+        }
+        const { data, error } = await query;
         handleSupabaseError(error, 'getClasses');
         // @ts-ignore
         return data?.map(c => ({
@@ -316,13 +324,39 @@ export const dataService = {
             teacherName: c.profiles.full_name,
         })) || [];
     },
+    async getStudentsInClass(classId: string): Promise<User[]> {
+        const { data, error } = await supabase
+            .from('class_members')
+            .select('profiles(*)')
+            .eq('class_id', classId);
+        handleSupabaseError(error, 'getStudentsInClass');
+        // @ts-ignore
+        return data?.map(m => m.profiles).map(p => ({
+            id: p.id,
+            email: '',
+            identityNumber: p.identity_number,
+            name: p.full_name,
+            role: p.role,
+            avatarUrl: p.avatar_url,
+            schoolId: p.school_id,
+        })) || [];
+    },
     async createClass(formData: any): Promise<void> {
-        const { error } = await supabase.from('classes').insert({
+        const { data, error } = await supabase.from('classes').insert({
             name: formData.name,
             school_id: formData.schoolId,
             teacher_id: formData.teacherId,
-        });
-        handleSupabaseError(error, 'createClass');
+        }).select().single();
+        handleSupabaseError(error, 'createClass (insert)');
+
+        if (formData.studentIds && formData.studentIds.length > 0) {
+            const members = formData.studentIds.map((student_id: string) => ({
+                class_id: data.id,
+                student_id,
+            }));
+            const { error: memberError } = await supabase.from('class_members').insert(members);
+            handleSupabaseError(memberError, 'createClass (add members)');
+        }
     },
     async updateClass(id: string, formData: any): Promise<void> {
         const { error } = await supabase.from('classes').update({
@@ -331,8 +365,23 @@ export const dataService = {
              teacher_id: formData.teacherId,
         }).eq('id', id);
         handleSupabaseError(error, 'updateClass');
+        
+        // Replace all members with the new list
+        const { error: deleteError } = await supabase.from('class_members').delete().eq('class_id', id);
+        handleSupabaseError(deleteError, 'updateClass (delete members)');
+
+        if (formData.studentIds && formData.studentIds.length > 0) {
+             const members = formData.studentIds.map((student_id: string) => ({
+                class_id: id,
+                student_id,
+            }));
+            const { error: insertError } = await supabase.from('class_members').insert(members);
+            handleSupabaseError(insertError, 'updateClass (insert members)');
+        }
     },
     async deleteClass(id: string): Promise<void> {
+        // RLS might require deleting members first
+        await supabase.from('class_members').delete().eq('class_id', id);
         const { error } = await supabase.from('classes').delete().eq('id', id);
         handleSupabaseError(error, 'deleteClass');
     },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, UserRole } from '../../types';
+import { User, Class } from '../../types';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
 
@@ -8,48 +8,69 @@ interface MyClassPageProps {
 }
 
 const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
+  const [classes, setClasses] = useState<Class[]>([]);
   const [students, setStudents] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedClass, setSelectedClass] = useState('MA Kelas 10-A');
+  const [isLoading, setIsLoading] = useState({ classes: true, students: false });
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
 
-  // In a real app, this would be fetched based on the teacher's assigned classes
-  const teacherClasses = ['MA Kelas 10-A', 'MA Kelas 10-B', 'MA Kelas 11-A'];
-
+  // Fetch classes assigned to the teacher
   useEffect(() => {
-    const fetchStudents = async () => {
-      if (!user.schoolId) return;
-      setIsLoading(true);
+    const fetchClasses = async () => {
+      setIsLoading(prev => ({...prev, classes: true}));
       try {
-        // This is a simplification. In reality, you'd filter by selectedClass.
-        const allStudents = await dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId });
-        setStudents(allStudents.filter(s => s.level === selectedClass));
+        const teacherClasses = await dataService.getClasses({ teacherId: user.id });
+        setClasses(teacherClasses);
+        if (teacherClasses.length > 0) {
+          setSelectedClassId(teacherClasses[0].id);
+        }
       } catch (error) {
-        console.error(`Failed to fetch students for class ${selectedClass}:`, error);
+        console.error("Failed to fetch teacher's classes:", error);
       } finally {
-        setIsLoading(false);
+        setIsLoading(prev => ({...prev, classes: false}));
+      }
+    };
+    fetchClasses();
+  }, [user.id]);
+
+  // Fetch students when a class is selected
+  useEffect(() => {
+    if (!selectedClassId) return;
+
+    const fetchStudents = async () => {
+      setIsLoading(prev => ({...prev, students: true}));
+      try {
+        const studentsData = await dataService.getStudentsInClass(selectedClassId);
+        setStudents(studentsData);
+      } catch (error) {
+        console.error(`Failed to fetch students for class ${selectedClassId}:`, error);
+      } finally {
+        setIsLoading(prev => ({...prev, students: false}));
       }
     };
     fetchStudents();
-  }, [user.schoolId, selectedClass]);
+  }, [selectedClassId]);
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelas Saya</h2>
       <Card>
         <div className="p-4 border-b">
-          <label htmlFor="class-selector" className="sr-only">Pilih Kelas</label>
+          <label htmlFor="class-selector" className="text-sm font-medium mr-2">Pilih Kelas:</label>
           <select
             id="class-selector"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            disabled={isLoading.classes}
             className="p-2 border border-gray-300 rounded-md"
           >
-            {teacherClasses.map(c => <option key={c} value={c}>{c}</option>)}
+            {isLoading.classes ? <option>Memuat...</option> :
+              classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+            }
           </select>
         </div>
 
         <div className="overflow-x-auto">
-          {isLoading ? (
+          {isLoading.students ? (
             <p className="p-4 text-center">Memuat daftar siswa...</p>
           ) : (
             <table className="w-full text-sm text-left text-gray-500">
