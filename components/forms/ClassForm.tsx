@@ -1,58 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { Class, School, User, UserRole } from '../../types';
-import { dataService } from '../../services/dataService';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Class, School, User } from '../../types';
 
 interface ClassFormProps {
-  classData: Class | null;
+  classData: (Partial<Class> & { studentIds?: string[] }) | null;
+  schools: School[];
+  allTeachers: User[];
+  allStudents: User[];
   onClose: () => void;
   onSave: (formData: any) => Promise<void>;
 }
 
-const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => {
+const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, allStudents, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: '',
     schoolId: '',
     homeroomTeacherId: '',
     studentIds: [] as string[],
   });
-  const [schools, setSchools] = useState<School[]>([]);
-  const [teachers, setTeachers] = useState<User[]>([]);
-  const [availableStudents, setAvailableStudents] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch initial data for form dropdowns
   useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [schoolsData, teachersData, studentsData] = await Promise.all([
-                dataService.getSchools(),
-                dataService.getUsers({ role: UserRole.TEACHER }),
-                // A more advanced query would be to fetch students without a class
-                dataService.getUsers({ role: UserRole.STUDENT }), 
-            ]);
-            setSchools(schoolsData);
-            setTeachers(teachersData);
-            setAvailableStudents(studentsData);
-
-            if (classData) {
-                const classStudents = await dataService.getStudentsInClass(classData.id);
-                setFormData({
-                    name: classData.name || '',
-                    schoolId: classData.schoolId || '',
-                    homeroomTeacherId: classData.homeroomTeacherId || '',
-                    studentIds: classStudents.map(s => s.id),
-                });
-            }
-        } catch (error) {
-            console.error("Failed to fetch data for class form", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchData();
+    if (classData) {
+      setFormData({
+        name: classData.name || '',
+        schoolId: classData.schoolId || '',
+        homeroomTeacherId: classData.homeroomTeacherId || '',
+        studentIds: classData.studentIds || [],
+      });
+    }
   }, [classData]);
 
+  const availableTeachers = useMemo(() => {
+    if (!formData.schoolId) return [];
+    return allTeachers.filter(t => t.schoolId === formData.schoolId);
+  }, [formData.schoolId, allTeachers]);
+
+  const availableStudents = useMemo(() => {
+    if (!formData.schoolId) return [];
+    return allStudents.filter(s => s.schoolId === formData.schoolId);
+  }, [formData.schoolId, allStudents]);
+
+  const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSchoolId = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      schoolId: newSchoolId,
+      homeroomTeacherId: '', // Reset teacher and students when school changes
+      studentIds: [],
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -60,9 +56,8 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
   };
 
   const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // FIX: Explicitly type the `option` parameter as HTMLOptionElement to resolve the type inference issue.
-    const selectedIds = Array.from(e.target.selectedOptions, (option: HTMLOptionElement) => option.value);
-    setFormData(prev => ({...prev, studentIds: selectedIds}));
+    const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
+    setFormData(prev => ({ ...prev, studentIds: selectedIds }));
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,31 +67,15 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
     setIsLoading(false);
   };
 
-  const filteredTeachers = teachers.filter(t => t.schoolId === formData.schoolId);
-  const filteredStudents = availableStudents.filter(s => s.schoolId === formData.schoolId);
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Kelas</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-          placeholder="e.g., MA Kelas 10-A"
-        />
-      </div>
       <div>
         <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700">Sekolah</label>
         <select
           id="schoolId"
           name="schoolId"
           value={formData.schoolId}
-          onChange={handleChange}
+          onChange={handleSchoolChange}
           required
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
         >
@@ -106,7 +85,20 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
           ))}
         </select>
       </div>
-       <div>
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Kelas</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          disabled={!formData.schoolId}
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+        />
+      </div>
+      <div>
         <label htmlFor="homeroomTeacherId" className="block text-sm font-medium text-gray-700">Wali Kelas</label>
         <select
           id="homeroomTeacherId"
@@ -116,43 +108,34 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
           disabled={!formData.schoolId}
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
         >
-          <option value="">Pilih Wali Kelas</option>
-          {filteredTeachers.map(teacher => (
+          <option value="">Pilih Wali Kelas (Opsional)</option>
+          {availableTeachers.map(teacher => (
             <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
           ))}
         </select>
       </div>
        <div>
-        <label htmlFor="studentIds" className="block text-sm font-medium text-gray-700">Siswa di Kelas</label>
-        <p className="text-xs text-gray-500">Tahan Ctrl/Cmd untuk memilih beberapa siswa.</p>
-        <select
-          id="studentIds"
-          name="studentIds"
-          multiple
-          value={formData.studentIds}
-          onChange={handleStudentSelect}
-          disabled={!formData.schoolId}
-          className="mt-1 block w-full h-40 p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
-        >
-          {filteredStudents.map(student => (
-            <option key={student.id} value={student.id}>{student.name}</option>
-          ))}
-        </select>
-      </div>
+            <label htmlFor="studentIds" className="block text-sm font-medium text-gray-700">Siswa di Kelas (tahan Ctrl/Cmd untuk memilih lebih dari satu)</label>
+            <select
+                id="studentIds"
+                name="studentIds"
+                multiple
+                value={formData.studentIds}
+                onChange={handleStudentSelect}
+                disabled={!formData.schoolId}
+                className="mt-1 block w-full h-40 p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+            >
+                {availableStudents.map(student => (
+                    <option key={student.id} value={student.id}>{student.name}</option>
+                ))}
+            </select>
+        </div>
+
       <div className="flex justify-end pt-4 space-x-2">
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={isLoading}
-          className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300"
-        >
+        <button type="button" onClick={onClose} disabled={isLoading} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
           Batal
         </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 disabled:bg-brand-400"
-        >
+        <button type="submit" disabled={isLoading || !formData.schoolId} className="px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 disabled:bg-brand-400">
           {isLoading ? 'Menyimpan...' : 'Simpan'}
         </button>
       </div>
