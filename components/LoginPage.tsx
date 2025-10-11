@@ -54,7 +54,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 className="w-full py-3 pl-10 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
                 placeholder="Nomor Induk (NIS/NIP)"
                 value={identityNumber}
-                onChange={(e) => setIdentityNumber(e.target.value)}
+                onChange={(e) => setIdentityNumber(e.target.value.trim())}
                 autoComplete="username"
               />
             </div>

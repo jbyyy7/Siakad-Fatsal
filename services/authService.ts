@@ -62,8 +62,17 @@ export const authService = {
       identity_number_input: identityNumber
     });
 
-    if (rpcError || !email) {
-      throw new Error('Nomor Induk tidak ditemukan atau tidak valid.');
+    // Enhanced Error Handling
+    if (rpcError) {
+      console.error('Supabase RPC Error:', rpcError);
+      if (rpcError.code === '42501' || rpcError.message.includes('permission denied')) {
+        throw new Error('Gagal mengakses database karena masalah izin. Pastikan fungsi get_email_from_identity telah diberi izin EXECUTE untuk peran "anon" di SQL Editor Supabase.');
+      }
+      throw new Error(`Terjadi kesalahan saat validasi Nomor Induk: ${rpcError.message}`);
+    }
+
+    if (!email) {
+      throw new Error('Nomor Induk tidak ditemukan di dalam sistem. Pastikan Nomor Induk yang Anda masukkan sudah benar.');
     }
     
     // Step 2: Use the retrieved email to sign in
