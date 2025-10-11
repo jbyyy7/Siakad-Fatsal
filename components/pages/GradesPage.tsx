@@ -20,17 +20,20 @@ const getGradeColor = (grade: string) => {
 const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
     const [myGrades, setMyGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
     const [teacherNote, setTeacherNote] = useState({ note: '', teacherName: '' });
+    const [studentClass, setStudentClass] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [gradesData, noteData] = await Promise.all([
+                const [gradesData, noteData, classData] = await Promise.all([
                     dataService.getGradesForStudent(user.id),
-                    dataService.getTeacherNoteForStudent(user.id)
+                    dataService.getTeacherNoteForStudent(user.id),
+                    dataService.getClassForStudent(user.id),
                 ]);
                 setMyGrades(gradesData);
                 setTeacherNote(noteData);
+                setStudentClass(classData);
             } catch (error) {
                 console.error("Failed to fetch grades data:", error);
             } finally {
@@ -89,7 +92,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Kelas</p>
-                        <p className="font-bold text-lg text-gray-800">{user.level}</p>
+                        <p className="font-bold text-lg text-gray-800">{isLoading ? '...' : studentClass || 'Belum terdaftar'}</p>
                     </div>
                 </div>
 

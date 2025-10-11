@@ -12,7 +12,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
   const [formData, setFormData] = useState({
     name: '',
     schoolId: '',
-    teacherId: '',
+    homeroomTeacherId: '',
     studentIds: [] as string[],
   });
   const [schools, setSchools] = useState<School[]>([]);
@@ -40,7 +40,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
                 setFormData({
                     name: classData.name || '',
                     schoolId: classData.schoolId || '',
-                    teacherId: classData.teacherId || '',
+                    homeroomTeacherId: classData.homeroomTeacherId || '',
                     studentIds: classStudents.map(s => s.id),
                 });
             }
@@ -107,11 +107,11 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, onClose, onSave }) => 
         </select>
       </div>
        <div>
-        <label htmlFor="teacherId" className="block text-sm font-medium text-gray-700">Wali Kelas</label>
+        <label htmlFor="homeroomTeacherId" className="block text-sm font-medium text-gray-700">Wali Kelas</label>
         <select
-          id="teacherId"
-          name="teacherId"
-          value={formData.teacherId}
+          id="homeroomTeacherId"
+          name="homeroomTeacherId"
+          value={formData.homeroomTeacherId}
           onChange={handleChange}
           disabled={!formData.schoolId}
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"

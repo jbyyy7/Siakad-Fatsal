@@ -1,3 +1,4 @@
+
 // FIX: Removed self-import of UserRole which was causing a name conflict with the enum declaration below.
 export enum UserRole {
   STUDENT = 'Student',
@@ -16,7 +17,6 @@ export interface User {
   avatarUrl: string;
   schoolId?: string;
   schoolName?: string;
-  level?: string; // e.g., 'MA Kelas 10-A'
 }
 
 export interface School {
@@ -36,7 +36,7 @@ export interface Announcement {
 
 export interface JournalEntry {
     subject: string;
-    classId: string;
+    class: string;
     topic: string;
 }
 
@@ -50,6 +50,7 @@ export interface NotificationSettings {
 export interface Badge {
     id: string;
     icon: string;
+    name: string;
     description: string;
 }
 
@@ -61,16 +62,14 @@ export interface GamificationProfile {
 export interface Subject {
     id: string;
     name: string;
-    schoolId?: string;
-    schoolName?: string;
 }
 
 export interface Class {
     id: string;
     name: string;
     schoolId: string;
-    teacherId?: string;
+    homeroomTeacherId?: string;
     schoolName?: string;
-    teacherName?: string;
+    homeroomTeacherName?: string;
     students?: User[];
 }

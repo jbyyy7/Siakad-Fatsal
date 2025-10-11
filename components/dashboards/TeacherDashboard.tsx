@@ -55,7 +55,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
                     <ul className="space-y-3">
                         {journalToday.map((entry, index) => (
                             <li key={index} className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-400">
-                                <p className="font-bold text-blue-800">{entry.subject} - Kelas {entry.classId.toUpperCase()}</p>
+                                <p className="font-bold text-blue-800">{entry.subject} - {entry.class}</p>
                                 <p className="text-sm text-blue-700">Materi: {entry.topic}</p>
                             </li>
                         ))}

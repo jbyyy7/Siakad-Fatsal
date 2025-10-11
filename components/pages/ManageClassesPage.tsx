@@ -99,7 +99,7 @@ const ManageClassesPage: React.FC = () => {
                                 <tr key={c.id} className="bg-white border-b hover:bg-gray-50">
                                     <td className="px-6 py-4 font-medium text-gray-900">{c.name}</td>
                                     <td className="px-6 py-4">{c.schoolName || '-'}</td>
-                                    <td className="px-6 py-4">{c.teacherName || '-'}</td>
+                                    <td className="px-6 py-4">{c.homeroomTeacherName || '-'}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button onClick={() => openModal(c)} className="p-1 text-blue-600 hover:text-blue-800"><PencilIcon className="h-5 w-5"/></button>
                                         <button onClick={() => handleDeleteClass(c.id)} className="p-1 text-red-600 hover:text-red-800 ml-2"><TrashIcon className="h-5 w-5"/></button>

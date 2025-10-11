@@ -51,7 +51,6 @@ const StudentDataPage: React.FC<StudentDataPageProps> = ({ user }) => {
                 <tr>
                   <th className="px-6 py-3">Nama</th>
                   <th className="px-6 py-3">NIS</th>
-                  <th className="px-6 py-3">Kelas</th>
                 </tr>
               </thead>
               <tbody>
@@ -64,7 +63,6 @@ const StudentDataPage: React.FC<StudentDataPageProps> = ({ user }) => {
                           </div>
                       </td>
                     <td className="px-6 py-4">{student.identityNumber}</td>
-                    <td className="px-6 py-4">{student.level}</td>
                   </tr>
                 ))}
               </tbody>
