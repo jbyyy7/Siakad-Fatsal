@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
-import { MOCK_ANNOUNCEMENTS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { Announcement, User } from '../../types';
 import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
@@ -10,8 +10,25 @@ interface AnnouncementsPageProps {
 }
 
 const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
-    const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const data = await dataService.getAnnouncements();
+                setAnnouncements(data);
+            } catch (err) {
+                setError('Gagal memuat pengumuman.');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAnnouncements();
+    }, []);
 
     return (
         <div>
@@ -27,6 +44,11 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
             </div>
             
             <div className="space-y-6">
+                {isLoading && <p>Memuat pengumuman...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+                {!isLoading && !error && announcements.length === 0 && (
+                    <Card><p className="text-center text-gray-500">Belum ada pengumuman.</p></Card>
+                )}
                 {announcements.map(ann => (
                     <Card key={ann.id}>
                         <h3 className="text-xl font-bold text-gray-900">{ann.title}</h3>

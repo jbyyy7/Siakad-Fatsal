@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
-import { MOCK_USERS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { User, UserRole } from '../../types';
 
 type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
@@ -10,10 +10,28 @@ interface StudentAttendancePageProps {
 }
 
 const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) => {
-    const students = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === user.schoolId);
-    const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>(
-        students.reduce((acc, student) => ({ ...acc, [student.id]: 'Hadir' }), {})
-    );
+    const [students, setStudents] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!user.schoolId) return;
+            try {
+                // A more specific filter by class would be needed in a full implementation
+                const classStudents = await dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId });
+                setStudents(classStudents);
+                // Initialize all students as 'Hadir'
+                const initialAttendance = classStudents.reduce((acc, student) => ({ ...acc, [student.id]: 'Hadir' }), {});
+                setAttendance(initialAttendance);
+            } catch (error) {
+                console.error("Failed to fetch students:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStudents();
+    }, [user.schoolId]);
 
     const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
         setAttendance(prev => ({ ...prev, [studentId]: status }));
@@ -27,6 +45,7 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
                     <p>Tanggal: <strong>{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
                 </div>
                 <div className="overflow-x-auto">
+                     {isLoading ? <p className="p-4">Memuat siswa...</p> :
                      <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
@@ -59,6 +78,7 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
                             ))}
                         </tbody>
                      </table>
+                    }
                 </div>
                 <div className="p-4 border-t text-right">
                     <button className="px-6 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors">

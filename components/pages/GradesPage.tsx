@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User } from '../../types';
-import { MOCK_GRADES, MOCK_TEACHER_NOTES } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { PrinterIcon } from '../icons/PrinterIcon';
 import { SparklesIcon } from '../icons/SparklesIcon';
@@ -18,9 +18,29 @@ const getGradeColor = (grade: string) => {
 };
 
 const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
-    const myGrades = MOCK_GRADES[user.id] || [];
+    const [myGrades, setMyGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
+    const [teacherNote, setTeacherNote] = useState({ note: '', teacherName: '' });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [gradesData, noteData] = await Promise.all([
+                    dataService.getGradesForStudent(user.id),
+                    dataService.getTeacherNoteForStudent(user.id)
+                ]);
+                setMyGrades(gradesData);
+                setTeacherNote(noteData);
+            } catch (error) {
+                console.error("Failed to fetch grades data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, [user.id]);
+
     const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
-    const teacherNote = MOCK_TEACHER_NOTES[user.id] || "Belum ada catatan dari wali kelas.";
 
     // Mock attendance data for the report card
     const attendanceSummary = {
@@ -33,7 +53,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
     const totalDays = Object.values(attendanceSummary).reduce((a, b) => a + b, 0);
     const attendancePercentage = ((attendanceSummary.hadir / totalDays) * 100).toFixed(0);
 
-    const aiReview = `Berdasarkan analisis nilai, ${user.name} menunjukkan keunggulan signifikan dalam bidang Sains (Kimia: A, Fisika: B+) dan Bahasa (Bahasa Indonesia: A). Ini menandakan kemampuan analisis dan pemahaman konsep yang kuat. Untuk meningkatkan performa secara keseluruhan, disarankan untuk memberikan perhatian lebih pada mata pelajaran Biologi. Strategi belajar visual dan praktik langsung mungkin bisa sangat membantu. Secara keseluruhan, potensi ${user.name} sangat besar!`;
+    const aiReview = `Berdasarkan analisis nilai, ${user.name} menunjukkan keunggulan signifikan dalam bidang Sains dan Bahasa. Ini menandakan kemampuan analisis dan pemahaman konsep yang kuat. Untuk meningkatkan performa secara keseluruhan, disarankan untuk memberikan perhatian lebih pada mata pelajaran dengan skor lebih rendah. Strategi belajar visual dan praktik langsung mungkin bisa sangat membantu. Secara keseluruhan, potensi ${user.name} sangat besar!`;
 
     return (
         <div>
@@ -75,6 +95,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
 
                 <Card title="Detail Nilai Akademik" icon={ChartBarIcon} className="shadow-none border">
                     <div className="overflow-x-auto">
+                        {isLoading ? <p>Memuat nilai...</p> : (
                         <table className="w-full text-sm text-left text-gray-500">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
@@ -105,6 +126,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                                 </tr>
                             </tfoot>
                         </table>
+                        )}
                     </div>
                 </Card>
 
@@ -122,9 +144,9 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </Card>
                     <Card title="Catatan Wali Kelas" className="shadow-none border">
                          <blockquote className="text-sm italic text-gray-700 border-l-4 border-brand-300 pl-4">
-                           "{teacherNote}"
+                           "{isLoading ? 'Memuat catatan...' : teacherNote.note}"
                          </blockquote>
-                         <p className="text-right text-sm font-semibold mt-4">- Eko Wibowo, S.Pd.</p>
+                         {teacherNote.teacherName && <p className="text-right text-sm font-semibold mt-4">- {teacherNote.teacherName}</p>}
                     </Card>
                 </div>
                 

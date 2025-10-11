@@ -1,7 +1,7 @@
-import React from 'react';
-import { User } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { User, JournalEntry } from '../../types';
 import Card from '../Card';
-import { MOCK_JOURNAL } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { CalendarIcon } from '../icons/CalendarIcon';
@@ -13,8 +13,23 @@ interface TeacherDashboardProps {
 }
 
 const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate }) => {
-  const today = '2024-07-25'; // Mocking date for demo data
-  const journalToday = MOCK_JOURNAL[today] || [];
+  const [journalToday, setJournalToday] = useState<JournalEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const fetchJournal = async () => {
+      try {
+        const journal = await dataService.getJournalForTeacher(user.id, today);
+        setJournalToday(journal);
+      } catch (error) {
+        console.error("Failed to fetch teacher journal:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchJournal();
+  }, [user.id]);
 
   return (
     <div>
@@ -35,7 +50,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user, onNavigate })
            </Card>
 
            <Card title="Jurnal Mengajar Hari Ini" icon={BookOpenIcon}>
-                {journalToday.length > 0 ? (
+                {isLoading ? <p className="text-gray-500">Memuat jurnal...</p> :
+                  journalToday.length > 0 ? (
                     <ul className="space-y-3">
                         {journalToday.map((entry, index) => (
                             <li key={index} className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-400">

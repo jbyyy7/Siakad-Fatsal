@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../../types';
 import Card from '../Card';
-import { MOCK_USERS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { AcademicCapIcon } from '../icons/AcademicCapIcon';
 import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
@@ -12,8 +12,29 @@ interface PrincipalDashboardProps {
 }
 
 const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user, onNavigate }) => {
-  const teacherCount = MOCK_USERS.filter(u => u.role === UserRole.TEACHER && u.schoolId === user.schoolId).length;
-  const studentCount = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === user.schoolId).length;
+  const [stats, setStats] = useState({ teacherCount: 0, studentCount: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user.schoolId) {
+      setIsLoading(false);
+      return;
+    }
+    const fetchStats = async () => {
+      try {
+        const [teacherCount, studentCount] = await Promise.all([
+          dataService.getUserCount({ role: UserRole.TEACHER, schoolId: user.schoolId }),
+          dataService.getUserCount({ role: UserRole.STUDENT, schoolId: user.schoolId })
+        ]);
+        setStats({ teacherCount, studentCount });
+      } catch (error) {
+        console.error("Failed to fetch principal dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [user.schoolId]);
 
   return (
     <div>
@@ -26,7 +47,7 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user, onNavigat
             <UserGroupIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
               <p className="text-sm text-gray-500">Jumlah Guru</p>
-              <p className="text-2xl font-bold text-gray-800">{teacherCount}</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.teacherCount}</p>
             </div>
           </div>
         </Card>
@@ -35,7 +56,7 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user, onNavigat
             <AcademicCapIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
               <p className="text-sm text-gray-500">Jumlah Siswa</p>
-              <p className="text-2xl font-bold text-gray-800">{studentCount}</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.studentCount}</p>
             </div>
           </div>
         </Card>

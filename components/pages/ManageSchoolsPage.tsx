@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
-import { MOCK_SCHOOLS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { School } from '../../types';
 import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
@@ -8,9 +8,26 @@ import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
 
 const ManageSchoolsPage: React.FC = () => {
-    const [schools, setSchools] = useState<School[]>(MOCK_SCHOOLS);
+    const [schools, setSchools] = useState<School[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+
+    useEffect(() => {
+        const fetchSchools = async () => {
+            try {
+                const data = await dataService.getSchools();
+                setSchools(data);
+            } catch (err) {
+                setError('Gagal memuat data sekolah.');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSchools();
+    }, []);
 
     const openModal = (school: School | null = null) => {
         setSelectedSchool(school);
@@ -36,6 +53,8 @@ const ManageSchoolsPage: React.FC = () => {
             </div>
             <Card>
                 <div className="overflow-x-auto">
+                    {isLoading ? <p className="p-4">Memuat sekolah...</p> :
+                     error ? <p className="p-4 text-red-500">{error}</p> :
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
@@ -59,6 +78,7 @@ const ManageSchoolsPage: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                    }
                 </div>
             </Card>
 

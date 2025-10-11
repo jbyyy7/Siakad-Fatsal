@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Card from '../Card';
-import { MOCK_USERS, MOCK_SCHOOLS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { User, UserRole, School } from '../../types';
 import Modal from '../ui/Modal';
 import { PlusIcon } from '../icons/PlusIcon';
@@ -8,12 +8,34 @@ import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
 
 const ManageUsersPage: React.FC = () => {
-    const [users, setUsers] = useState<User[]>(MOCK_USERS);
+    const [users, setUsers] = useState<User[]>([]);
+    const [schools, setSchools] = useState<School[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
     const [schoolFilter, setSchoolFilter] = useState<string | 'all'>('all');
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [usersData, schoolsData] = await Promise.all([
+                    dataService.getUsers(),
+                    dataService.getSchools(),
+                ]);
+                setUsers(usersData);
+                setSchools(schoolsData);
+            } catch (err) {
+                setError('Gagal memuat data pengguna.');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const openModal = (user: User | null = null) => {
         setSelectedUser(user);
@@ -68,13 +90,15 @@ const ManageUsersPage: React.FC = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
                     >
                         <option value="all">Semua Sekolah</option>
-                        {MOCK_SCHOOLS.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                        {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
                     </select>
                 </div>
             </Card>
 
             <Card>
                 <div className="overflow-x-auto">
+                    {isLoading ? <p className="p-4">Memuat pengguna...</p> :
+                     error ? <p className="p-4 text-red-500">{error}</p> :
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
@@ -105,6 +129,7 @@ const ManageUsersPage: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                    }
                 </div>
             </Card>
 

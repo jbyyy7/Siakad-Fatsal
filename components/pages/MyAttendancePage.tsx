@@ -1,15 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User } from '../../types';
-import { MOCK_ATTENDANCE } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { PrinterIcon } from '../icons/PrinterIcon';
 
 interface MyAttendancePageProps {
     user: User;
 }
 
+type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
+
 const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
-    const attendanceData = MOCK_ATTENDANCE[user.id] || [];
+    const [attendanceData, setAttendanceData] = useState<{ date: string; status: AttendanceStatus }[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAttendance = async () => {
+            try {
+                const data = await dataService.getAttendanceForStudent(user.id);
+                setAttendanceData(data);
+            } catch (error) {
+                console.error("Failed to fetch attendance data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAttendance();
+    }, [user.id]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -21,16 +38,20 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
         }
     };
     
-    const attendanceMap = new Map(attendanceData.map(item => [item.date, item.status]));
+    // Using current month for calendar generation
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+    const monthName = now.toLocaleString('id-ID', { month: 'long' });
 
-    const year = 2024;
-    const month = 6; // 0-indexed for July
+    const attendanceMap = new Map(attendanceData.map(item => [item.date, item.status]));
+    
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = new Date(year, month, 1).getDay();
 
     const calendarDays = Array.from({ length: daysInMonth }, (_, i) => {
         const day = i + 1;
-        const date = `${year}-07-${day.toString().padStart(2, '0')}`;
+        const date = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         return { date, status: attendanceMap.get(date) || 'Belum Tercatat' };
     });
     
@@ -61,7 +82,7 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
             <div id="printable-attendance" className="printable-area">
                 <div className="hidden print-header">
                     <h1>Rekapitulasi Kehadiran Siswa</h1>
-                    <p>Nama: {user.name} | Bulan: Juli 2024</p>
+                    <p>Nama: {user.name} | Bulan: {monthName} {year}</p>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -74,7 +95,7 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                 <Card>
                     <div className="flex justify-between items-center mb-4">
                         <div>
-                            <h3 className="text-lg font-semibold">Kalender Kehadiran - Juli 2024</h3>
+                            <h3 className="text-lg font-semibold">Kalender Kehadiran - {monthName} {year}</h3>
                         </div>
                         <div className="text-right">
                              <p className="text-sm text-gray-500">Tingkat Kehadiran</p>
@@ -82,6 +103,8 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                         </div>
                     </div>
 
+                    {isLoading ? <p>Memuat kalender...</p> :
+                    <>
                     <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-600 mb-2">
                         <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
                     </div>
@@ -89,14 +112,16 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                     <div className="grid grid-cols-7 gap-2">
                         {emptySlots.map((_, index) => <div key={`empty-${index}`}></div>)}
                         {calendarDays.map(({ date, status }) => {
-                             const dayOfMonth = new Date(date).getDate();
-                             const dayOfWeek = new Date(date).getDay();
+                             const dayDate = new Date(date + 'T00:00:00'); // Ensure local timezone
+                             const dayOfMonth = dayDate.getDate();
+                             const dayOfWeek = dayDate.getDay();
                              const isWeekend = dayOfWeek === 6 || dayOfWeek === 0;
-                             const color = isWeekend ? 'bg-gray-100' : getStatusColor(status);
+                             // FIX: Cast status to string to satisfy getStatusColor function signature.
+                             const color = isWeekend ? 'bg-gray-100' : getStatusColor(status as string);
                              
                              return (
                                 <div key={date} className="group relative aspect-square">
-                                    <div className={`w-full h-full rounded-md flex items-center justify-center ${color} text-white text-sm font-bold`}>
+                                    <div className={`w-full h-full rounded-md flex items-center justify-center ${color} ${isWeekend ? 'text-gray-400' : 'text-white'} text-sm font-bold`}>
                                         {dayOfMonth}
                                     </div>
                                     <div className="absolute bottom-full mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -106,6 +131,8 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                              )
                         })}
                     </div>
+                    </>
+                    }
                 </Card>
             </div>
         </div>

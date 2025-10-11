@@ -1,26 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
-import { MOCK_USERS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { User, UserRole } from '../../types';
 
 interface InputGradesPageProps {
   user: User;
 }
 
+// In a real app, this would also be fetched from the database
 const subjects = ['Matematika', 'Bahasa Indonesia', 'Fisika', 'Kimia', 'Biologi', 'Sejarah'];
 
 const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
     const [selectedClass, setSelectedClass] = useState('MA Kelas 10-A');
+    const [studentsInClass, setStudentsInClass] = useState<User[]>([]);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-
-    const studentsInClass = MOCK_USERS.filter(u => u.role === UserRole.STUDENT && u.schoolId === user.schoolId && u.level === selectedClass);
-    
-    // Initialize grades state
     const [grades, setGrades] = useState<Record<string, number | ''>>({});
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!user.schoolId) return;
+            setIsLoadingStudents(true);
+            try {
+                // In a real app, you might need a more robust way to filter by class
+                const allStudents = await dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId });
+                const filteredStudents = allStudents.filter(student => student.level === selectedClass);
+                setStudentsInClass(filteredStudents);
+            } catch (error) {
+                console.error("Failed to fetch students for class:", error);
+            } finally {
+                setIsLoadingStudents(false);
+            }
+        };
+
+        fetchStudents();
+    }, [selectedClass, user.schoolId]);
 
     const handleStudentSelect = (studentId: string) => {
         setSelectedStudentId(studentId);
-        // Pre-fill grades for the selected student if they exist (mocked)
         const initialGrades = subjects.reduce((acc, subject) => ({...acc, [subject]: ''}), {});
         setGrades(initialGrades);
     };
@@ -33,6 +50,8 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
     };
     
     const handleSave = () => {
+        // Here you would call a dataService function to save the grades
+        // await dataService.saveGrades(selectedStudentId, grades);
         alert(`Nilai untuk siswa ID ${selectedStudentId} telah disimpan (simulasi).`);
         console.log({ studentId: selectedStudentId, grades });
     };
@@ -62,18 +81,20 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-1">
                     <h3 className="font-semibold mb-4">Daftar Siswa - {selectedClass}</h3>
-                    <ul className="space-y-2 max-h-96 overflow-y-auto">
-                        {studentsInClass.map(student => (
-                            <li key={student.id}>
-                                <button
-                                    onClick={() => handleStudentSelect(student.id)}
-                                    className={`w-full text-left p-2 rounded-md ${selectedStudentId === student.id ? 'bg-brand-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                                >
-                                    {student.name}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                    {isLoadingStudents ? <p>Memuat siswa...</p> : (
+                        <ul className="space-y-2 max-h-96 overflow-y-auto">
+                            {studentsInClass.map(student => (
+                                <li key={student.id}>
+                                    <button
+                                        onClick={() => handleStudentSelect(student.id)}
+                                        className={`w-full text-left p-2 rounded-md ${selectedStudentId === student.id ? 'bg-brand-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                    >
+                                        {student.name}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </Card>
 
                 <div className="md:col-span-2">

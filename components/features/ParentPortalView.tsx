@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User, NotificationSettings } from '../../types';
+import { dataService } from '../../services/dataService';
 import { WhatsappIcon } from '../icons/WhatsappIcon';
-import { MOCK_GRADES } from '../../constants';
 
 interface ParentPortalViewProps {
     user: User;
@@ -17,6 +17,34 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
         dailyReport: true,
     });
     const [isSaved, setIsSaved] = useState(false);
+    const [academicStats, setAcademicStats] = useState({ averageScore: 'N/A', attendancePercentage: 'N/A' });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const [gradesData, attendanceData] = await Promise.all([
+                    dataService.getGradesForStudent(user.id),
+                    dataService.getAttendanceForStudent(user.id)
+                ]);
+
+                const avgScore = gradesData.length > 0 
+                    ? (gradesData.reduce((acc, curr) => acc + curr.score, 0) / gradesData.length).toFixed(1) 
+                    : 'N/A';
+
+                const attendancePct = attendanceData.length > 0 
+                    ? Math.round((attendanceData.filter(a => a.status === 'Hadir').length / attendanceData.length) * 100).toString() + '%' 
+                    : '100%';
+
+                setAcademicStats({ averageScore: avgScore, attendancePercentage: attendancePct });
+            } catch (error) {
+                console.error("Failed to fetch parent portal stats", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStats();
+    }, [user.id]);
 
     const handleSettingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = e.target;
@@ -35,9 +63,6 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
         setTimeout(() => setIsSaved(false), 2000);
     }
 
-    const myGrades = MOCK_GRADES[user.id] || [];
-    const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
-
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -54,11 +79,11 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                  <Card className="bg-blue-50">
                     <p className="text-lg font-medium text-blue-800">Rata-rata Nilai</p>
-                    <p className="text-4xl font-bold text-blue-900">{averageScore}</p>
+                    <p className="text-4xl font-bold text-blue-900">{isLoading ? '...' : academicStats.averageScore}</p>
                  </Card>
                  <Card className="bg-green-50">
                     <p className="text-lg font-medium text-green-800">Tingkat Kehadiran</p>
-                    <p className="text-4xl font-bold text-green-900">95%</p>
+                    <p className="text-4xl font-bold text-green-900">{isLoading ? '...' : academicStats.attendancePercentage}</p>
                  </Card>
                  <Card className="bg-yellow-50">
                     <p className="text-lg font-medium text-yellow-800">Tugas Belum Selesai</p>

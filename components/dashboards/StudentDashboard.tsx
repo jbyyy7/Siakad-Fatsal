@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
 import Card from '../Card';
-import { MOCK_GRADES } from '../../constants';
+import { dataService } from '../../services/dataService';
 import GamificationSection from '../features/GamificationSection';
 import ParentPortalView from '../features/ParentPortalView';
 import AIChatAssistant from '../features/AIChatAssistant';
@@ -15,8 +15,37 @@ interface StudentDashboardProps {
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
   const [showParentPortal, setShowParentPortal] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
-  const myGrades = MOCK_GRADES[user.id] || [];
-  const recentGrades = myGrades.slice(0, 3);
+  const [grades, setGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
+  const [attendancePercentage, setAttendancePercentage] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gradesData, attendanceData] = await Promise.all([
+          dataService.getGradesForStudent(user.id),
+          dataService.getAttendanceForStudent(user.id)
+        ]);
+        
+        setGrades(gradesData);
+
+        if (attendanceData.length > 0) {
+          const hadirCount = attendanceData.filter(a => a.status === 'Hadir').length;
+          setAttendancePercentage(Math.round((hadirCount / attendanceData.length) * 100));
+        } else {
+          setAttendancePercentage(100);
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch student dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [user.id]);
+
+  const recentGrades = grades.slice(0, 3);
 
   if (showParentPortal) {
     return <ParentPortalView user={user} onBack={() => setShowParentPortal(false)} />;
@@ -51,7 +80,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
 
         <div className="lg:col-span-1 space-y-6">
           <Card title="Nilai Terbaru">
-            {recentGrades.length > 0 ? (
+            {isLoading ? <p className="text-gray-500">Memuat nilai...</p> : 
+              recentGrades.length > 0 ? (
               <ul className="space-y-3">
                 {recentGrades.map((grade, index) => (
                   <li key={index} className="flex justify-between items-center">
@@ -65,7 +95,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
           </Card>
           <Card title="Absensi Bulan Ini">
             <div className="text-center">
-                <p className="text-4xl font-bold text-gray-800">95%</p>
+                <p className="text-4xl font-bold text-gray-800">{isLoading ? '...' : `${attendancePercentage}%`}</p>
                 <p className="text-sm text-gray-500">Kehadiran</p>
             </div>
              <button onClick={() => onNavigate('Absensi')} className="mt-4 w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-800">Lihat Detail Absensi</button>

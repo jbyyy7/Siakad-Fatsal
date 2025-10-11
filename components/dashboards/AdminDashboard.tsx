@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
 import Card from '../Card';
-import { MOCK_USERS, MOCK_SCHOOLS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
 import { CogIcon } from '../icons/CogIcon';
@@ -12,37 +12,45 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onNavigate }) => {
+  const [stats, setStats] = useState({ userCount: 0, schoolCount: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [userCount, schoolCount] = await Promise.all([
+          dataService.getUserCount(),
+          dataService.getSchoolCount()
+        ]);
+        setStats({ userCount, schoolCount });
+      } catch (error) {
+        console.error("Failed to fetch admin dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const StatCard: React.FC<{ label: string; value: number | string; icon: React.FC<any> }> = ({ label, value, icon: Icon }) => (
+    <Card>
+      <div className="flex items-center">
+        <Icon className="h-10 w-10 text-brand-600 mr-4" />
+        <div>
+          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : value}</p>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Selamat Datang, {user.name}!</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <div className="flex items-center">
-            <UserGroupIcon className="h-10 w-10 text-brand-600 mr-4" />
-            <div>
-              <p className="text-sm text-gray-500">Total Pengguna</p>
-              <p className="text-2xl font-bold text-gray-800">{MOCK_USERS.length}</p>
-            </div>
-          </div>
-        </Card>
-        <Card>
-          <div className="flex items-center">
-            <BuildingLibraryIcon className="h-10 w-10 text-brand-600 mr-4" />
-            <div>
-              <p className="text-sm text-gray-500">Total Sekolah</p>
-              <p className="text-2xl font-bold text-gray-800">{MOCK_SCHOOLS.length}</p>
-            </div>
-          </div>
-        </Card>
-        <Card>
-           <div className="flex items-center">
-            <CogIcon className="h-10 w-10 text-brand-600 mr-4" />
-            <div>
-              <p className="text-sm text-gray-500">Versi Sistem</p>
-              <p className="text-2xl font-bold text-gray-800">1.1.0</p>
-            </div>
-          </div>
-        </Card>
+        <StatCard label="Total Pengguna" value={stats.userCount} icon={UserGroupIcon} />
+        <StatCard label="Total Sekolah" value={stats.schoolCount} icon={BuildingLibraryIcon} />
+        <StatCard label="Versi Sistem" value="1.2.0" icon={CogIcon} />
       </div>
 
       <div className="mt-8">

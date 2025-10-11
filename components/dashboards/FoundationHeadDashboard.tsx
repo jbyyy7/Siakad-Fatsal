@@ -1,7 +1,7 @@
-import React from 'react';
-import { User } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Announcement, User } from '../../types';
 import Card from '../Card';
-import { MOCK_SCHOOLS } from '../../constants';
+import { dataService } from '../../services/dataService';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
 import { EnvelopeIcon } from '../icons/EnvelopeIcon';
@@ -12,6 +12,26 @@ interface FoundationHeadDashboardProps {
 }
 
 const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user, onNavigate }) => {
+  const [stats, setStats] = useState<{ schoolCount: number; latestAnnouncement: Announcement | null }>({ schoolCount: 0, latestAnnouncement: null });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [schoolCount, announcements] = await Promise.all([
+          dataService.getSchoolCount(),
+          dataService.getAnnouncements()
+        ]);
+        setStats({ schoolCount, latestAnnouncement: announcements[0] || null });
+      } catch (error) {
+        console.error("Failed to fetch foundation head dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Selamat Datang, {user.name}!</h2>
@@ -20,8 +40,8 @@ const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user,
           <div className="flex items-center">
             <ChartBarIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
-              <p className="text-sm text-gray-500">Rata-rata Nilai Yayasan</p>
-              <p className="text-2xl font-bold text-gray-800">85.5</p>
+              <p className="text-sm text-gray-500">Analitik Yayasan</p>
+              <p className="text-xl font-bold text-gray-800">Lihat Laporan</p>
             </div>
           </div>
         </Card>
@@ -30,7 +50,7 @@ const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user,
             <BuildingLibraryIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
               <p className="text-sm text-gray-500">Jumlah Sekolah</p>
-              <p className="text-2xl font-bold text-gray-800">{MOCK_SCHOOLS.length}</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.schoolCount}</p>
             </div>
           </div>
         </Card>
@@ -39,7 +59,9 @@ const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user,
             <EnvelopeIcon className="h-10 w-10 text-brand-600 mr-4" />
             <div>
               <p className="text-sm text-gray-500">Pengumuman Terakhir</p>
-              <p className="text-lg font-semibold text-gray-800 truncate">Rapat Awal Tahun</p>
+              <p className="text-lg font-semibold text-gray-800 truncate">
+                {isLoading ? '...' : (stats.latestAnnouncement?.title || 'Tidak ada')}
+              </p>
             </div>
           </div>
         </Card>
