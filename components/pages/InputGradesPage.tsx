@@ -16,7 +16,7 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   
   const [grades, setGrades] = useState<Record<string, number | ''>>({});
-  const [isLoading, setIsLoading] = useState({ classes: true, students: false, subjects: true });
+  const [isLoading, setIsLoading] = useState({ classes: true, students: false, subjects: false });
 
   // Fetch classes taught by the teacher
   useEffect(() => {
@@ -34,46 +34,43 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
         setIsLoading(prev => ({ ...prev, classes: false }));
       }
     };
-
-    // Fetch all subjects (since they are global)
-    const fetchSubjects = async () => {
-        setIsLoading(prev => ({ ...prev, subjects: true }));
-        try {
-            const subjectsData = await dataService.getSubjects();
-            setSubjects(subjectsData);
-            if (subjectsData.length > 0) {
-                setSelectedSubjectId(subjectsData[0].id);
-            }
-        } catch (error) {
-            console.error("Failed to fetch subjects:", error);
-        } finally {
-            setIsLoading(prev => ({...prev, subjects: false }));
-        }
-    }
-
     fetchClasses();
-    fetchSubjects();
   }, [user.id]);
 
-  // Fetch students when a class is selected
+  // Fetch students and subjects when a class is selected
   useEffect(() => {
     if (!selectedClassId) return;
 
-    const fetchStudentsForClass = async () => {
-      setIsLoading(prev => ({ ...prev, students: true }));
+    const selectedClass = classes.find(c => c.id === selectedClassId);
+    if (!selectedClass) return;
+
+    const fetchClassData = async () => {
+      setIsLoading(prev => ({ ...prev, students: true, subjects: true }));
       try {
-        const studentsData = await dataService.getStudentsInClass(selectedClassId);
+        const [studentsData, subjectsData] = await Promise.all([
+          dataService.getStudentsInClass(selectedClassId),
+          dataService.getSubjects({ schoolId: selectedClass.schoolId })
+        ]);
         setStudents(studentsData);
+        setSubjects(subjectsData);
         setGrades({}); // Reset grades when class changes
+        
+        // Reset selected subject if it's not in the new list or not set
+        if (subjectsData.length > 0) {
+           setSelectedSubjectId(subjectsData[0].id);
+        } else {
+           setSelectedSubjectId('');
+        }
+
       } catch (error) {
         console.error("Failed to fetch data for class:", error);
       } finally {
-        setIsLoading(prev => ({ ...prev, students: false }));
+        setIsLoading(prev => ({ ...prev, students: false, subjects: false }));
       }
     };
 
-    fetchStudentsForClass();
-  }, [selectedClassId]);
+    fetchClassData();
+  }, [selectedClassId, classes]);
 
   const handleGradeChange = (studentId: string, score: string) => {
     const numericScore = score === '' ? '' : Math.max(0, Math.min(100, parseInt(score, 10)));
@@ -118,7 +115,7 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
                      {isLoading.subjects ? <option>Memuat mapel...</option> :
                         subjects.length > 0 ?
                         subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>) :
-                        <option>Tidak ada mapel</option>
+                        <option>Tidak ada mapel untuk sekolah ini</option>
                      }
                  </select>
             </div>

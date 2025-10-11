@@ -1,5 +1,4 @@
-
-// FIX: Removed self-import of UserRole which was causing a name conflict with the enum declaration below.
+// FIX: Removed self-import of UserRole from './types' to prevent a circular dependency and resolve a name conflict with the enum declaration below.
 export enum UserRole {
   STUDENT = 'Student',
   TEACHER = 'Teacher',
@@ -62,6 +61,8 @@ export interface GamificationProfile {
 export interface Subject {
     id: string;
     name: string;
+    schoolId: string;
+    schoolName?: string;
 }
 
 export interface Class {

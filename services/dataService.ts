@@ -267,22 +267,35 @@ export const dataService = {
     },
 
     // Subject Management
-    async getSubjects(): Promise<Subject[]> {
-        const { data, error } = await supabase.from('subjects').select('*');
+    async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
+        const { data: schools, error: sError } = await supabase.from('schools').select('id, name');
+        handleSupabaseError(sError, 'getSubjects (schools)');
+        const schoolMap = new Map(schools?.map(s => [s.id, s.name]));
+    
+        let query = supabase.from('subjects').select('*');
+        if (filters?.schoolId) {
+            query = query.eq('school_id', filters.schoolId);
+        }
+        
+        const { data, error } = await query;
         handleSupabaseError(error, 'getSubjects');
-        return data || [];
+
+        return data?.map(s => ({
+            ...s,
+            schoolName: schoolMap.get(s.school_id) || 'N/A'
+        })) || [];
     },
     async getSubjectCount(): Promise<number> {
         const { count, error } = await supabase.from('subjects').select('*', { count: 'exact', head: true });
         handleSupabaseError(error, 'getSubjectCount');
         return count || 0;
     },
-    async createSubject(formData: { name: string }): Promise<void> {
-        const { error } = await supabase.from('subjects').insert({ name: formData.name });
+    async createSubject(formData: { name: string, schoolId: string }): Promise<void> {
+        const { error } = await supabase.from('subjects').insert({ name: formData.name, school_id: formData.schoolId });
         handleSupabaseError(error, 'createSubject');
     },
-    async updateSubject(id: string, formData: { name: string }): Promise<void> {
-        const { error } = await supabase.from('subjects').update({ name: formData.name }).eq('id', id);
+    async updateSubject(id: string, formData: { name: string, schoolId: string }): Promise<void> {
+        const { error } = await supabase.from('subjects').update({ name: formData.name, school_id: formData.schoolId }).eq('id', id);
         handleSupabaseError(error, 'updateSubject');
     },
     async deleteSubject(id: string): Promise<void> {
