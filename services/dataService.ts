@@ -14,7 +14,33 @@ const mapUserFromDb = (dbUser: any): User => ({
     avatarUrl: dbUser.avatar_url,
     schoolId: dbUser.school_id,
     schoolName: dbUser.school?.name || undefined,
+    placeOfBirth: dbUser.place_of_birth,
+    dateOfBirth: dbUser.date_of_birth,
+    gender: dbUser.gender,
+    religion: dbUser.religion,
+    address: dbUser.address,
+    phoneNumber: dbUser.phone_number,
+    parentName: dbUser.parent_name,
+    parentPhoneNumber: dbUser.parent_phone_number,
 });
+
+// Helper to convert camelCase from app to snake_case for DB
+const mapUserToDb = (appUser: any) => ({
+    full_name: appUser.name,
+    identity_number: appUser.identityNumber,
+    role: appUser.role,
+    school_id: appUser.schoolId || null,
+    avatar_url: appUser.avatarUrl,
+    place_of_birth: appUser.placeOfBirth,
+    date_of_birth: appUser.dateOfBirth,
+    gender: appUser.gender,
+    religion: appUser.religion,
+    address: appUser.address,
+    phone_number: appUser.phoneNumber,
+    parent_name: appUser.parentName,
+    parent_phone_number: appUser.parentPhoneNumber,
+});
+
 
 const getGradeLetter = (score: number) => {
     if (score >= 90) return 'A';
@@ -53,13 +79,11 @@ export const dataService = {
     if (authError) throw authError;
     if (!authData.user) throw new Error("Gagal membuat pengguna otentikasi.");
 
+    const profileData = mapUserToDb(userData);
+    
     const { error: profileError } = await supabase.from('profiles').insert({
         id: authData.user.id,
-        full_name: userData.name,
-        identity_number: userData.identityNumber,
-        role: userData.role,
-        school_id: userData.schoolId || null,
-        avatar_url: userData.avatarUrl
+        ...profileData
     });
     
     if (profileError) {
@@ -71,12 +95,11 @@ export const dataService = {
   },
 
   async updateUser(userId: string, userData: any): Promise<void> {
-    const { error } = await supabase.from('profiles').update({
-        full_name: userData.name,
-        identity_number: userData.identityNumber,
-        role: userData.role,
-        school_id: userData.schoolId || null,
-    }).eq('id', userId);
+    const dbData = mapUserToDb(userData);
+    // Remove fields that shouldn't be updated this way
+    delete (dbData as any).role;
+    
+    const { error } = await supabase.from('profiles').update(dbData).eq('id', userId);
     if (error) throw error;
   },
   
@@ -169,10 +192,13 @@ export const dataService = {
   },
   
   // TEACHER DATA
-   async getClasses(filters?: { teacherId?: string }): Promise<Class[]> {
+   async getClasses(filters?: { teacherId?: string, schoolId?: string }): Promise<Class[]> {
     let query = supabase.from('classes').select('*, school:schools(name), homeroom_teacher:profiles(full_name)');
     if (filters?.teacherId) {
         query = query.eq('homeroom_teacher_id', filters.teacherId);
+    }
+    if (filters?.schoolId) {
+        query = query.eq('school_id', filters.schoolId);
     }
     const { data, error } = await query;
     if (error) throw error;
@@ -221,6 +247,19 @@ export const dataService = {
   },
 
   // CLASS & SUBJECT MANAGEMENT
+  async getClassMemberships(schoolId: string): Promise<{ student_id: string, class_id: string }[]> {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('id, class_members(student_id)')
+      .eq('school_id', schoolId);
+  
+    if (error) throw error;
+  
+    const memberships = data.flatMap(c =>
+      (c.class_members || []).map((cm: any) => ({ student_id: cm.student_id, class_id: c.id }))
+    );
+    return memberships;
+  },
   async createSubject(data: { name: string, schoolId: string }): Promise<void> { 
     const { error } = await supabase.from('subjects').insert({ name: data.name, school_id: data.schoolId });
     if (error) throw error;

@@ -18,6 +18,16 @@ export interface User {
   avatarUrl: string;
   schoolId?: string;
   schoolName?: string;
+  
+  // New detailed fields
+  placeOfBirth?: string;
+  dateOfBirth?: string; // YYYY-MM-DD
+  gender?: 'Laki-laki' | 'Perempuan';
+  religion?: string;
+  address?: string;
+  phoneNumber?: string;
+  parentName?: string;
+  parentPhoneNumber?: string;
 }
 
 export interface School {

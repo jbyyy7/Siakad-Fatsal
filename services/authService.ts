@@ -29,7 +29,15 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
         full_name,
         role,
         avatar_url,
-        school_id
+        school_id,
+        place_of_birth,
+        date_of_birth,
+        gender,
+        religion,
+        address,
+        phone_number,
+        parent_name,
+        parent_phone_number
       `)
       .eq('id', supabaseUser.id)
       .single();
@@ -61,7 +69,14 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       avatarUrl: profile.avatar_url,
       schoolId: profile.school_id,
       schoolName: schoolName,
-      // level: undefined // Temporarily removed until correct column name is identified
+      placeOfBirth: profile.place_of_birth,
+      dateOfBirth: profile.date_of_birth,
+      gender: profile.gender,
+      religion: profile.religion,
+      address: profile.address,
+      phoneNumber: profile.phone_number,
+      parentName: profile.parent_name,
+      parentPhoneNumber: profile.parent_phone_number,
     };
 
     return appUser;
