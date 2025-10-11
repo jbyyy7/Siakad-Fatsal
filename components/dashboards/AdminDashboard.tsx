@@ -1,92 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User } from '../../types';
+import { User, UserRole } from '../../types';
 import Card from '../Card';
+import { dataService } from '../../services/dataService';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
+import { AcademicCapIcon } from '../icons/AcademicCapIcon';
 import { CogIcon } from '../icons/CogIcon';
-import { TagIcon } from '../icons/TagIcon';
-import { BookOpenIcon } from '../icons/BookOpenIcon';
-import { dataService } from '../../services/dataService';
 
 interface AdminDashboardProps {
   user: User;
 }
 
-const StatCard: React.FC<{ title: string; value: number | string; icon: React.ComponentType<{ className?: string }> }> = ({ title, value, icon: Icon }) => (
-  <Card>
-    <div className="flex items-center">
-      <Icon className="h-10 w-10 text-brand-600 mr-4" />
-      <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <p className="text-2xl font-bold text-gray-800">{value}</p>
-      </div>
-    </div>
-  </Card>
-);
-
-const pageToPath = (pageName: string): string => `/${pageName.toLowerCase().replace(/\s+/g, '-')}`;
-
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
-  const [stats, setStats] = useState({ userCount: '...', schoolCount: '...', subjectCount: '...', classCount: '...' });
+  const [stats, setStats] = useState({ userCount: 0, schoolCount: 0, studentCount: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [users, schools, subjects, classes] = await Promise.all([
+        const [usersData, schoolsData] = await Promise.all([
           dataService.getUsers(),
-          dataService.getSchools(),
-          dataService.getSubjects(),
-          dataService.getClasses(),
+          dataService.getSchools()
         ]);
         setStats({
-          userCount: users.length.toString(),
-          schoolCount: schools.length.toString(),
-          subjectCount: subjects.length.toString(),
-          classCount: classes.length.toString(),
+          userCount: usersData.length,
+          schoolCount: schoolsData.length,
+          studentCount: usersData.filter(u => u.role === UserRole.STUDENT).length
         });
       } catch (error) {
-        console.error("Failed to fetch admin stats:", error);
-        setStats({ userCount: 'Error', schoolCount: 'Error', subjectCount: 'Error', classCount: 'Error' });
+        console.error("Failed to fetch admin dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStats();
   }, []);
 
-  const quickAccessItems = [
-    { title: 'Kelola Pengguna', description: 'Tambah, edit, dan hapus data pengguna.', icon: UserGroupIcon, page: 'Kelola Pengguna' },
-    { title: 'Kelola Sekolah', description: 'Kelola data unit sekolah di bawah yayasan.', icon: BuildingLibraryIcon, page: 'Kelola Sekolah' },
-    { title: 'Kelola Mata Pelajaran', description: 'Atur daftar mata pelajaran per sekolah.', icon: TagIcon, page: 'Kelola Mata Pelajaran' },
-    { title: 'Kelola Kelas', description: 'Atur kelas, wali kelas, dan siswa.', icon: BookOpenIcon, page: 'Kelola Kelas' },
-    { title: 'Pengaturan Sistem', description: 'Konfigurasi umum sistem SIAKAD.', icon: CogIcon, page: 'Pengaturan Sistem' },
-  ];
-
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Selamat Datang, Administrator {user.name}!</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Total Pengguna" value={stats.userCount} icon={UserGroupIcon} />
-        <StatCard title="Total Sekolah" value={stats.schoolCount} icon={BuildingLibraryIcon} />
-        <StatCard title="Total Mapel" value={stats.subjectCount} icon={TagIcon} />
-        <StatCard title="Total Kelas" value={stats.classCount} icon={BookOpenIcon} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <div className="flex items-center">
+            <UserGroupIcon className="h-10 w-10 text-brand-600 mr-4" />
+            <div>
+              <p className="text-sm text-gray-500">Total Pengguna</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.userCount}</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center">
+            <BuildingLibraryIcon className="h-10 w-10 text-brand-600 mr-4" />
+            <div>
+              <p className="text-sm text-gray-500">Total Sekolah</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.schoolCount}</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+           <div className="flex items-center">
+            <AcademicCapIcon className="h-10 w-10 text-brand-600 mr-4" />
+            <div>
+              <p className="text-sm text-gray-500">Total Siswa</p>
+              <p className="text-2xl font-bold text-gray-800">{isLoading ? '...' : stats.studentCount}</p>
+            </div>
+          </div>
+        </Card>
       </div>
-
-      <Card title="Panel Administrasi">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickAccessItems.map(item => (
-            <Link
-              key={item.page}
-              to={pageToPath(item.page)}
-              className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors shadow-sm hover:shadow-md border block"
-            >
-              <item.icon className="h-8 w-8 text-brand-600 mb-2" />
-              <h4 className="font-semibold text-gray-800">{item.title}</h4>
-              <p className="text-sm text-gray-600">{item.description}</p>
+      <div className="mt-8">
+        <Card title="Manajemen Sistem" icon={CogIcon}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link to="/kelola-pengguna" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
+              <h4 className="font-semibold text-gray-800">Kelola Pengguna</h4>
+              <p className="text-sm text-gray-600">Tambah, edit, dan hapus data pengguna.</p>
             </Link>
-          ))}
-        </div>
-      </Card>
+            <Link to="/kelola-sekolah" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
+              <h4 className="font-semibold text-gray-800">Kelola Sekolah</h4>
+              <p className="text-sm text-gray-600">Kelola informasi data sekolah.</p>
+            </Link>
+             <Link to="/pengaturan-sistem" className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors block">
+              <h4 className="font-semibold text-gray-800">Pengaturan</h4>
+              <p className="text-sm text-gray-600">Atur konfigurasi sistem umum.</p>
+            </Link>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

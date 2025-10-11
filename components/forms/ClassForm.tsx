@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Class, School, User } from '../../types';
 
@@ -59,8 +61,8 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
   };
 
   const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // FIX: Explicitly cast the `option` type to `HTMLOptionElement` within the `Array.from` map function to resolve a TypeScript type inference issue where it was being treated as `unknown`.
-    const selectedIds = Array.from(e.currentTarget.selectedOptions, (option: HTMLOptionElement) => option.value);
+    // FIX: Use spread operator for a more robust way to convert HTMLCollection to array, resolving potential TS inference issues.
+    const selectedIds = [...e.currentTarget.selectedOptions].map(option => option.value);
     setFormData(prev => ({ ...prev, studentIds: selectedIds }));
   }
 

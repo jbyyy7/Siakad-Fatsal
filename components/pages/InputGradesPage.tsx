@@ -1,167 +1,157 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from '../Card';
 import { dataService } from '../../services/dataService';
-import { User, Subject, Class } from '../../types';
+import { User, Class, Subject } from '../../types';
 
 interface InputGradesPageProps {
   user: User;
 }
 
 const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [students, setStudents] = useState<User[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  
-  const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-  
-  const [grades, setGrades] = useState<Record<string, number | ''>>({});
-  const [isLoading, setIsLoading] = useState({ classes: true, students: false, subjects: false });
+    const [classes, setClasses] = useState<Class[]>([]);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [students, setStudents] = useState<User[]>([]);
+    
+    const [selectedClassId, setSelectedClassId] = useState<string>('');
+    const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+    const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+    
+    const [grades, setGrades] = useState<Record<string, { score: string, notes: string }>>({});
+    
+    const [isLoading, setIsLoading] = useState({ page: true, students: false });
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  // Fetch classes taught by the teacher
-  useEffect(() => {
-    const fetchClasses = async () => {
-      setIsLoading(prev => ({ ...prev, classes: true }));
-      try {
-        const teacherClasses = await dataService.getClasses({ teacherId: user.id });
-        setClasses(teacherClasses);
-        if (teacherClasses.length > 0) {
-          setSelectedClassId(teacherClasses[0].id);
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            if (!user.id || !user.schoolId) return;
+            setIsLoading({ page: true, students: false });
+            try {
+                const [teacherClasses, schoolSubjects] = await Promise.all([
+                    dataService.getClasses({ teacherId: user.id }),
+                    dataService.getSubjects({ schoolId: user.schoolId })
+                ]);
+                setClasses(teacherClasses);
+                setSubjects(schoolSubjects);
+                if (teacherClasses.length > 0) setSelectedClassId(teacherClasses[0].id);
+                if (schoolSubjects.length > 0) setSelectedSubjectId(schoolSubjects[0].id);
+            } catch (error) {
+                console.error("Failed to load initial data", error);
+            } finally {
+                setIsLoading({ page: false, students: false });
+            }
+        };
+        fetchInitialData();
+    }, [user.id, user.schoolId]);
+
+    useEffect(() => {
+        if (!selectedClassId) {
+            setStudents([]);
+            return;
         }
-      } catch (error) {
-        console.error("Failed to fetch teacher's classes:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, classes: false }));
-      }
+        const fetchStudents = async () => {
+            setIsLoading(prev => ({ ...prev, students: true }));
+            try {
+                const classStudents = await dataService.getStudentsInClass(selectedClassId);
+                setStudents(classStudents);
+                setGrades({}); // Reset grades when class changes
+            } catch (error) {
+                console.error("Failed to fetch students", error);
+            } finally {
+                setIsLoading(prev => ({ ...prev, students: false }));
+            }
+        };
+        fetchStudents();
+    }, [selectedClassId]);
+
+    const handleGradeChange = (studentId: string, value: string) => {
+        setGrades(prev => ({
+            ...prev,
+            [studentId]: { ...prev[studentId], score: value },
+        }));
+        setSaveStatus('idle');
     };
-    fetchClasses();
-  }, [user.id]);
-
-  // Fetch students and subjects when a class is selected
-  useEffect(() => {
-    if (!selectedClassId) return;
-
-    const selectedClass = classes.find(c => c.id === selectedClassId);
-    if (!selectedClass) return;
-
-    const fetchClassData = async () => {
-      setIsLoading(prev => ({ ...prev, students: true, subjects: true }));
-      try {
-        const [studentsData, subjectsData] = await Promise.all([
-          dataService.getStudentsInClass(selectedClassId),
-          dataService.getSubjects({ schoolId: selectedClass.schoolId })
-        ]);
-        setStudents(studentsData);
-        setSubjects(subjectsData);
-        setGrades({}); // Reset grades when class changes
-        
-        // Reset selected subject if it's not in the new list or not set
-        if (subjectsData.length > 0) {
-           setSelectedSubjectId(subjectsData[0].id);
-        } else {
-           setSelectedSubjectId('');
-        }
-
-      } catch (error) {
-        console.error("Failed to fetch data for class:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, students: false, subjects: false }));
-      }
+    
+    const handleSaveGrades = async () => {
+        setSaveStatus('saving');
+        console.log("Saving grades:", grades);
+        // Here you would call a dataService function like `dataService.saveGrades(...)`
+        // For this mock, we'll just simulate a success
+        await new Promise(res => setTimeout(res, 1000));
+        setSaveStatus('success');
+        setTimeout(() => setSaveStatus('idle'), 2000);
     };
 
-    fetchClassData();
-  }, [selectedClassId, classes]);
-
-  const handleGradeChange = (studentId: string, score: string) => {
-    const numericScore = score === '' ? '' : Math.max(0, Math.min(100, parseInt(score, 10)));
-    setGrades(prev => ({ ...prev, [studentId]: numericScore }));
-  };
-  
-  const handleSave = () => {
-    console.log("Saving grades:", { classId: selectedClassId, subjectId: selectedSubjectId, grades });
-    alert("Nilai berhasil disimpan (simulasi).");
-  }
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Input Nilai Siswa</h2>
-      <Card>
-        <div className="p-4 border-b grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                 <label htmlFor="class-select" className="block text-sm font-medium text-gray-700">Pilih Kelas</label>
-                 <select 
-                    id="class-select" 
-                    value={selectedClassId} 
-                    onChange={e => setSelectedClassId(e.target.value)}
-                    disabled={isLoading.classes}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-md"
-                 >
-                     {isLoading.classes ? <option>Memuat kelas...</option> : 
-                        classes.length > 0 ?
-                        classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>) :
-                        <option>Anda tidak mengajar di kelas manapun</option>
-                     }
-                 </select>
-            </div>
-             <div>
-                 <label htmlFor="subject-select" className="block text-sm font-medium text-gray-700">Pilih Mata Pelajaran</label>
-                 <select 
-                    id="subject-select" 
-                    value={selectedSubjectId} 
-                    onChange={e => setSelectedSubjectId(e.target.value)}
-                    disabled={isLoading.subjects || !selectedClassId}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-md"
-                 >
-                     {isLoading.subjects ? <option>Memuat mapel...</option> :
-                        subjects.length > 0 ?
-                        subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>) :
-                        <option>Tidak ada mapel untuk sekolah ini</option>
-                     }
-                 </select>
-            </div>
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Input Nilai Siswa</h2>
+            <Card>
+                <div className="p-4 border-b grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Kelas</label>
+                        <select
+                            value={selectedClassId}
+                            onChange={e => setSelectedClassId(e.target.value)}
+                            disabled={isLoading.page}
+                            className="mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm"
+                        >
+                            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                        <select
+                            value={selectedSubjectId}
+                            onChange={e => setSelectedSubjectId(e.target.value)}
+                            disabled={isLoading.page}
+                            className="mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm"
+                        >
+                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                    </div>
+                </div>
+                 <div className="overflow-x-auto">
+                    {isLoading.students ? <p className="p-4 text-center">Memuat siswa...</p> : (
+                    <table className="w-full text-sm text-left text-gray-500">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3">Nama Siswa</th>
+                                <th className="px-6 py-3 w-32">Nilai (0-100)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {students.map(student => (
+                                <tr key={student.id} className="bg-white border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
+                                    <td className="px-6 py-4">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={grades[student.id]?.score || ''}
+                                            onChange={e => handleGradeChange(student.id, e.target.value)}
+                                            className="w-24 p-2 border border-gray-300 rounded-md"
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    )}
+                </div>
+                 <div className="p-4 border-t flex justify-end items-center gap-4">
+                    {saveStatus === 'success' && <p className="text-sm text-green-600">Nilai berhasil disimpan!</p>}
+                    <button
+                        onClick={handleSaveGrades}
+                        disabled={saveStatus === 'saving' || students.length === 0}
+                        className="px-6 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 disabled:bg-brand-400"
+                    >
+                        {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan Nilai'}
+                    </button>
+                </div>
+            </Card>
         </div>
-         <div className="overflow-x-auto">
-            {isLoading.students ? <p className="p-4 text-center">Memuat siswa...</p> : (
-            <table className="w-full text-sm text-left text-gray-500">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3">Nama Siswa</th>
-                        <th className="px-6 py-3 w-40">Input Nilai (0-100)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {students.map(student => (
-                         <tr key={student.id} className="bg-white border-b hover:bg-gray-50">
-                             <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
-                             <td className="px-6 py-4">
-                                 <input 
-                                     type="number" 
-                                     min="0"
-                                     max="100"
-                                     value={grades[student.id] || ''}
-                                     onChange={e => handleGradeChange(student.id, e.target.value)}
-                                     className="w-full p-2 border border-gray-300 rounded-md text-center"
-                                     disabled={!selectedSubjectId}
-                                 />
-                             </td>
-                         </tr>
-                    ))}
-                </tbody>
-            </table>
-            )}
-         </div>
-          <div className="p-4 border-t text-right">
-              <button 
-                onClick={handleSave} 
-                disabled={isLoading.students || !selectedSubjectId || students.length === 0}
-                className="px-6 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors disabled:bg-brand-400"
-              >
-                  Simpan Nilai
-              </button>
-          </div>
-      </Card>
-    </div>
-  );
+    );
 };
 
 export default InputGradesPage;

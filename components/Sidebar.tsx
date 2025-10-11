@@ -1,140 +1,124 @@
 import React from 'react';
-import { NavLink as RouterNavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { User, UserRole } from '../types';
-import { HomeIcon } from './icons/HomeIcon';
-import { CogIcon } from './icons/CogIcon';
 import { AcademicCapIcon } from './icons/AcademicCapIcon';
+import { HomeIcon } from './icons/HomeIcon';
 import { UserGroupIcon } from './icons/UserGroupIcon';
 import { BuildingLibraryIcon } from './icons/BuildingLibraryIcon';
-import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
+import { CogIcon } from './icons/CogIcon';
 import { IdentificationIcon } from './icons/IdentificationIcon';
-import { TagIcon } from './icons/TagIcon';
-import { XIcon } from './icons/XIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
-import { PencilIcon } from './icons/PencilIcon';
+import { CalendarIcon } from './icons/CalendarIcon';
+import { PencilSquareIcon } from './icons/PencilSquareIcon';
+import { XIcon } from './icons/XIcon';
+import { TagIcon } from './icons/TagIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { EnvelopeIcon } from './icons/EnvelopeIcon';
-import { PencilSquareIcon } from './icons/PencilSquareIcon';
 
 interface SidebarProps {
   user: User;
   isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  setOpen: (isOpen: boolean) => void;
 }
 
-const pageToPath = (pageName: string): string => {
-    if (pageName === 'Dashboard') return '/';
-    return `/${pageName.toLowerCase().replace(/\s+/g, '-')}`;
-}
-
-const NavLink: React.FC<{
-  label: string;
-  icon: React.ReactNode;
-  to: string;
-  onClick: () => void;
-}> = ({ label, icon, to, onClick }) => (
-  <RouterNavLink
+const NavItem: React.FC<{ to: string, icon: React.ReactNode, children: React.ReactNode }> = ({ to, icon, children }) => (
+  <NavLink
     to={to}
-    onClick={onClick}
-    className={({ isActive }) => `flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
-      isActive
-        ? 'bg-brand-700 text-white shadow'
-        : 'text-gray-200 hover:bg-brand-800 hover:text-white'
-    }`}
+    end
+    className={({ isActive }) =>
+      `flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+        isActive
+          ? 'bg-brand-700 text-white shadow-sm'
+          : 'text-gray-200 hover:bg-brand-700 hover:text-white'
+      }`
+    }
   >
     {icon}
-    <span className="ml-4">{label}</span>
-  </RouterNavLink>
+    <span className="ml-3">{children}</span>
+  </NavLink>
 );
 
-const getNavLinks = (role: UserRole) => {
-    const baseLinks = [{ label: 'Dashboard', icon: <HomeIcon className="w-5 h-5" /> }];
-    
-    switch (role) {
-        case UserRole.STUDENT:
-            return [
-                ...baseLinks,
-                { label: 'Jadwal Pelajaran', icon: <ClipboardDocumentListIcon className="w-5 h-5" /> },
-                { label: 'Lihat Nilai', icon: <AcademicCapIcon className="w-5 h-5" /> },
-                { label: 'Absensi', icon: <IdentificationIcon className="w-5 h-5" /> },
-            ];
-        case UserRole.TEACHER:
-            return [
-                ...baseLinks,
-                { label: 'Jurnal Mengajar', icon: <PencilSquareIcon className="w-5 h-5" /> },
-                { label: 'Input Nilai', icon: <PencilIcon className="w-5 h-5" /> },
-                { label: 'Absensi Siswa', icon: <IdentificationIcon className="w-5 h-5" /> },
-                { label: 'Kelas Saya', icon: <UserGroupIcon className="w-5 h-5" /> },
-            ];
-        case UserRole.PRINCIPAL:
-             return [
-                ...baseLinks,
-                { label: 'Data Guru', icon: <UserGroupIcon className="w-5 h-5" /> },
-                { label: 'Data Siswa', icon: <AcademicCapIcon className="w-5 h-5" /> },
-                { label: 'Laporan Sekolah', icon: <ChartBarIcon className="w-5 h-5" /> },
-            ];
-        case UserRole.FOUNDATION_HEAD:
-            return [
-                ...baseLinks,
-                { label: 'Laporan Akademik', icon: <ChartBarIcon className="w-5 h-5" /> },
-                { label: 'Data Sekolah', icon: <BuildingLibraryIcon className="w-5 h-5" /> },
-                { label: 'Pengumuman', icon: <EnvelopeIcon className="w-5 h-5" /> },
-            ];
-        case UserRole.ADMIN:
-            return [
-                ...baseLinks,
-                { label: 'Kelola Pengguna', icon: <UserGroupIcon className="w-5 h-5" /> },
-                { label: 'Kelola Sekolah', icon: <BuildingLibraryIcon className="w-5 h-5" /> },
-                { label: 'Kelola Mata Pelajaran', icon: <TagIcon className="w-5 h-5" /> },
-                { label: 'Kelola Kelas', icon: <BookOpenIcon className="w-5 h-5" /> },
-                { label: 'Pengaturan Sistem', icon: <CogIcon className="w-5 h-5" /> },
-            ];
-        default:
-            return baseLinks;
-    }
-}
+const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
+  const adminLinks = (
+    <>
+      <NavItem to="/kelola-pengguna" icon={<UserGroupIcon className="h-5 w-5" />}>Kelola Pengguna</NavItem>
+      <NavItem to="/kelola-sekolah" icon={<BuildingLibraryIcon className="h-5 w-5" />}>Kelola Sekolah</NavItem>
+      <NavItem to="/kelola-mapel" icon={<TagIcon className="h-5 w-5" />}>Kelola Mapel</NavItem>
+      <NavItem to="/kelola-kelas" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kelas</NavItem>
+      <NavItem to="/pantau-absensi" icon={<CalendarIcon className="h-5 w-5" />}>Pantau Absensi</NavItem>
+      <NavItem to="/pantau-nilai" icon={<PencilSquareIcon className="h-5 w-5" />}>Pantau Nilai</NavItem>
+      <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan Sistem</NavItem>
+    </>
+  );
 
-const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setIsOpen }) => {
-  const navLinks = getNavLinks(user.role);
+  const foundationHeadLinks = (
+    <>
+      <NavItem to="/laporan-akademik" icon={<ChartBarIcon className="h-5 w-5" />}>Laporan Akademik</NavItem>
+      <NavItem to="/data-sekolah" icon={<BuildingLibraryIcon className="h-5 w-5" />}>Data Sekolah</NavItem>
+      <NavItem to="/pengumuman" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman</NavItem>
+    </>
+  );
+
+  const principalLinks = (
+    <>
+      <NavItem to="/data-guru" icon={<UserGroupIcon className="h-5 w-5" />}>Data Guru</NavItem>
+      <NavItem to="/data-siswa" icon={<AcademicCapIcon className="h-5 w-5" />}>Data Siswa</NavItem>
+      <NavItem to="/laporan-sekolah" icon={<ChartBarIcon className="h-5 w-5" />}>Laporan Sekolah</NavItem>
+    </>
+  );
+
+  const teacherLinks = (
+    <>
+      <NavItem to="/input-nilai" icon={<PencilSquareIcon className="h-5 w-5" />}>Input Nilai</NavItem>
+      <NavItem to="/absensi-siswa" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
+      <NavItem to="/kelas-saya" icon={<UserGroupIcon className="h-5 w-5" />}>Kelas Saya</NavItem>
+      <NavItem to="/jurnal-mengajar" icon={<BookOpenIcon className="h-5 w-5" />}>Jurnal Mengajar</NavItem>
+    </>
+  );
+
+  const studentLinks = (
+    <>
+      <NavItem to="/lihat-nilai" icon={<PencilSquareIcon className="h-5 w-5" />}>Lihat Nilai</NavItem>
+      <NavItem to="/jadwal-pelajaran" icon={<CalendarIcon className="h-5 w-5" />}>Jadwal Pelajaran</NavItem>
+      <NavItem to="/absensi" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
+    </>
+  );
+
+  const renderLinksByRole = () => {
+    switch (user.role) {
+      case UserRole.ADMIN: return adminLinks;
+      case UserRole.FOUNDATION_HEAD: return foundationHeadLinks;
+      case UserRole.PRINCIPAL: return principalLinks;
+      case UserRole.TEACHER: return teacherLinks;
+      case UserRole.STUDENT: return studentLinks;
+      default: return null;
+    }
+  };
 
   return (
     <>
       {/* Overlay for mobile */}
-      <div className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden ${isOpen ? 'block' : 'hidden'}`} onClick={() => setIsOpen(false)}></div>
-      
-      <aside className={`fixed md:relative inset-y-0 left-0 bg-brand-900 text-white w-64 space-y-6 py-4 px-2 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out z-30 flex flex-col`}>
-        <div className="px-4">
-            <div className="flex justify-between items-center">
-                <a href="#" className="flex items-center space-x-2">
-                    <AcademicCapIcon className="h-8 w-8 text-white" />
-                    <span className="text-xl font-bold">SIAKAD</span>
-                </a>
-                <button onClick={() => setIsOpen(false)} className="md:hidden p-1 rounded-md hover:bg-brand-800">
-                    <XIcon className="h-6 w-6" />
-                </button>
-            </div>
-            <p className="text-xs text-brand-300 mt-1">Sistem Informasi Akademik</p>
+      <div
+        className={`fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setOpen(false)}
+      ></div>
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-brand-800 text-white flex flex-col transition-transform transform md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="flex items-center justify-between px-4 py-5 border-b border-brand-700">
+          <Link to="/" className="flex items-center">
+            <AcademicCapIcon className="h-8 w-8 text-white" />
+            <span className="ml-3 text-xl font-bold">SIAKAD</span>
+          </Link>
+          <button onClick={() => setOpen(false)} className="md:hidden p-1 rounded-full hover:bg-brand-700">
+            <XIcon className="h-6 w-6"/>
+          </button>
         </div>
-
-        <nav className="flex-1">
-          <ul className="space-y-2">
-            {navLinks.map(({ label, icon }) => (
-              <li key={label}>
-                <NavLink
-                  label={label}
-                  icon={icon}
-                  to={pageToPath(label)}
-                  onClick={() => { if (isOpen) setIsOpen(false); }}
-                />
-              </li>
-            ))}
-          </ul>
+        <nav className="flex-1 px-3 py-4 space-y-2">
+          <NavItem to="/" icon={<HomeIcon className="h-5 w-5" />}>Dashboard</NavItem>
+          {renderLinksByRole()}
         </nav>
-        
-         <div className="px-4 py-2 border-t border-brand-800">
-            <p className="text-sm font-semibold">{user.name}</p>
-            <p className="text-xs text-brand-300">{user.role}</p>
-        </div>
       </aside>
     </>
   );

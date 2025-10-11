@@ -1,10 +1,11 @@
+
 import { User, UserRole } from '../types';
 import { supabase } from './supabaseClient';
 import { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Helper function to map database role string (e.g., 'murid') to the app's UserRole enum (e.g., 'Murid')
 // FIX: Refactored to use Object.entries for improved type safety and to resolve a potential linting/compilation issue with the `key` variable.
-const toUserRoleEnum = (dbRole: string): UserRole => {
+const toUserRoleEnum = (dbRole: any): UserRole => {
     // Find the entry in UserRole enum (e.g., ['STUDENT', 'Murid'])
     // whose value's lowercase version matches the dbRole.
     const roleEntry = Object.entries(UserRole).find(

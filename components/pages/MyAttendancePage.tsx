@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../Card';
-import { User } from '../../types';
+import { User, AttendanceStatus } from '../../types';
 import { dataService } from '../../services/dataService';
 import { PrinterIcon } from '../icons/PrinterIcon';
 
@@ -8,14 +8,13 @@ interface MyAttendancePageProps {
     user: User;
 }
 
-type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
-
 const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
     const [attendanceData, setAttendanceData] = useState<{ date: string; status: AttendanceStatus }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchAttendance = async () => {
+            setIsLoading(true);
             try {
                 const data = await dataService.getAttendanceForStudent(user.id);
                 setAttendanceData(data);
@@ -38,10 +37,9 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
         }
     };
     
-    // Using current month for calendar generation
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth(); // 0-indexed
+    const month = now.getMonth();
     const monthName = now.toLocaleString('id-ID', { month: 'long' });
 
     const attendanceMap = new Map(attendanceData.map(item => [item.date, item.status]));
@@ -63,7 +61,7 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
     }, {} as Record<string, number>);
 
     const totalSchoolDays = attendanceData.length;
-    const presencePercentage = totalSchoolDays > 0 ? (((summary['Hadir'] || 0) / totalSchoolDays) * 100).toFixed(0) : 0;
+    const presencePercentage = totalSchoolDays > 0 ? (((summary['Hadir'] || 0) / totalSchoolDays) * 100).toFixed(0) : 100;
 
 
     return (
@@ -99,11 +97,11 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                         </div>
                         <div className="text-right">
                              <p className="text-sm text-gray-500">Tingkat Kehadiran</p>
-                             <p className="text-2xl font-bold text-brand-700">{presencePercentage}%</p>
+                             <p className="text-2xl font-bold text-brand-700">{isLoading ? '...' : presencePercentage}%</p>
                         </div>
                     </div>
 
-                    {isLoading ? <p>Memuat kalender...</p> :
+                    {isLoading ? <p className="text-center p-8">Memuat kalender...</p> :
                     <>
                     <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-600 mb-2">
                         <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
@@ -116,7 +114,6 @@ const MyAttendancePage: React.FC<MyAttendancePageProps> = ({ user }) => {
                              const dayOfMonth = dayDate.getDate();
                              const dayOfWeek = dayDate.getDay();
                              const isWeekend = dayOfWeek === 6 || dayOfWeek === 0;
-                             // FIX: Cast status to string to satisfy getStatusColor function signature.
                              const color = isWeekend ? 'bg-gray-100' : getStatusColor(status as string);
                              
                              return (
