@@ -2,12 +2,22 @@
 import { supabase } from './supabaseClient';
 import { Announcement, User, UserRole, School, Subject, Class, AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry } from '../types';
 
+// Helper function to map database role string (e.g., 'murid') to the app's UserRole enum (e.g., 'Murid')
+const toUserRoleEnum = (dbRole: any): UserRole => {
+    const roleString = String(dbRole || '').toLowerCase();
+    const roleEntry = Object.entries(UserRole).find(
+        ([, value]) => value.toLowerCase() === roleString
+    );
+    return roleEntry ? roleEntry[1] : dbRole as UserRole;
+};
+
+
 export const dataService = {
     // User functions
     async getUsers(filters: { role?: UserRole; schoolId?: string } = {}): Promise<User[]> {
         let query = supabase.from('profiles').select('*, school:schools(name)');
         if (filters.role) {
-            query = query.eq('role', filters.role);
+            query = query.eq('role', filters.role.toLowerCase());
         }
         if (filters.schoolId) {
             query = query.eq('school_id', filters.schoolId);
@@ -19,7 +29,7 @@ export const dataService = {
             email: u.email,
             identityNumber: u.identity_number,
             name: u.full_name,
-            role: u.role,
+            role: toUserRoleEnum(u.role),
             avatarUrl: u.avatar_url,
             schoolId: u.school_id,
             schoolName: u.school?.name,
@@ -91,7 +101,7 @@ export const dataService = {
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data?.map((item: any) => ({
+        return (data || []).map((item: any) => ({
             id: item.id,
             title: item.title,
             content: item.content,
@@ -100,7 +110,7 @@ export const dataService = {
             date: new Date(item.created_at).toISOString().split('T')[0],
             schoolId: item.school_id,
             schoolName: item.school?.name
-        })) || [];
+        }));
     },
     async createAnnouncement(announcementData: { title: string, content: string, author_id: string, school_id?: string }): Promise<void> {
         const { error } = await supabase.from('announcements').insert(announcementData);
@@ -211,7 +221,7 @@ export const dataService = {
             email: item.student.email,
             identityNumber: item.student.identity_number,
             name: item.student.full_name,
-            role: item.student.role,
+            role: toUserRoleEnum(item.student.role),
             avatarUrl: item.student.avatar_url,
             schoolId: item.student.school_id,
             schoolName: item.student.school?.name,
