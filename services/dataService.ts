@@ -33,7 +33,8 @@ export const dataService = {
 
         let query = supabase.from('profiles').select('id, identity_number, full_name, role, avatar_url, school_id');
         if (filters?.role) {
-            query = query.eq('role', filters.role);
+            // FIX: Convert role to lowercase to match database enum format.
+            query = query.eq('role', filters.role.toLowerCase());
         }
         if (filters?.schoolId) {
             query = query.eq('school_id', filters.schoolId);
@@ -58,7 +59,8 @@ export const dataService = {
         const { error } = await supabase.from('profiles').update({
             full_name: formData.name,
             identity_number: formData.identityNumber,
-            role: formData.role,
+            // FIX: Convert role to lowercase before sending to the database.
+            role: formData.role.toLowerCase(),
             school_id: formData.schoolId || null,
             avatar_url: formData.avatarUrl,
         }).eq('id', userId);
@@ -83,7 +85,8 @@ export const dataService = {
             id: authData.user.id,
             full_name: formData.name,
             identity_number: formData.identityNumber,
-            role: formData.role,
+            // FIX: Convert role to lowercase before sending to the database.
+            role: formData.role.toLowerCase(),
             school_id: formData.schoolId || null,
             avatar_url: formData.avatarUrl,
         });
@@ -103,7 +106,8 @@ export const dataService = {
         const { count, error } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', filters.role)
+            // FIX: Convert role to lowercase to match database enum format.
+            .eq('role', filters.role.toLowerCase())
             .eq('school_id', filters.schoolId);
         handleSupabaseError(error, 'getUserCount');
         return count || 0;

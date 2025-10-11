@@ -2,6 +2,19 @@ import { User, UserRole } from '../types';
 import { supabase } from './supabaseClient';
 import { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
 
+// Helper function to map database role string (e.g., 'murid') to the app's UserRole enum (e.g., 'Murid')
+const toUserRoleEnum = (dbRole: string): UserRole => {
+    // Find the key in UserRole enum ('STUDENT', 'TEACHER', etc.)
+    // whose value's lowercase version matches the dbRole.
+    const roleKey = Object.keys(UserRole).find(
+        (key) => (UserRole as any)[key].toLowerCase() === dbRole?.toLowerCase()
+    );
+    // If a key is found, return the corresponding enum value (e.g., 'Murid').
+    // Otherwise, fallback to the original dbRole (though this shouldn't happen with correct data).
+    return roleKey ? (UserRole as any)[roleKey] : dbRole as UserRole;
+};
+
+
 // Helper function to fetch user profile and map to app's User type
 const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
   try {
@@ -41,7 +54,7 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       email: supabaseUser.email || '',
       identityNumber: profile.identity_number,
       name: profile.full_name,
-      role: profile.role as UserRole, // Assuming role in DB matches UserRole enum
+      role: toUserRoleEnum(profile.role), // Use mapping function for safety
       avatarUrl: profile.avatar_url,
       schoolId: profile.school_id,
       schoolName: schoolName,

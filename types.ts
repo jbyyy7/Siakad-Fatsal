@@ -1,10 +1,9 @@
-
 // FIX: Removed self-import of UserRole from './types' to prevent a circular dependency and resolve a name conflict with the enum declaration below.
 export enum UserRole {
-  STUDENT = 'Student',
-  TEACHER = 'Teacher',
-  PRINCIPAL = 'Principal',
-  FOUNDATION_HEAD = 'Foundation Head',
+  STUDENT = 'Murid',
+  TEACHER = 'Guru',
+  PRINCIPAL = 'Kepala Sekolah',
+  FOUNDATION_HEAD = 'Kepala Yayasan',
   ADMIN = 'Admin',
 }
 
