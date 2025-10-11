@@ -34,7 +34,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
         <div className="text-center">
           <AcademicCapIcon className="w-16 h-16 mx-auto text-brand-600" />
-          <h2 className="mt-4 text-3xl font-bold text-gray-900">SIAKAD</h2>
+          <h2 className="mt-4 text-2xl font-bold text-gray-900">SIAKAD Fathus Salafi</h2>
           <p className="mt-2 text-sm text-gray-600">Sistem Informasi Akademik Terpadu</p>
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { User, UserRole } from '../types';
@@ -15,7 +14,6 @@ import { PencilSquareIcon } from './icons/PencilSquareIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
-import { SparklesIcon } from './icons/SparklesIcon';
 
 interface SidebarProps {
   user: User;
@@ -115,8 +113,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
     <>
         <div className={sidebarClasses}>
           <div className="flex items-center justify-center text-white mb-6">
-            <SparklesIcon className="h-8 w-8 mr-2" />
-            <span className="text-xl font-bold">SIAKAD</span>
+            <AcademicCapIcon className="h-8 w-8 mr-2" />
+            <span className="text-lg font-bold">SIAKAD Fathus Salafi</span>
           </div>
           <nav className="space-y-2">
               <NavItem to="/" icon={<HomeIcon className="h-5 w-5" />} end={true}>Dashboard</NavItem>
