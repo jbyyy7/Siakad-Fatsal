@@ -24,7 +24,9 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
             try {
                 // In a real app, you might need a more robust way to filter by class
                 const allStudents = await dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId });
-                const filteredStudents = allStudents.filter(student => student.level === selectedClass);
+                // TODO: Re-enable class filtering once the correct 'level' column in the DB is identified.
+                // The current query does not load this data, so filtering is disabled to prevent an empty list.
+                const filteredStudents = allStudents;
                 setStudentsInClass(filteredStudents);
             } catch (error) {
                 console.error("Failed to fetch students for class:", error);
@@ -76,6 +78,9 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
                         <option>MA Kelas 10-B</option>
                     </select>
                 </div>
+                 <p className="mt-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded-md">
+                    <b>Catatan:</b> Daftar siswa menampilkan semua siswa di sekolah ini. Fitur penyaringan per kelas akan diaktifkan kembali setelah nama kolom kelas di database dikonfirmasi.
+                </p>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -48,8 +48,7 @@ export const dataService = {
             full_name,
             role,
             avatar_url,
-            school_id,
-            level
+            school_id
         `);
         
         if (filters.role) {
@@ -74,7 +73,7 @@ export const dataService = {
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
             schoolName: profile.school_id ? schoolMap.get(profile.school_id) : undefined,
-            level: profile.level,
+            // level: undefined, // Temporarily removed
         }));
     },
     

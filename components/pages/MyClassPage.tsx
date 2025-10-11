@@ -18,7 +18,8 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
                 // This is a simplification. A real app would have a class concept
                 // and fetch students for that specific class.
                 const allStudents = await dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId });
-                const classStudents = allStudents.filter(s => s.level === 'MA Kelas 10-A'); // Example filter
+                // TODO: Re-enable class filtering once the correct 'level' column in the DB is identified.
+                const classStudents = allStudents; // Temporarily show all students
                 setStudents(classStudents);
             } catch (error) {
                 console.error("Failed to fetch students for class:", error);
@@ -32,7 +33,10 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelas Saya: MA Kelas 10-A</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Siswa di {user.schoolName}</h2>
+             <p className="mb-4 text-sm text-yellow-700 bg-yellow-100 p-2 rounded-md">
+                <b>Catatan:</b> Fitur penyaringan per kelas dinonaktifkan sementara. Daftar ini menampilkan semua siswa di sekolah Anda.
+            </p>
             <Card>
                 <div className="p-4 border-b">
                     <h3 className="text-lg font-semibold">Daftar Siswa</h3>
