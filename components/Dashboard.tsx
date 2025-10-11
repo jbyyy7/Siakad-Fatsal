@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { User, UserRole } from '../types';
@@ -32,6 +31,7 @@ import GradesPage from './pages/GradesPage';
 import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
 import ProfileSettingsPage from './pages/ProfileSettingsPage';
+// FIX: Import AdminAttendancePage and AdminGradesPage, which were previously missing files.
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
 

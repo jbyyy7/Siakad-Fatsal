@@ -1,4 +1,3 @@
-
 export enum UserRole {
   ADMIN = 'Admin',
   FOUNDATION_HEAD = 'Ketua Yayasan',
@@ -21,23 +20,24 @@ export interface User {
 export interface School {
   id: string;
   name: string;
-  level: string;
+  level: string; // e.g., 'SMA', 'SMP'
   address: string;
 }
 
 export interface Class {
-    id: string;
-    name: string;
-    schoolId: string;
-    homeroomTeacherId?: string;
-    homeroomTeacherName?: string;
-    studentIds?: string[]; // for form
+  id: string;
+  name: string;
+  schoolId: string;
+  schoolName?: string;
+  homeroomTeacherId?: string;
+  homeroomTeacherName?: string;
 }
 
 export interface Subject {
-    id: string;
-    name:string;
-    schoolId: string;
+  id: string;
+  name: string;
+  schoolId: string;
+  schoolName?: string;
 }
 
 export type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpha';
@@ -52,6 +52,34 @@ export interface AttendanceRecord {
     status: AttendanceStatus;
 }
 
+export interface JournalEntry { // Used in TeacherDashboard
+  subject: string;
+  class: string;
+  topic: string;
+}
+
+export interface TeachingJournal { // Used in TeachingJournalPage
+    id: number;
+    date: string;
+    classId: string;
+    className?: string;
+    subjectId: string;
+    subjectName?: string;
+    topic: string;
+    teacherId: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  author: string;
+  author_id: string;
+  schoolId?: string;
+  schoolName?: string;
+}
+
 export interface NotificationSettings {
     whatsappNumber: string;
     attendance: boolean;
@@ -60,34 +88,11 @@ export interface NotificationSettings {
 }
 
 export interface GamificationProfile {
-    progress: Record<string, number>;
-    badges: { id: string; icon: string; description: string }[];
-}
-
-export interface TeachingJournal {
-    id: number;
-    date: string;
-    classId: string;
-    className?: string;
-    subjectId: string;
-    subjectName?: string;
-    topic: string;
-    teacherId?: string;
-}
-
-export interface JournalEntry {
-    subject: string;
-    class: string;
-    topic: string;
-}
-
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  author: string; // This is author's full name from profiles table
-  author_id: string;
-  date: string; // YYYY-MM-DD
-  schoolId?: string;
-  schoolName?: string;
+    studentId: string;
+    progress: Record<string, number>; // subject -> percentage
+    badges: {
+        id: string;
+        icon: string;
+        description: string;
+    }[];
 }
