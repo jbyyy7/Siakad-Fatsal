@@ -1,6 +1,6 @@
 
 export enum UserRole {
-  ADMIN = 'Administrator',
+  ADMIN = 'Admin',
   FOUNDATION_HEAD = 'Ketua Yayasan',
   PRINCIPAL = 'Kepala Sekolah',
   TEACHER = 'Guru',
