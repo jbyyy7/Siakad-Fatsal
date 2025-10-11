@@ -12,6 +12,14 @@ const handleSupabaseError = (error: any, context: string) => {
     }
 };
 
+const calculateGrade = (score: number): string => {
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'B';
+    if (score >= 70) return 'C';
+    if (score >= 60) return 'D';
+    return 'E';
+};
+
 export const dataService = {
     // School data
     async getSchools(): Promise<School[]> {
@@ -31,8 +39,7 @@ export const dataService = {
         // Step 1: Fetch all schools once to create an efficient lookup map.
         const { data: schoolsData, error: schoolsError } = await supabase.from('schools').select('id, name');
         handleSupabaseError(schoolsError, 'getUsers -> fetching schools');
-        // FIX: Explicitly type the Map to ensure schoolMap.get() returns string | undefined, resolving the type error on schoolName.
-        const schoolMap = new Map<string, string>(schoolsData?.map(s => [s.id, s.name]));
+        const schoolMap = new Map<string, string>(schoolsData?.map(s => [s.id, s.name]) || []);
 
         // Step 2: Fetch profiles without the problematic join.
         let query = supabase.from('profiles').select(`
@@ -42,7 +49,7 @@ export const dataService = {
             role,
             avatar_url,
             school_id,
-            level
+            class_level
         `);
         
         if (filters.role) {
@@ -56,26 +63,19 @@ export const dataService = {
         handleSupabaseError(profilesError, 'getUsers -> fetching profiles');
 
         // Step 3: Manually "join" the school name on the client side.
-        const usersWithEmail = await Promise.all((profiles || []).map(async (profile) => {
-             const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(profile.id);
-             if (authError) console.error(`Could not fetch email for user ${profile.id}`, authError);
-             return {
-                ...profile,
-                email: authUser?.user?.email || ''
-             }
-        }));
-
-        return usersWithEmail.map(profile => ({
+        // Email is not reliably available without admin rights, so it's safer to omit it here.
+        // It's primarily available on login.
+        return (profiles || []).map(profile => ({
             id: profile.id,
-            email: profile.email, 
+            email: '', // Not fetching email here to avoid admin rights requirement
             identityNumber: profile.identity_number,
             name: profile.full_name,
             role: profile.role as UserRole,
             avatarUrl: profile.avatar_url,
             schoolId: profile.school_id,
             schoolName: profile.school_id ? schoolMap.get(profile.school_id) : undefined,
-            level: profile.level,
-        })) || [];
+            level: profile.class_level,
+        }));
     },
     
     async getUserCount(filters: { role?: UserRole; schoolId?: string } = {}): Promise<number> {
@@ -97,14 +97,13 @@ export const dataService = {
             .from('grades')
             .select(`
                 score,
-                grade,
                 subjects ( name )
             `)
             .eq('student_id', studentId);
             
         handleSupabaseError(error, 'getGradesForStudent');
         // @ts-ignore
-        return data?.map(g => ({ subject: g.subjects.name, score: g.score, grade: g.grade })) || [];
+        return data?.map(g => ({ subject: g.subjects.name, score: g.score, grade: calculateGrade(g.score) })) || [];
     },
 
     // Teacher Notes
@@ -129,7 +128,7 @@ export const dataService = {
     // Attendance
     async getAttendanceForStudent(studentId: string): Promise<{ date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpha' }[]> {
         const { data, error } = await supabase
-            .from('attendance')
+            .from('attendances')
             .select('date, status')
             .eq('student_id', studentId);
 
@@ -152,38 +151,60 @@ export const dataService = {
 
     // Gamification
     async getGamificationProfile(studentId: string): Promise<GamificationProfile | null> {
-         const { data, error } = await supabase
-            .from('gamification_profiles')
-            .select(`
-                points,
-                level,
-                student_badges ( badges ( id, name, description, icon ) ),
-                student_progress ( progress, subjects ( name ) )
-            `)
-            .eq('student_id', studentId)
-            .single();
+        try {
+            const { data: profileData, error: profileError } = await supabase
+                .from('gamification_profiles')
+                .select('points, level')
+                .eq('student_id', studentId)
+                .single();
 
-        if (error && error.code !== 'PGRST116') {
-             handleSupabaseError(error, 'getGamificationProfile');
-        }
-        if (!data) return null;
+            if (profileError && profileError.code !== 'PGRST116') { // Ignore no rows found
+                handleSupabaseError(profileError, 'getGamificationProfile (profile)');
+            }
+            if (!profileData) return null;
 
-        const profile: GamificationProfile = {
-            studentId,
-            points: data.points,
-            level: data.level,
-            // @ts-ignore
-            progress: (data.student_progress || []).reduce((acc: any, prog: any) => {
+            const { data: progressData, error: progressError } = await supabase
+                .from('student_progress')
+                .select('progress, subjects(name)')
+                .eq('student_id', studentId);
+            handleSupabaseError(progressError, 'getGamificationProfile (progress)');
+            
+            const progressMap = (progressData || []).reduce((acc: any, prog: any) => {
                 if (prog.subjects) {
                    acc[prog.subjects.name] = prog.progress;
                 }
                 return acc;
-            }, {}),
+            }, {});
+
+            const { data: badgesData, error: badgesError } = await supabase
+                .from('student_badges')
+                .select('badges(id, name, description, icon)')
+                .eq('student_id', studentId);
+            handleSupabaseError(badgesError, 'getGamificationProfile (badges)');
+
             // @ts-ignore
-            badges: (data.student_badges || []).map((b: any) => b.badges).filter(Boolean),
-        };
-        return profile;
+            const badgesList = (badgesData || []).map((b: any) => b.badges).filter(Boolean);
+
+            return {
+                studentId,
+                points: profileData.points,
+                level: profileData.level,
+                progress: progressMap,
+                badges: badgesList,
+            };
+        } catch (e) {
+            console.error("Failed to fetch gamification profile:", e);
+            // Return a default or empty object to prevent dashboard crash
+            return {
+                studentId,
+                points: 0,
+                level: 1,
+                progress: {},
+                badges: [],
+            };
+        }
     },
+
 
     // Announcements
     async getAnnouncements(): Promise<Announcement[]> {
