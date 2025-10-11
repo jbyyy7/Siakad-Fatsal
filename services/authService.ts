@@ -2,18 +2,25 @@ import { User, UserRole } from '../types';
 import { supabase } from './supabaseClient';
 import { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
 
-// Helper function to map database role string (e.g., 'murid') to the app's UserRole enum (e.g., 'Murid')
-// FIX: Refactored to use Object.entries for improved type safety and to resolve a potential linting/compilation issue with the `key` variable.
+// Helper function to map database role string (e.g., 'murid') to the app's UserRole enum (e.g., 'Siswa')
 const toUserRoleEnum = (dbRole: any): UserRole => {
-    // Find the entry in UserRole enum (e.g., ['STUDENT', 'Murid'])
-    // whose value's lowercase version matches the dbRole.
-    // FIX: Safely convert dbRole to a string before calling toLowerCase to prevent runtime errors.
     const roleString = String(dbRole || '').toLowerCase();
+    
+    // Handle legacy role names from the database for backward compatibility.
+    if (roleString === 'murid') {
+        return UserRole.STUDENT; // Maps 'murid' to 'Siswa'
+    }
+    if (roleString === 'ketua yayasan') {
+        return UserRole.FOUNDATION_HEAD; // Maps 'ketua yayasan' to 'Kepala Yayasan'
+    }
+
+    // Handle current role names.
     const roleEntry = Object.entries(UserRole).find(
         ([, value]) => value.toLowerCase() === roleString
     );
-    // If an entry is found, return the enum value (e.g., 'Murid').
-    // Otherwise, fallback to the original dbRole (though this shouldn't happen with correct data).
+    
+    // If an entry is found, return the enum value.
+    // Otherwise, fallback to the original dbRole.
     return roleEntry ? roleEntry[1] : dbRole as UserRole;
 };
 

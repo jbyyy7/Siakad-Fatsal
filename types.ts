@@ -1,12 +1,13 @@
 
+
 // FIX: Removed a circular dependency. The `User` type is defined in this file and does not need to be imported.
 
 export enum UserRole {
   ADMIN = 'Admin',
-  FOUNDATION_HEAD = 'Ketua Yayasan',
+  FOUNDATION_HEAD = 'Kepala Yayasan',
   PRINCIPAL = 'Kepala Sekolah',
   TEACHER = 'Guru',
-  STUDENT = 'Murid',
+  STUDENT = 'Siswa',
 }
 
 export interface User {

@@ -4,13 +4,29 @@ import {
     AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry, Grade
 } from '../types';
 
+// Helper to map DB role names to consistent App enum values
+const toUserRoleEnum = (dbRole: any): UserRole => {
+    const roleString = String(dbRole || '').toLowerCase();
+    // Handle legacy role names for backward compatibility.
+    if (roleString === 'murid') return UserRole.STUDENT; // Maps 'murid' to 'Siswa'
+    if (roleString === 'ketua yayasan') return UserRole.FOUNDATION_HEAD; // Maps 'ketua yayasan' to 'Kepala Yayasan'
+
+    // Handle current role names.
+    const roleEntry = Object.entries(UserRole).find(
+        ([, value]) => value.toLowerCase() === roleString
+    );
+    
+    return roleEntry ? roleEntry[1] : dbRole as UserRole;
+};
+
+
 // Helper to convert snake_case from DB to camelCase for app
 const mapUserFromDb = (dbUser: any): User => ({
     id: dbUser.id,
     email: dbUser.email,
     identityNumber: dbUser.identity_number,
     name: dbUser.full_name,
-    role: dbUser.role as UserRole,
+    role: toUserRoleEnum(dbUser.role),
     avatarUrl: dbUser.avatar_url,
     schoolId: dbUser.school_id,
     schoolName: dbUser.school?.name || undefined,
