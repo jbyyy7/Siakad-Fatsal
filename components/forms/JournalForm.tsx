@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { TeachingJournal, User, Class, Subject } from '../../types';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 
 interface JournalFormProps {

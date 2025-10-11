@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-// FIX: Import User and UserRole types
 import { User, UserRole } from '../types';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -31,9 +31,9 @@ import TeachingJournalPage from './pages/TeachingJournalPage';
 import GradesPage from './pages/GradesPage';
 import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
-import ProfileSettingsPage from './pages/ProfileSettingsPage';
 
 
 interface DashboardProps {
@@ -61,47 +61,70 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar user={user} isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={user} onLogout={onLogout} onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-          <Routes>
-            <Route path="/" element={renderDashboardByRole()} />
-            
-            {/* Universal Routes */}
-            <Route path="/pengaturan-akun" element={<ProfileSettingsPage user={user} />} />
-            
-            {/* Admin Routes */}
+  const renderRoutesByRole = () => {
+    switch (user.role) {
+      case UserRole.ADMIN:
+        return (
+          <>
             <Route path="/kelola-pengguna" element={<ManageUsersPage />} />
             <Route path="/kelola-sekolah" element={<ManageSchoolsPage />} />
             <Route path="/kelola-mapel" element={<ManageSubjectsPage />} />
             <Route path="/kelola-kelas" element={<ManageClassesPage />} />
+            <Route path="/pantau-absensi" element={<AdminAttendancePage user={user} />} />
+            <Route path="/pantau-nilai" element={<AdminGradesPage user={user} />} />
             <Route path="/pengaturan-sistem" element={<SystemSettingsPage />} />
-            <Route path="/pantau-absensi" element={<AdminAttendancePage />} />
-            <Route path="/pantau-nilai" element={<AdminGradesPage />} />
-            
-            {/* Foundation Head Routes */}
+          </>
+        );
+      case UserRole.FOUNDATION_HEAD:
+        return (
+          <>
             <Route path="/laporan-akademik" element={<AcademicReportPage />} />
             <Route path="/data-sekolah" element={<ManageSchoolsPage />} />
-            <Route path="/pengumuman" element={<AnnouncementsPage user={user}/>} />
-
-            {/* Principal Routes */}
-            <Route path="/data-guru" element={<TeacherDataPage user={user}/>} />
-            <Route path="/data-siswa" element={<StudentDataPage user={user}/>} />
-            <Route path="/laporan-sekolah" element={<SchoolReportPage user={user}/>} />
-
-            {/* Teacher Routes */}
-            <Route path="/input-nilai" element={<InputGradesPage user={user}/>} />
-            <Route path="/absensi-siswa" element={<StudentAttendancePage user={user}/>} />
-            <Route path="/kelas-saya" element={<MyClassPage user={user}/>} />
-            <Route path="/jurnal-mengajar" element={<TeachingJournalPage user={user}/>} />
-
-            {/* Student Routes */}
+            <Route path="/pengumuman" element={<AnnouncementsPage user={user} />} />
+          </>
+        );
+      case UserRole.PRINCIPAL:
+        return (
+          <>
+            <Route path="/data-guru" element={<TeacherDataPage user={user} />} />
+            <Route path="/data-siswa" element={<StudentDataPage user={user} />} />
+            <Route path="/laporan-sekolah" element={<SchoolReportPage user={user} />} />
+            <Route path="/pengumuman" element={<AnnouncementsPage user={user} />} />
+          </>
+        );
+      case UserRole.TEACHER:
+        return (
+          <>
+            <Route path="/input-nilai" element={<InputGradesPage user={user} />} />
+            <Route path="/absensi-siswa" element={<StudentAttendancePage user={user} />} />
+            <Route path="/kelas-saya" element={<MyClassPage user={user} />} />
+            <Route path="/jurnal-mengajar" element={<TeachingJournalPage user={user} />} />
+          </>
+        );
+      case UserRole.STUDENT:
+        return (
+          <>
             <Route path="/lihat-nilai" element={<GradesPage user={user} />} />
             <Route path="/jadwal-pelajaran" element={<ClassSchedulePage />} />
             <Route path="/absensi" element={<MyAttendancePage user={user} />} />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar user={user} isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Header user={user} onLogout={onLogout} onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+          <Routes>
+            <Route path="/" element={renderDashboardByRole()} />
+            <Route path="/pengaturan-akun" element={<ProfileSettingsPage user={user} />} />
+            {renderRoutesByRole()}
+            {/* Fallback route can be added here for 404 */}
           </Routes>
         </main>
       </div>

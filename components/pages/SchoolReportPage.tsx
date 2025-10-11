@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User } from '../../types';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 

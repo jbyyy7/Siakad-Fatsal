@@ -1,142 +1,84 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Card from '../Card';
-import { dataService } from '../../services/dataService';
-import { School, Class, Subject, User } from '../../types';
+import { User, School, Class } from '../../types';
+// import { dataService } from '../../services/dataService';
 
-const AdminGradesPage: React.FC = () => {
-    const [schools, setSchools] = useState<School[]>([]);
-    const [classes, setClasses] = useState<Class[]>([]);
-    const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [students, setStudents] = useState<(User & {grade?: number})[]>([]);
 
-    const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
-    const [selectedClassId, setSelectedClassId] = useState<string>('');
-    const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+interface AdminGradesPageProps {
+    user: User;
+}
+
+const AdminGradesPage: React.FC<AdminGradesPageProps> = ({ user }) => {
+    // MOCK DATA
+    const mockGradesData = [
+        { id: 1, studentName: 'Ahmad Dahlan', className: 'MA Kelas 10-A', subject: 'Matematika', score: 85, grade: 'A-' },
+        { id: 2, studentName: 'Siti Aminah', className: 'MA Kelas 10-A', subject: 'Matematika', score: 92, grade: 'A' },
+        { id: 3, studentName: 'Zainal Arifin', className: 'MTs Kelas 8-B', subject: 'IPA', score: 75, grade: 'B' },
+        { id: 4, studentName: 'Dewi Lestari', className: 'MI Kelas 5', subject: 'Bahasa Indonesia', score: 88, grade: 'A-' },
+        { id: 5, studentName: 'Fajar Nugroho', className: 'MA Kelas 11-A', subject: 'Fisika', score: 68, grade: 'C+' },
+    ];
     
-    const [isLoading, setIsLoading] = useState({
-        page: true,
-        classes: false,
-        subjects: false,
-        students: false,
-    });
-    const [error, setError] = useState<string | null>(null);
+    // In a real app, you would fetch these from dataService
+    const [schools, setSchools] = useState<School[]>([{id: 'ma_fs', name: 'MA Fathus Salafi', level: 'MA', address: '...'}]);
+    const [classes, setClasses] = useState<Class[]>([{id: '10a', name: 'MA Kelas 10-A', schoolId: 'ma_fs'}]);
 
-    // Fetch initial schools
-    useEffect(() => {
-        const fetchSchools = async () => {
-            setIsLoading(prev => ({ ...prev, page: true }));
-            try {
-                const schoolsData = await dataService.getSchools();
-                setSchools(schoolsData);
-                if (schoolsData.length > 0) {
-                    setSelectedSchoolId(schoolsData[0].id);
-                }
-            } catch (err) {
-                console.error("Failed to fetch schools", err);
-                setError("Gagal memuat data sekolah.");
-            } finally {
-                setIsLoading(prev => ({ ...prev, page: false }));
-            }
-        };
-        fetchSchools();
-    }, []);
+    const [selectedSchool, setSelectedSchool] = useState('');
+    const [selectedClass, setSelectedClass] = useState('');
+    const [grades, setGrades] = useState(mockGradesData);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch classes and subjects when school changes
-    useEffect(() => {
-        if (!selectedSchoolId) return;
-        const fetchSchoolData = async () => {
-            setIsLoading(prev => ({ ...prev, classes: true, subjects: true }));
-            try {
-                const [classesData, subjectsData] = await Promise.all([
-                    dataService.getClasses({ schoolId: selectedSchoolId }),
-                    dataService.getSubjects({ schoolId: selectedSchoolId }),
-                ]);
-                setClasses(classesData);
-                setSubjects(subjectsData);
-                if (classesData.length > 0) setSelectedClassId(classesData[0].id);
-                if (subjectsData.length > 0) setSelectedSubjectId(subjectsData[0].id);
-            } catch (err) {
-                console.error("Failed to fetch school data", err);
-            } finally {
-                setIsLoading(prev => ({ ...prev, classes: false, subjects: false }));
-            }
-        };
-        fetchSchoolData();
-    }, [selectedSchoolId]);
-    
-    // Fetch students and their grades
-    useEffect(() => {
-        if (!selectedClassId || !selectedSubjectId) {
-            setStudents([]);
-            return;
-        }
-        const fetchStudentGrades = async () => {
-             setIsLoading(prev => ({ ...prev, students: true }));
-             try {
-                // In a real app, you'd fetch grades for a specific class/subject
-                const studentsInClass = await dataService.getStudentsInClass(selectedClassId);
-                // Mock grades
-                const studentsWithGrades = studentsInClass.map(s => ({
-                    ...s,
-                    grade: Math.floor(Math.random() * 31) + 70 // random grade 70-100
-                }));
-                setStudents(studentsWithGrades);
-             } catch(err) {
-                 console.error("Failed to fetch student grades", err);
-                 setError("Gagal memuat nilai siswa.");
-             } finally {
-                 setIsLoading(prev => ({ ...prev, students: false }));
-             }
-        };
-        fetchStudentGrades();
-    }, [selectedClassId, selectedSubjectId]);
-
+    // useEffect for fetching data would go here
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Pantau Nilai Siswa</h2>
-             <Card>
-                <div className="p-4 border-b grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Sekolah</label>
-                        <select value={selectedSchoolId} onChange={e => setSelectedSchoolId(e.target.value)} disabled={isLoading.page} className="mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm">
-                            {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Kelas</label>
-                        <select value={selectedClassId} onChange={e => setSelectedClassId(e.target.value)} disabled={isLoading.classes} className="mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm">
-                            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
-                         <select value={selectedSubjectId} onChange={e => setSelectedSubjectId(e.target.value)} disabled={isLoading.subjects} className="mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm">
-                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                    </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Pantau Nilai Seluruh Sekolah</h2>
+            <Card className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <select
+                        value={selectedSchool}
+                        onChange={(e) => setSelectedSchool(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                        <option value="">Semua Sekolah</option>
+                        {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                    <select
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        disabled={!selectedSchool}
+                    >
+                        <option value="">Semua Kelas</option>
+                        {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
                 </div>
-                 <div className="overflow-x-auto">
-                    {isLoading.students ? <p className="p-4 text-center">Memuat nilai...</p> : (
-                    <table className="w-full text-sm text-left text-gray-500">
+            </Card>
+            <Card>
+                <div className="overflow-x-auto">
+                    {isLoading ? <p>Memuat...</p> : (
+                        <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3">Nama Siswa</th>
-                                <th className="px-6 py-3 text-center">Nilai</th>
+                            <th className="px-6 py-3">Siswa</th>
+                            <th className="px-6 py-3">Kelas</th>
+                            <th className="px-6 py-3">Mapel</th>
+                            <th className="px-6 py-3 text-center">Skor</th>
+                            <th className="px-6 py-3 text-center">Nilai</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {students.map(student => (
-                                <tr key={student.id} className="bg-white border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
-                                    <td className="px-6 py-4 text-center font-semibold">
-                                        {student.grade || 'N/A'}
-                                    </td>
-                                </tr>
+                            {grades.map(record => (
+                            <tr key={record.id} className="bg-white border-b hover:bg-gray-50">
+                                <td className="px-6 py-4 font-medium text-gray-900">{record.studentName}</td>
+                                <td className="px-6 py-4">{record.className}</td>
+                                <td className="px-6 py-4">{record.subject}</td>
+                                <td className="px-6 py-4 text-center">{record.score}</td>
+                                <td className="px-6 py-4 text-center font-bold">{record.grade}</td>
+                            </tr>
                             ))}
                         </tbody>
-                    </table>
+                        </table>
                     )}
                 </div>
             </Card>

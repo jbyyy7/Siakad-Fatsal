@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, TeachingJournal } from '../../types';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import Card from '../Card';
 import Modal from '../ui/Modal';

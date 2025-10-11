@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User, AttendanceStatus } from '../../types';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { PrinterIcon } from '../icons/PrinterIcon';
 

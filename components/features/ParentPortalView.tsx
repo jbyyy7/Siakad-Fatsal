@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 import { User, NotificationSettings } from '../../types';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { WhatsappIcon } from '../icons/WhatsappIcon';
 

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, Class } from '../../types';
 import Card from '../Card';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 
 interface MyClassPageProps {

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Card from '../Card';
+// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 
 const AcademicReportPage: React.FC = () => {
