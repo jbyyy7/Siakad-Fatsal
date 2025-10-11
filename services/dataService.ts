@@ -17,14 +17,17 @@ export const dataService = {
     async getUsers(filters: { role?: UserRole; schoolId?: string } = {}): Promise<User[]> {
         let query = supabase.from('profiles').select('*, school:schools(name)');
         if (filters.role) {
-            // CRITICAL FIX: Ensure the exact enum value (e.g., 'Guru', 'Murid') is passed directly without modification.
-            query = query.eq('role', filters.role);
+            // FINAL FIX: The database enum expects lowercase values (e.g., 'murid', 'guru').
+            // The error message confirms this. Convert the role to lowercase before querying.
+            query = query.eq('role', filters.role.toLowerCase());
         }
         if (filters.schoolId) {
             query = query.eq('school_id', filters.schoolId);
         }
         const { data, error } = await query;
         if (error) throw error;
+        
+        // The toUserRoleEnum helper will correctly map the lowercase response from DB back to the app's format.
         return (data || []).map((u: any) => ({
             id: u.id,
             email: u.email,
