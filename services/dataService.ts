@@ -14,7 +14,7 @@ export const dataService = {
         }
         const { data, error } = await query;
         if (error) throw error;
-        return data.map((u: any) => ({
+        return (data || []).map((u: any) => ({
             id: u.id,
             email: u.email,
             identityNumber: u.identity_number,
@@ -60,7 +60,7 @@ export const dataService = {
     async getSchools(): Promise<School[]> {
         const { data, error } = await supabase.from('schools').select('*');
         if (error) throw error;
-        return data;
+        return data || [];
     },
     async getSchoolCount(): Promise<number> {
         const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
@@ -141,7 +141,7 @@ export const dataService = {
     async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: AttendanceStatus }[]> {
         const { data, error } = await supabase.from('attendance').select('date, status').eq('student_id', studentId);
         if (error) throw error;
-        return data;
+        return data || [];
     },
 
     // Teacher specific data
@@ -151,7 +151,7 @@ export const dataService = {
             .eq('teacher_id', teacherId)
             .eq('date', date);
         if (error) throw error;
-        return data.map((j: any) => ({
+        return (data || []).map((j: any) => ({
             subject: j.subject.name,
             class: j.class.name,
             topic: j.topic,
@@ -172,7 +172,7 @@ export const dataService = {
         }
         const { data, error } = await query;
         if (error) throw error;
-        return data.map((c: any) => ({
+        return (data || []).map((c: any) => ({
             id: c.id,
             name: c.name,
             schoolId: c.school_id,
@@ -206,7 +206,7 @@ export const dataService = {
     async getStudentsInClass(classId: string): Promise<User[]> {
         const { data, error } = await supabase.from('class_student').select('student:profiles(*, school:schools(name))').eq('class_id', classId);
         if (error) throw error;
-        return data.map((item: any) => ({
+        return (data || []).map((item: any) => ({
             id: item.student.id,
             email: item.student.email,
             identityNumber: item.student.identity_number,
@@ -224,7 +224,11 @@ export const dataService = {
         }
         const { data, error } = await query;
         if (error) throw error;
-        return data;
+        return (data || []).map((subject: any) => ({
+            id: subject.id,
+            name: subject.name,
+            schoolId: subject.school_id,
+        }));
     },
     async createSubject(subjectData: { name: string; schoolId: string }): Promise<void> {
         const { error } = await supabase.from('subjects').insert({ name: subjectData.name, school_id: subjectData.schoolId });
@@ -300,7 +304,7 @@ export const dataService = {
             .eq('subject_id', subjectId)
             .eq('date', date);
         if (error) throw error;
-        return data;
+        return data || [];
     },
     async saveAttendance(records: AttendanceRecord[]): Promise<void> {
         const { error } = await supabase.from('attendance').upsert(records, { onConflict: 'date, student_id, subject_id' });
@@ -313,7 +317,7 @@ export const dataService = {
             .select('*, class:classes(name), subject:subjects(name)')
             .eq('teacher_id', teacherId);
         if (error) throw error;
-        return data.map((j: any) => ({
+        return (data || []).map((j: any) => ({
             id: j.id,
             date: j.date,
             classId: j.class_id,
