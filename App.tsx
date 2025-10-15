@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 // FIX: Import User type
 import { User } from './types';
 import { authService } from './services/authService';
-import LoginPage from './components/LoginPage';
-import Dashboard from './components/Dashboard';
+const LoginPage = React.lazy(() => import('./components/LoginPage'));
+const Dashboard = React.lazy(() => import('./components/Dashboard'));
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -30,6 +31,7 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
+    toast.success(`Selamat datang, ${user.name}`);
   };
 
   const handleLogout = async () => {
@@ -46,19 +48,24 @@ const App: React.FC = () => {
   }
 
   return (
-    <Routes>
-      {!currentUser ? (
-        <>
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </>
-      ) : (
-        <>
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/*" element={<Dashboard user={currentUser} onLogout={handleLogout} />} />
-        </>
-      )}
-    </Routes>
+    <>
+      <Toaster position="top-right" />
+      <Suspense fallback={<div className="p-6">Memuat...</div>}>
+        <Routes>
+          {!currentUser ? (
+            <>
+              <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/*" element={<Dashboard user={currentUser} onLogout={handleLogout} />} />
+            </>
+          )}
+        </Routes>
+      </Suspense>
+    </>
   );
 };
 

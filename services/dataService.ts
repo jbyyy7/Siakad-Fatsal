@@ -1,23 +1,9 @@
 import { supabase } from './supabaseClient';
 import { 
-    User, UserRole, School, Announcement, Subject, Class, 
-    AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry, Grade
+  User, UserRole, School, Announcement, Subject, Class, 
+  AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry, Grade
 } from '../types';
-
-// Helper to map DB role names to consistent App enum values
-const toUserRoleEnum = (dbRole: any): UserRole => {
-    const roleString = String(dbRole || '').toLowerCase();
-    // Handle legacy role names for backward compatibility.
-    if (roleString === 'murid') return UserRole.STUDENT; // Maps 'murid' to 'Siswa'
-    if (roleString === 'ketua yayasan') return UserRole.FOUNDATION_HEAD; // Maps 'ketua yayasan' to 'Kepala Yayasan'
-
-    // Handle current role names.
-    const roleEntry = Object.entries(UserRole).find(
-        ([, value]) => value.toLowerCase() === roleString
-    );
-    
-    return roleEntry ? roleEntry[1] : dbRole as UserRole;
-};
+import { toUserRoleEnum } from '../utils/roleMapping';
 
 
 // Helper to convert snake_case from DB to camelCase for app
@@ -181,9 +167,11 @@ export const dataService = {
   async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
     const { data, error } = await supabase.from('grades').select('score, subject:subjects(name)').eq('student_id', studentId);
     if (error) throw error;
-    return data.map(g => ({
+    // Supabase may return joined relation as an array or an object depending on query.
+    const getSubjectName = (subjectField: any) => Array.isArray(subjectField) ? subjectField[0]?.name : subjectField?.name;
+    return data.map((g: any) => ({
         score: g.score,
-        subject: g.subject.name,
+        subject: getSubjectName(g.subject) ?? 'Unknown',
         grade: getGradeLetter(g.score),
     }));
   },
@@ -199,7 +187,9 @@ export const dataService = {
   async getClassForStudent(studentId: string): Promise<string | null> { 
     const { data, error } = await supabase.from('class_members').select('class:classes(name)').eq('student_id', studentId).single();
     if (error || !data) return null;
-    return data.class.name;
+    const classField = (data as any).class;
+    const className = Array.isArray(classField) ? classField[0]?.name : classField?.name;
+    return className ?? null;
   },
 
   // GAMIFICATION (MOCK)

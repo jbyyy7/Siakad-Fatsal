@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { authService } from '../services/authService';
 import { User } from '../types';
 import { AcademicCapIcon } from './icons/AcademicCapIcon';
@@ -24,6 +25,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       onLogin(user);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat login.');
+      toast.error(err.message || 'Terjadi kesalahan saat login.');
     } finally {
       setIsLoading(false);
     }

@@ -1,10 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://xlkphzmjbfyzpiqnnyvc.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa3Boem1qYmZ5enBpcW5ueXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNzk4OTMsImV4cCI6MjA3NTY1NTg5M30.WMOI-22Maro_NtfQff9V7irqy2eRTy8lPtSljh3vLrs';
+// Read Supabase configuration from Vite environment variables.
+// On Vercel set these as project/environment variables.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Supabase URL and anon key are required.');
+  // Helpful runtime message for developers if env vars are missing.
+  throw new Error('Supabase URL and anon key are required. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
