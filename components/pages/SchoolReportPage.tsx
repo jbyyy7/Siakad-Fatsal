@@ -13,6 +13,10 @@ interface SchoolReportPageProps {
 const SchoolReportPage: React.FC<SchoolReportPageProps> = ({ user }) => {
   const [gradeData, setGradeData] = useState<{ subject: string; avg: number; }[]>([]);
   const [attendanceData, setAttendanceData] = useState<{ month: string; percentage: number; }[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [semesters, setSemesters] = useState<any[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +30,11 @@ const SchoolReportPage: React.FC<SchoolReportPageProps> = ({ user }) => {
         ]);
         setGradeData(grades);
         setAttendanceData(attendance);
+        // fetch classes & semesters for filters
+        const cls = await dataService.getClasses({ schoolId: user.schoolId });
+        const sem = await dataService.getSemesters({ schoolId: user.schoolId });
+        setClasses(cls);
+        setSemesters(sem);
       } catch (error) {
         console.error("Failed to fetch school report data:", error);
       } finally {
@@ -40,6 +49,26 @@ const SchoolReportPage: React.FC<SchoolReportPageProps> = ({ user }) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Laporan Sekolah - {user.schoolName}</h2>
       {isLoading ? <p>Memuat laporan...</p> : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="col-span-full flex gap-2 mb-4 items-end">
+                <div>
+                  <label className="block text-xs">Pilih Kelas</label>
+                  <select className="p-1" value={selectedClass ?? ''} onChange={(e) => setSelectedClass(e.target.value || null)}>
+                    <option value="">Semua Kelas</option>
+                    {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs">Pilih Semester</label>
+                  <select className="p-1" value={selectedSemester ?? ''} onChange={(e) => setSelectedSemester(e.target.value || null)}>
+                    <option value="">Semua Semester</option>
+                    {semesters.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="ml-auto flex gap-2">
+                  <button className="btn btn-primary" onClick={() => { window.location.href = `/api/export-grades?schoolId=${user.schoolId}&classId=${selectedClass ?? ''}&semesterId=${selectedSemester ?? ''}` }}>Unduh CSV Nilai</button>
+                  <button className="btn btn-secondary" onClick={() => { window.location.href = `/api/export-attendance?schoolId=${user.schoolId}&classId=${selectedClass ?? ''}` }}>Unduh CSV Absensi</button>
+                </div>
+            </div>
             <Card title="Rata-rata Nilai per Mata Pelajaran">
                 <div style={{ width: '100%', height: 300 }}>
                       <ResponsiveContainer>

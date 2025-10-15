@@ -14,11 +14,13 @@
   "dependencies": {
     "@google/genai": "^0.14.1",
     "@supabase/supabase-js": "^2.22.0",
+    "@sendgrid/mail": "^8.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.25.1",
     "recharts": "^2.12.7"
     ,"react-hot-toast": "^2.5.4"
+    ,"xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

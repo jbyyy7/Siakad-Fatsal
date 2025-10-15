@@ -234,6 +234,13 @@ export const dataService = {
           schoolName: s.school.name
       }));
   },
+  async getSemesters(filters?: { schoolId?: string }): Promise<any[]> {
+    let query = supabase.from('semesters').select('*').order('start_date', { ascending: false });
+    if (filters?.schoolId) query = query.eq('school_id', filters.schoolId);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
   async getStudentsInClass(classId: string): Promise<User[]> {
       const { data, error } = await supabase.from('class_members').select('student:profiles(*, school:schools(name))').eq('class_id', classId);
       if (error) throw error;

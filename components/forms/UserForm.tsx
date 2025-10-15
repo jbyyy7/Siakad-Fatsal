@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, School, UserRole } from '../../types';
+import toast from 'react-hot-toast';
+import Modal from '../ui/Modal';
+import { dataService } from '../../services/dataService';
 
 interface UserFormProps {
   user: User | null;
@@ -28,6 +31,13 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     parentPhoneNumber: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [emailExists, setEmailExists] = useState<boolean | null>(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const emailDebounce = useRef<number | undefined>(undefined);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [schoolQuery, setSchoolQuery] = useState('');
+  const [schoolOptions, setSchoolOptions] = useState<School[]>(schools || []);
   const isEditMode = !!user;
 
   useEffect(() => {
@@ -52,15 +62,48 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     }
   }, [user]);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const s = await dataService.getSchools();
+        if (mounted && s) setSchoolOptions(s);
+      } catch (e) {
+        console.warn('Failed to fetch schools for autocomplete', e);
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'email') {
+      setEmailExists(null);
+      setCheckingEmail(true);
+      if (emailDebounce.current) window.clearTimeout(emailDebounce.current);
+      emailDebounce.current = window.setTimeout(() => checkEmail(value), 600);
+    }
+    if (name === 'password') {
+      setPasswordStrength(calculatePasswordStrength(value));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+    // role-based validation: students require parent info
+  if (formData.role === UserRole.STUDENT && !formData.parentName) {
+      toast.error('Siswa harus mencantumkan nama orang tua/wali');
+      setIsLoading(false);
+      return;
+    }
+    // Prevent creating when email already exists
+    if (!isEditMode && emailExists) {
+      toast.error('Email sudah terdaftar, gunakan email lain');
+      setIsLoading(false);
+      return;
+    }
     const dataToSave = { ...formData };
     if (isEditMode) {
       // @ts-ignore
@@ -70,8 +113,43 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     }
     
     await onSave(dataToSave);
+    toast.success(isEditMode ? 'Perubahan tersimpan' : 'Pengguna berhasil dibuat');
     setIsLoading(false);
   };
+
+  async function checkEmail(email: string) {
+    if (!email) {
+      setEmailExists(null);
+      setCheckingEmail(false);
+      return;
+    }
+    try {
+      const resp = await fetch('/api/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const json = await resp.json();
+      setEmailExists(!!json.exists);
+      if (json.exists) toast.error('Email sudah terdaftar');
+    } catch (e) {
+      console.error('email check failed', e);
+    } finally {
+      setCheckingEmail(false);
+    }
+  }
+
+  function generatePassword() {
+    const pw = Math.random().toString(36).slice(2, 10) + 'A1!';
+    setFormData(prev => ({ ...prev, password: pw }));
+    setPasswordStrength(calculatePasswordStrength(pw));
+  }
+
+  function calculatePasswordStrength(pw: string) {
+    let score = 0;
+    if (!pw) return 0;
+    if (pw.length >= 8) score += 1;
+    if (/[A-Z]/.test(pw)) score += 1;
+    if (/[0-9]/.test(pw)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+    return score; // 0-4
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
@@ -139,45 +217,104 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
             </div>
             <div>
               <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700">Sekolah</label>
-              <select id="schoolId" name="schoolId" value={formData.schoolId} onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                <option value="">Tidak ada/Yayasan</option>
-                {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
-              </select>
+              <div className="relative">
+                <input id="schoolId" name="schoolId" value={schoolQuery || (schoolOptions.find(s=>s.id===formData.schoolId)?.name || '')} onChange={(e) => { setSchoolQuery(e.target.value); }} placeholder="Cari atau pilih sekolah" className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
+                {schoolQuery && (
+                  <div className="absolute z-20 w-full bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
+                    {schoolOptions.filter(s => s.name.toLowerCase().includes(schoolQuery.toLowerCase())).map(s => (
+                      <div key={s.id} onClick={() => { setFormData(prev=>({...prev, schoolId: s.id})); setSchoolQuery(s.name); }} className="p-2 hover:bg-gray-100 cursor-pointer">{s.name}</div>
+                    ))}
+                    {schoolOptions.filter(s => s.name.toLowerCase().includes(schoolQuery.toLowerCase())).length === 0 && (
+                      <div className="p-2 text-sm text-gray-500">Tidak ada hasil</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
         </div>
-         <div>
+        <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required disabled={isEditMode} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100" />
+          <div className="relative">
+            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required disabled={isEditMode} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100" />
+            {checkingEmail && <span className="absolute right-2 top-2 text-sm text-gray-500">Memeriksa...</span>}
+            {emailExists && <span className="absolute right-2 top-2 text-sm text-red-600">Terdaftar</span>}
+            {emailExists === false && <span className="absolute right-2 top-2 text-sm text-green-600">Tersedia</span>}
+          </div>
         </div>
         {!isEditMode && (
           <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Kata Sandi Awal</label>
-              <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required minLength={6} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="Minimal 6 karakter" />
+              <div className="flex items-center gap-2">
+                <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required minLength={6} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="Minimal 6 karakter" />
+                <button type="button" onClick={generatePassword} className="px-2 py-1 bg-gray-100 rounded">Generate</button>
+              </div>
+              <div className="mt-1 text-sm">
+                <div className="h-2 w-full bg-gray-200 rounded">
+                  <div style={{ width: `${(passwordStrength / 4) * 100}%` }} className={`h-2 rounded ${passwordStrength <=1 ? 'bg-red-500' : passwordStrength===2 ? 'bg-yellow-400' : 'bg-green-500'}`}></div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Kekuatan: {['Lemah','Cukup','Baik','Kuat'][Math.max(0, passwordStrength-1)] || 'Lemah'}</div>
+              </div>
           </div>
         )}
       </fieldset>
       
-      {/* Section: Data Orang Tua */}
-      <fieldset className="space-y-4 border-t pt-4">
-        <legend className="text-lg font-semibold text-gray-800 -mt-8 bg-white px-2">Data Orang Tua</legend>
-        <div>
-            <label htmlFor="parentName" className="block text-sm font-medium text-gray-700">Nama Orang Tua / Wali</label>
-            <input type="text" id="parentName" name="parentName" value={formData.parentName} onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
-        </div>
-         <div>
-            <label htmlFor="parentPhoneNumber" className="block text-sm font-medium text-gray-700">Nomor Telepon Orang Tua / Wali</label>
-            <input type="tel" id="parentPhoneNumber" name="parentPhoneNumber" value={formData.parentPhoneNumber} onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
-        </div>
-      </fieldset>
+      {/* Section: Data Orang Tua (only for Students) */}
+      {formData.role === UserRole.STUDENT && (
+        <fieldset className="space-y-4 border-t pt-4">
+          <legend className="text-lg font-semibold text-gray-800 -mt-8 bg-white px-2">Data Orang Tua</legend>
+          <div>
+              <label htmlFor="parentName" className="block text-sm font-medium text-gray-700">Nama Orang Tua / Wali</label>
+              <input type="text" id="parentName" name="parentName" value={formData.parentName} onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
+          </div>
+           <div>
+              <label htmlFor="parentPhoneNumber" className="block text-sm font-medium text-gray-700">Nomor Telepon Orang Tua / Wali</label>
+              <input type="tel" id="parentPhoneNumber" name="parentPhoneNumber" value={formData.parentPhoneNumber} onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
+          </div>
+        </fieldset>
+      )}
 
       <div className="flex justify-end pt-4 space-x-2">
         <button type="button" onClick={onClose} disabled={isLoading} className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
           Batal
         </button>
-        <button type="submit" disabled={isLoading} className="px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 disabled:bg-brand-400">
+        <button type="button" onClick={() => setIsPreviewOpen(true)} disabled={isLoading} className="px-4 py-2 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200">
+          Preview
+        </button>
+        <button type="submit" disabled={isLoading || (!isEditMode && emailExists === true)} className="px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 disabled:bg-brand-400">
           {isLoading ? 'Menyimpan...' : 'Simpan'}
         </button>
       </div>
+      {isPreviewOpen && (
+        <Modal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} title={isEditMode ? 'Preview Perubahan' : 'Preview Pengguna Baru'} footer={<>
+          <button onClick={() => setIsPreviewOpen(false)} className="px-4 py-2 bg-gray-200 rounded mr-2">Kembali</button>
+          <button onClick={async () => { setIsPreviewOpen(false); await handleSubmit(new Event('submit') as any); }} className="px-4 py-2 bg-brand-600 text-white rounded">Konfirmasi & Simpan</button>
+        </>}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-4">
+              <img src={formData.avatarUrl} alt="avatar" className="w-16 h-16 rounded-full" />
+              <div>
+                <div className="font-semibold">{formData.name}</div>
+                <div className="text-sm text-gray-600">{formData.email}</div>
+                <div className="text-sm text-gray-600">{formData.identityNumber}</div>
+              </div>
+            </div>
+            <div>
+              <div className="text-sm font-medium">Peran</div>
+              <div className="text-sm">{formData.role}</div>
+            </div>
+            <div>
+              <div className="text-sm font-medium">Sekolah</div>
+              <div className="text-sm">{(schoolOptions.find(s => s.id === formData.schoolId)?.name) || 'Tidak ada'}</div>
+            </div>
+            {formData.role === UserRole.STUDENT && (
+              <div>
+                <div className="text-sm font-medium">Orang Tua / Wali</div>
+                <div className="text-sm">{formData.parentName} — {formData.parentPhoneNumber}</div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </form>
   );
 };

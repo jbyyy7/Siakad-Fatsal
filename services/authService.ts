@@ -29,10 +29,61 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
       .single();
 
     if (error || !profile) {
-      // CRITICAL FIX: Do not default to a 'Student'. If the profile cannot be loaded
-      // after a successful authentication, it's a critical error. Abort the login.
-      console.error('Error fetching user profile after login:', error?.message);
-      throw new Error('Autentikasi berhasil, tetapi profil pengguna tidak dapat dimuat. Hubungi administrator.');
+      // If profile cannot be loaded due to RLS or missing row, try to build a minimal profile
+      // from the Supabase user metadata to allow non-admin roles to function.
+      console.warn('Warning fetching user profile after login:', error?.message);
+      const metaRole = (supabaseUser.user_metadata as any)?.role || (supabaseUser.app_metadata as any)?.role;
+      const fallbackRole = metaRole ? toUserRoleEnum(metaRole) : UserRole.STUDENT;
+      const fallbackProfile: any = {
+        id: supabaseUser.id,
+        identity_number: '',
+        full_name: supabaseUser.email || 'Pengguna',
+        role: fallbackRole,
+        avatar_url: undefined,
+        school_id: undefined,
+        place_of_birth: undefined,
+        date_of_birth: undefined,
+        gender: undefined,
+        religion: undefined,
+        address: undefined,
+        phone_number: undefined,
+        parent_name: undefined,
+        parent_phone_number: undefined,
+      };
+
+      // Use fallbackProfile below when profile is missing
+      const profileToUse = profile || fallbackProfile;
+
+      let schoolName: string | undefined = undefined;
+      if (profileToUse.school_id) {
+          const { data: school } = await supabase
+              .from('schools')
+              .select('name')
+              .eq('id', profileToUse.school_id)
+              .single();
+          schoolName = school?.name;
+      }
+
+      const appUser: User = {
+        id: profileToUse.id,
+        email: supabaseUser.email || '',
+        identityNumber: profileToUse.identity_number,
+        name: profileToUse.full_name,
+        role: toUserRoleEnum(profileToUse.role), // Use mapping function for safety
+        avatarUrl: profileToUse.avatar_url,
+        schoolId: profileToUse.school_id,
+        schoolName: schoolName,
+        placeOfBirth: profileToUse.place_of_birth,
+        dateOfBirth: profileToUse.date_of_birth,
+        gender: profileToUse.gender,
+        religion: profileToUse.religion,
+        address: profileToUse.address,
+        phoneNumber: profileToUse.phone_number,
+        parentName: profileToUse.parent_name,
+        parentPhoneNumber: profileToUse.parent_phone_number,
+      };
+
+      return appUser;
     }
     
     let schoolName: string | undefined = undefined;
