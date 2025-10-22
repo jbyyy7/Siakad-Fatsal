@@ -73,6 +73,16 @@ CREATE INDEX IF NOT EXISTS idx_notifications_type ON public.notifications(type);
 -- 2. ADD MISSING COLUMNS TO EXISTING TABLES
 -- =====================================================
 
+-- Add email column if not exists
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='profiles' AND column_name='email') THEN
+        ALTER TABLE public.profiles ADD COLUMN email TEXT;
+        RAISE NOTICE 'Added email column to profiles';
+    END IF;
+END $$;
+
 -- Add school_name to profiles if not exists (for faster queries)
 DO $$ 
 BEGIN
@@ -98,6 +108,18 @@ BEGIN
     END IF;
 END $$;
 
+-- Populate email from auth.users if email is empty
+DO $$
+BEGIN
+    UPDATE public.profiles p
+    SET email = u.email
+    FROM auth.users u
+    WHERE p.id = u.id 
+    AND (p.email IS NULL OR p.email = '');
+    
+    RAISE NOTICE 'Populated email column from auth.users';
+END $$;
+
 -- =====================================================
 -- 3. CREATE RPC FUNCTIONS
 -- =====================================================
@@ -105,10 +127,29 @@ END $$;
 -- 3.1 Function to get email from identity number (for login)
 CREATE OR REPLACE FUNCTION public.get_email_from_identity(identity_number_input text)
 RETURNS text 
-LANGUAGE sql 
+LANGUAGE plpgsql
 SECURITY DEFINER 
 AS $$
-  SELECT email FROM public.profiles WHERE identity_number = identity_number_input LIMIT 1;
+DECLARE
+    user_email text;
+BEGIN
+    -- First try to get from profiles.email
+    SELECT email INTO user_email
+    FROM public.profiles 
+    WHERE identity_number = identity_number_input 
+    LIMIT 1;
+    
+    -- If profiles.email is empty, get from auth.users
+    IF user_email IS NULL OR user_email = '' THEN
+        SELECT u.email INTO user_email
+        FROM public.profiles p
+        JOIN auth.users u ON u.id = p.id
+        WHERE p.identity_number = identity_number_input
+        LIMIT 1;
+    END IF;
+    
+    RETURN user_email;
+END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_email_from_identity(text) TO anon, authenticated;
