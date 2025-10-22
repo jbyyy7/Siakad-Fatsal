@@ -70,7 +70,27 @@ CREATE INDEX IF NOT EXISTS idx_notifications_timestamp ON public.notifications(t
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON public.notifications(type);
 
 -- =====================================================
--- 2. ADD MISSING COLUMNS TO EXISTING TABLES
+-- 2. ADD STAFF TO USER_ROLE ENUM
+-- =====================================================
+
+-- Add Staff to the user_role enum type
+DO $$ 
+BEGIN
+    -- Check if Staff value already exists in enum
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_enum 
+        WHERE enumlabel = 'Staff' 
+        AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'user_role')
+    ) THEN
+        ALTER TYPE user_role ADD VALUE 'Staff';
+        RAISE NOTICE 'Added Staff to user_role enum';
+    ELSE
+        RAISE NOTICE 'Staff already exists in user_role enum';
+    END IF;
+END $$;
+
+-- =====================================================
+-- 3. ADD MISSING COLUMNS TO EXISTING TABLES
 -- =====================================================
 
 -- Add email column if not exists
@@ -121,10 +141,10 @@ BEGIN
 END $$;
 
 -- =====================================================
--- 3. CREATE RPC FUNCTIONS
+-- 4. CREATE RPC FUNCTIONS
 -- =====================================================
 
--- 3.1 Function to get email from identity number (for login)
+-- 4.1 Function to get email from identity number (for login)
 CREATE OR REPLACE FUNCTION public.get_email_from_identity(identity_number_input text)
 RETURNS text 
 LANGUAGE plpgsql
@@ -154,7 +174,7 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_email_from_identity(text) TO anon, authenticated;
 
--- 3.2 Function to delete user (cascade delete from auth and profile)
+-- 4.2 Function to delete user (cascade delete from auth and profile)
 CREATE OR REPLACE FUNCTION public.delete_user(uid uuid)
 RETURNS void 
 LANGUAGE plpgsql 
@@ -177,7 +197,7 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.delete_user(uuid) TO authenticated;
 
--- 3.3 Update updated_at trigger function
+-- 4.3 Update updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -194,7 +214,7 @@ CREATE TRIGGER teacher_attendance_updated_at
     EXECUTE FUNCTION update_updated_at();
 
 -- =====================================================
--- 4. ENABLE ROW LEVEL SECURITY
+-- 5. ENABLE ROW LEVEL SECURITY
 -- =====================================================
 
 ALTER TABLE public.password_resets ENABLE ROW LEVEL SECURITY;
@@ -203,7 +223,7 @@ ALTER TABLE public.class_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
--- 5. RLS POLICIES FOR PASSWORD_RESETS
+-- 6. RLS POLICIES FOR PASSWORD_RESETS
 -- =====================================================
 
 DROP POLICY IF EXISTS "Service role can manage password resets" ON public.password_resets;
@@ -219,7 +239,7 @@ CREATE POLICY "Users can view own password resets"
     USING (user_id = auth.uid());
 
 -- =====================================================
--- 6. RLS POLICIES FOR TEACHER_ATTENDANCE
+-- 7. RLS POLICIES FOR TEACHER_ATTENDANCE
 -- =====================================================
 
 -- Admin can view all
@@ -312,7 +332,7 @@ CREATE POLICY "Principal can manage their school teacher attendance"
     );
 
 -- =====================================================
--- 7. RLS POLICIES FOR STAFF ROLE (SCHOOL-SCOPED ADMIN)
+-- 8. RLS POLICIES FOR STAFF ROLE (SCHOOL-SCOPED ADMIN)
 -- =====================================================
 
 -- PROFILES TABLE - Staff can manage users in their school
@@ -524,7 +544,7 @@ CREATE POLICY "Staff can view teaching journals in their school"
     );
 
 -- =====================================================
--- 8. RLS POLICIES FOR CLASS_MEMBERS
+-- 9. RLS POLICIES FOR CLASS_MEMBERS
 -- =====================================================
 
 DROP POLICY IF EXISTS "Admin can manage class members" ON public.class_members;
@@ -580,7 +600,7 @@ CREATE POLICY "Students can view their class members"
     );
 
 -- =====================================================
--- 9. RLS POLICIES FOR NOTIFICATIONS
+-- 10. RLS POLICIES FOR NOTIFICATIONS
 -- =====================================================
 
 DROP POLICY IF EXISTS "Users can view their notifications" ON public.notifications;
@@ -608,7 +628,7 @@ CREATE POLICY "Users can update their own notifications"
     USING (auth.uid() = ANY(recipient_ids));
 
 -- =====================================================
--- 10. GRANT PERMISSIONS
+-- 11. GRANT PERMISSIONS
 -- =====================================================
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.password_resets TO authenticated;
@@ -619,7 +639,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.notifications TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE public.teacher_attendance_id_seq TO authenticated;
 
 -- =====================================================
--- 11. CREATE INDEXES FOR PERFORMANCE
+-- 12. CREATE INDEXES FOR PERFORMANCE
 -- =====================================================
 
 CREATE INDEX IF NOT EXISTS idx_profiles_school_id ON public.profiles(school_id);
