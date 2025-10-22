@@ -99,13 +99,17 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
 
     const mappedRole = toUserRoleEnum(profile.role);
     
-    // DEBUG: Log untuk troubleshooting
-    console.log('🔍 DEBUG LOGIN:', {
-      rawRole: profile.role,
-      mappedRole: mappedRole,
-      userName: profile.full_name,
-      identityNumber: profile.identity_number
-    });
+    // DEBUG: SUPER DETAILED LOG
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔍 AUTH DEBUG - AFTER ROLE MAPPING:');
+    console.log('  👤 User:', profile.full_name);
+    console.log('  📧 Email:', supabaseUser.email);
+    console.log('  🎭 Raw Role from DB:', profile.role, `(type: ${typeof profile.role})`);
+    console.log('  🎯 Mapped Role:', mappedRole, `(type: ${typeof mappedRole})`);
+    console.log('  ✅ UserRole.ADMIN:', UserRole.ADMIN);
+    console.log('  ❓ Is Admin?:', mappedRole === UserRole.ADMIN);
+    console.log('  ❓ Strict Equal?:', mappedRole === 'Admin');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     const appUser: User = {
       id: profile.id,
