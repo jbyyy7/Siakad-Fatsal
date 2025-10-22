@@ -4,11 +4,11 @@
 
 export enum UserRole {
   ADMIN = 'Admin',
-  STAFF = 'Staff',
-  FOUNDATION_HEAD = 'Kepala Yayasan',
-  PRINCIPAL = 'Kepala Sekolah',
   TEACHER = 'Guru',
+  PRINCIPAL = 'Kepala Sekolah',
   STUDENT = 'Siswa',
+  FOUNDATION_HEAD = 'Kepala Yayasan',
+  STAFF = 'Staff',
 }
 
 export interface User {

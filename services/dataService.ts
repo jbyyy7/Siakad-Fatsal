@@ -179,14 +179,14 @@ export const dataService = {
     }));
   },
   async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: AttendanceStatus }[]> {
-      const { data, error } = await supabase.from('attendance').select('date, status').eq('student_id', studentId);
+      const { data, error } = await supabase.from('attendances').select('date, status').eq('student_id', studentId);
       if (error) throw error;
       return data;
   },
 
   async getAttendanceSummaryForStudent(studentId: string): Promise<{ hadir: number; sakit: number; izin: number; alpha: number }> {
       const { data, error } = await supabase
-          .from('attendance')
+          .from('attendances')
           .select('status')
           .eq('student_id', studentId);
       
@@ -281,12 +281,12 @@ export const dataService = {
 
   // ATTENDANCE
   async getAttendanceForDate(classId: string, subjectId: string, date: string): Promise<AttendanceRecord[]> { 
-    const { data, error } = await supabase.from('attendance').select('*').eq('class_id', classId).eq('subject_id', subjectId).eq('date', date);
+    const { data, error } = await supabase.from('attendances').select('*').eq('class_id', classId).eq('subject_id', subjectId).eq('date', date);
     if (error) throw error;
     return data;
   },
   async saveAttendance(records: AttendanceRecord[]): Promise<void> {
-    const { error } = await supabase.from('attendance').upsert(records, { onConflict: 'date,student_id,class_id,subject_id' });
+    const { error } = await supabase.from('attendances').upsert(records, { onConflict: 'date,student_id,class_id,subject_id' });
     if (error) throw error;
   },
 
@@ -366,7 +366,7 @@ export const dataService = {
 
   // ADMIN REPORTS
   async getAttendanceForAdmin(filters: { date: string, schoolId?: string, classId?: string }): Promise<AttendanceRecord[]> {
-    let query = supabase.from('attendance').select('*, student:profiles(full_name), teacher:profiles(full_name), class:classes(name, school_id)')
+    let query = supabase.from('attendances').select('*, student:profiles(full_name), teacher:profiles(full_name), class:classes(name, school_id)')
         .eq('date', filters.date);
 
     if (filters.classId) {
@@ -416,7 +416,7 @@ export const dataService = {
 
   async updateAttendanceRecords(records: AttendanceRecord[]): Promise<void> {
      const recordsToSave = records.map(({ studentName, teacherName, ...rest }) => rest);
-     const { error } = await supabase.from('attendance').upsert(recordsToSave, { onConflict: 'date,student_id,class_id,subject_id' });
+     const { error } = await supabase.from('attendances').upsert(recordsToSave, { onConflict: 'date,student_id,class_id,subject_id' });
      if (error) throw error;
   },
 
