@@ -336,15 +336,15 @@ BEGIN
 END $$;
 
 -- =====================================================
--- STEP 10: RLS POLICIES - STAFF ROLE (OTHER TABLES)
--- HANYA untuk tabel yang PASTI ADA
+-- STEP 10: RLS POLICIES - STAFF ROLE (ALL TABLES)
+-- Dengan pengecekan untuk semua tabel
 -- =====================================================
 
 DO $$
 DECLARE
     table_exists boolean;
 BEGIN
-    -- Check classes table
+    -- ===== CLASSES =====
     SELECT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'classes'
@@ -382,7 +382,7 @@ BEGIN
         RAISE NOTICE '⚠️  Table classes not found, skipping';
     END IF;
 
-    -- Check subjects table
+    -- ===== SUBJECTS =====
     SELECT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'subjects'
@@ -420,7 +420,87 @@ BEGIN
         RAISE NOTICE '⚠️  Table subjects not found, skipping';
     END IF;
 
-    -- Check announcements table
+    -- ===== ATTENDANCE (Student) =====
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'attendance'
+    ) INTO table_exists;
+    
+    IF table_exists THEN
+        DROP POLICY IF EXISTS "Staff can view attendance in their school" ON public.attendance;
+        CREATE POLICY "Staff can view attendance in their school"
+            ON public.attendance FOR SELECT
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS student ON student.id = attendance.student_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = student.school_id
+                )
+            );
+        
+        DROP POLICY IF EXISTS "Staff can manage attendance in their school" ON public.attendance;
+        CREATE POLICY "Staff can manage attendance in their school"
+            ON public.attendance FOR ALL
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS student ON student.id = attendance.student_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = student.school_id
+                )
+            );
+        
+        RAISE NOTICE '✅ Attendance policies created';
+    ELSE
+        RAISE NOTICE '⚠️  Table attendance not found, skipping';
+    END IF;
+
+    -- ===== GRADES =====
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'grades'
+    ) INTO table_exists;
+    
+    IF table_exists THEN
+        DROP POLICY IF EXISTS "Staff can view grades in their school" ON public.grades;
+        CREATE POLICY "Staff can view grades in their school"
+            ON public.grades FOR SELECT
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS student ON student.id = grades.student_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = student.school_id
+                )
+            );
+        
+        DROP POLICY IF EXISTS "Staff can manage grades in their school" ON public.grades;
+        CREATE POLICY "Staff can manage grades in their school"
+            ON public.grades FOR ALL
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS student ON student.id = grades.student_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = student.school_id
+                )
+            );
+        
+        RAISE NOTICE '✅ Grades policies created';
+    ELSE
+        RAISE NOTICE '⚠️  Table grades not found, skipping';
+    END IF;
+
+    -- ===== ANNOUNCEMENTS =====
     SELECT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'announcements'
@@ -458,6 +538,86 @@ BEGIN
     ELSE
         RAISE NOTICE '⚠️  Table announcements not found, skipping';
     END IF;
+
+    -- ===== TEACHING JOURNALS =====
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'teaching_journals'
+    ) INTO table_exists;
+    
+    IF table_exists THEN
+        DROP POLICY IF EXISTS "Staff can view teaching journals in their school" ON public.teaching_journals;
+        CREATE POLICY "Staff can view teaching journals in their school"
+            ON public.teaching_journals FOR SELECT
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS teacher ON teacher.id = teaching_journals.teacher_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = teacher.school_id
+                )
+            );
+        
+        DROP POLICY IF EXISTS "Staff can manage teaching journals in their school" ON public.teaching_journals;
+        CREATE POLICY "Staff can manage teaching journals in their school"
+            ON public.teaching_journals FOR ALL
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles AS staff
+                    JOIN public.profiles AS teacher ON teacher.id = teaching_journals.teacher_id
+                    WHERE staff.id = auth.uid()
+                    AND staff.role = 'Staff'
+                    AND staff.school_id = teacher.school_id
+                )
+            );
+        
+        RAISE NOTICE '✅ Teaching journals policies created';
+    ELSE
+        RAISE NOTICE '⚠️  Table teaching_journals not found, skipping';
+    END IF;
+
+    -- ===== SCHOOLS =====
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'schools'
+    ) INTO table_exists;
+    
+    IF table_exists THEN
+        DROP POLICY IF EXISTS "Staff can view their school" ON public.schools;
+        CREATE POLICY "Staff can view their school"
+            ON public.schools FOR SELECT
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles
+                    WHERE profiles.id = auth.uid()
+                    AND profiles.role = 'Staff'
+                    AND profiles.school_id = schools.id
+                )
+            );
+        
+        DROP POLICY IF EXISTS "Staff can update their school" ON public.schools;
+        CREATE POLICY "Staff can update their school"
+            ON public.schools FOR UPDATE
+            TO authenticated
+            USING (
+                EXISTS (
+                    SELECT 1 FROM public.profiles
+                    WHERE profiles.id = auth.uid()
+                    AND profiles.role = 'Staff'
+                    AND profiles.school_id = schools.id
+                )
+            );
+        
+        RAISE NOTICE '✅ Schools policies created';
+    ELSE
+        RAISE NOTICE '⚠️  Table schools not found, skipping';
+    END IF;
+
+    RAISE NOTICE '✅ Step 10: Staff policies for all tables completed';
 END $$;
 
 -- =====================================================
