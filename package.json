@@ -14,12 +14,15 @@
   "dependencies": {
     "@google/genai": "^0.14.1",
     "@supabase/supabase-js": "^2.22.0",
+    "@types/qrcode": "^1.5.5",
+    "exceljs": "^4.4.0",
+    "html5-qrcode": "^2.3.8",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.5.4",
     "react-router-dom": "^6.25.1",
-    "recharts": "^2.12.7",
-    "xlsx": "^0.18.5"
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.0.1",

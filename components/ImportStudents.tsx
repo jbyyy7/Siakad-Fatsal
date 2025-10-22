@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
+import { parseExcelFile, downloadStudentImportTemplate } from '../utils/excelUtils';
+import { StudentImportRow, ImportValidationError } from '../types';
+import { logger } from '../utils/logger';
 
-type RawRow = Record<string, any>;
+type RawRow = Record<string, unknown>;
 type MappedRow = { full_name?: string; email?: string; phone?: string; class_name?: string };
 
 const REQUIRED_FIELDS = ['full_name', 'email'];
@@ -20,35 +22,53 @@ export default function ImportStudents() {
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const data = ev.target?.result;
-      if (!data) return;
-      const workbook = XLSX.read(data, { type: 'binary' as any });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet, { defval: '' }) as RawRow[];
-      setRawRows(json || []);
-      const hdrs = (json[0] && Object.keys(json[0])) || [];
-      setHeaders(hdrs);
-      const guess: Record<string, string> = {};
-      hdrs.forEach((h) => {
-        const key = h.toLowerCase().replace(/\s+/g, '_');
-        if (['name', 'fullname', 'full_name'].some((k) => key.includes(k))) guess['full_name'] = h;
-        if (['email'].some((k) => key.includes(k))) guess['email'] = h;
-        if (['phone', 'tel'].some((k) => key.includes(k))) guess['phone'] = h;
-        if (['class', 'kelas'].some((k) => key.includes(k))) guess['class_name'] = h;
+    
+    // Validate file size (5MB max)
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error('File terlalu besar. Maksimal 5MB');
+      return;
+    }
+    
+    // Validate file type
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+      toast.error('Format file tidak valid. Gunakan Excel (.xlsx, .xls) atau CSV');
+      return;
+    }
+
+    parseExcelFile<RawRow>(file)
+      .then((json) => {
+        setRawRows(json || []);
+        const hdrs = (json[0] && Object.keys(json[0])) || [];
+        setHeaders(hdrs);
+        const guess: Record<string, string> = {};
+        hdrs.forEach((h) => {
+          const key = h.toLowerCase().replace(/\s+/g, '_');
+          if (['name', 'fullname', 'full_name'].some((k) => key.includes(k))) guess['full_name'] = h;
+          if (['email'].some((k) => key.includes(k))) guess['email'] = h;
+          if (['phone', 'tel'].some((k) => key.includes(k))) guess['phone'] = h;
+          if (['class', 'kelas'].some((k) => key.includes(k))) guess['class_name'] = h;
+        });
+        setMapping(guess);
+        toast.success(`${json.length} baris berhasil dibaca`);
+      })
+      .catch((error) => {
+        logger.error('Failed to parse Excel file', error);
+        toast.error('Gagal membaca file: ' + (error.message || 'Unknown error'));
       });
-      setMapping(guess);
-    };
-    reader.readAsBinaryString(file);
   }
 
   function mapRows() {
     const mapped: MappedRow[] = rawRows.map((r) => ({
-      full_name: mapping['full_name'] ? r[mapping['full_name']] : undefined,
-      email: mapping['email'] ? r[mapping['email']] : undefined,
-      phone: mapping['phone'] ? r[mapping['phone']] : undefined,
-      class_name: mapping['class_name'] ? r[mapping['class_name']] : undefined,
+      full_name: mapping['full_name'] ? String(r[mapping['full_name']] || '') : undefined,
+      email: mapping['email'] ? String(r[mapping['email']] || '') : undefined,
+      phone: mapping['phone'] ? String(r[mapping['phone']] || '') : undefined,
+      class_name: mapping['class_name'] ? String(r[mapping['class_name']] || '') : undefined,
     }));
     setMappedRows(mapped);
     const errs = mapped.map((row) => {
@@ -172,7 +192,24 @@ export default function ImportStudents() {
   return (
     <div className="p-4">
       <h3 className="text-lg font-semibold">Import Students (Excel/CSV)</h3>
-      <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="mt-2" />
+      
+      <div className="mt-4 flex gap-2">
+        <button
+          onClick={() => downloadStudentImportTemplate()}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Download Template
+        </button>
+        <label className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer">
+          Choose File
+          <input 
+            type="file" 
+            accept=".xlsx,.xls,.csv" 
+            onChange={handleFile} 
+            className="hidden" 
+          />
+        </label>
+      </div>
 
       {headers.length > 0 && (
         <div className="mt-4">

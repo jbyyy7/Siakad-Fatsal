@@ -1,11 +1,21 @@
 import serverSupabase from './serverSupabase';
+import { checkRateLimit, RATE_LIMITS } from '../utils/rateLimiter';
+import { logger } from '../utils/logger';
 
 // Simple shared-secret check (set CREATE_USER_SECRET in Vercel env)
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).send({ error: 'Method not allowed' });
 
+  // Rate limiting
+  const rateLimitResponse = checkRateLimit(req, RATE_LIMITS.CREATE_USER);
+  if (rateLimitResponse) {
+    const body = await rateLimitResponse.json();
+    return res.status(429).send(body);
+  }
+
   const secret = req.headers['x-create-user-secret'] as string | undefined;
   if (!secret || secret !== process.env.CREATE_USER_SECRET) {
+    logger.warn('Unauthorized create-user attempt', { headers: req.headers });
     return res.status(401).send({ error: 'Unauthorized' });
   }
 
@@ -46,7 +56,7 @@ export default async function handler(req: any, res: any) {
       const resetLink = `${appUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
       await sendEmailNotification({ to: email, subject: 'Atur password Anda', text: `Silakan atur password Anda: ${resetLink}`, html: `<p>Silakan atur password Anda <a href="${resetLink}">di sini</a></p>` });
     } catch (e) {
-      console.warn('Failed to send reset email:', e);
+      logger.warn('Failed to send reset email', e);
     }
 
     return res.status(201).send({ ok: true, userId: authData.user.id });

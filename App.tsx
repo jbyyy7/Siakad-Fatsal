@@ -4,12 +4,18 @@ import { Toaster, toast } from 'react-hot-toast';
 // FIX: Import User type
 import { User } from './types';
 import { authService } from './services/authService';
+import { ErrorBoundary, LoadingSkeleton } from './components/ui/ErrorBoundary';
+import { useRealtimeNotifications } from './services/realtimeService';
+
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Enable realtime notifications for logged-in users
+  useRealtimeNotifications(currentUser?.id || null, currentUser?.schoolId || null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -41,31 +47,35 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="max-w-md w-full p-8">
+          <LoadingSkeleton lines={5} />
+        </div>
       </div>
     );
   }
 
   return (
-    <>
-      <Toaster position="top-right" />
-      <Suspense fallback={<div className="p-6">Memuat...</div>}>
-        <Routes>
-          {!currentUser ? (
-            <>
-              <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </>
-          ) : (
-            <>
-              <Route path="/login" element={<Navigate to="/" replace />} />
-              <Route path="/*" element={<Dashboard user={currentUser} onLogout={handleLogout} />} />
-            </>
-          )}
-        </Routes>
-      </Suspense>
-    </>
+    <ErrorBoundary>
+      <>
+        <Toaster position="top-right" />
+        <Suspense fallback={<div className="p-6">Memuat...</div>}>
+          <Routes>
+            {!currentUser ? (
+              <>
+                <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="/*" element={<Dashboard user={currentUser} onLogout={handleLogout} />} />
+              </>
+            )}
+          </Routes>
+        </Suspense>
+      </>
+    </ErrorBoundary>
   );
 };
 

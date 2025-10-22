@@ -124,3 +124,106 @@ export interface GamificationProfile {
         description: string;
     }[];
 }
+
+// Additional types for better type safety
+export interface Semester {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
+export interface ClassMember {
+  id: string;
+  classId: string;
+  profileId: string;
+  role: 'student' | 'teacher';
+}
+
+export interface PasswordReset {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: string;
+  used: boolean;
+}
+
+export interface ClassSchedule {
+  id: string;
+  classId: string;
+  subjectId: string;
+  teacherId: string;
+  dayOfWeek: number; // 0-6 (Sunday-Saturday)
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+}
+
+export interface StudentImportRow {
+  identityNumber: string;
+  name: string;
+  email: string;
+  placeOfBirth?: string;
+  dateOfBirth?: string;
+  gender?: 'Laki-laki' | 'Perempuan';
+  religion?: string;
+  address?: string;
+  phoneNumber?: string;
+  parentName?: string;
+  parentPhoneNumber?: string;
+}
+
+export interface ImportValidationError {
+  row: number;
+  field: string;
+  message: string;
+  value?: string;
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+// QR Attendance types
+export interface QRAttendanceSession {
+  id: string;
+  classId: string;
+  subjectId: string;
+  teacherId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  qrCode: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+    radius: number; // meters
+  };
+}
+
+export interface QRCheckIn {
+  id: string;
+  sessionId: string;
+  studentId: string;
+  timestamp: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  status: 'on-time' | 'late' | 'early';
+}
+
+// Real-time notification types
+export interface RealtimeNotification {
+  id: string;
+  type: 'announcement' | 'grade' | 'attendance' | 'assignment';
+  title: string;
+  message: string;
+  timestamp: string;
+  recipientIds: string[];
+  data?: Record<string, unknown>;
+  read: boolean;
+}

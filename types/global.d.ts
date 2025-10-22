@@ -35,8 +35,3 @@ declare module '@vercel/node' {
   export type VercelRequest = any;
   export type VercelResponse = any;
 }
-
-declare module 'xlsx' {
-  export function read(data: any, opts?: any): any;
-  export const utils: any;
-}
