@@ -20,13 +20,16 @@ BEGIN
 END $$;
 
 -- Populate email from auth.users
-UPDATE public.profiles p
-SET email = u.email
-FROM auth.users u
-WHERE p.id = u.id 
-AND (p.email IS NULL OR p.email = '');
-
-RAISE NOTICE '✅ Populated email from auth.users';
+DO $$ 
+BEGIN
+    UPDATE public.profiles p
+    SET email = u.email
+    FROM auth.users u
+    WHERE p.id = u.id 
+    AND (p.email IS NULL OR p.email = '');
+    
+    RAISE NOTICE '✅ Populated email from auth.users';
+END $$;
 
 -- =====================================================
 -- 2. FIX: Policy already exists errors
@@ -53,11 +56,14 @@ END $$;
 -- 3. FIX: Function already exists errors
 -- =====================================================
 
-DROP FUNCTION IF EXISTS public.get_email_from_identity(text);
-DROP FUNCTION IF EXISTS public.delete_user(uuid);
-DROP FUNCTION IF EXISTS public.update_updated_at();
-
-RAISE NOTICE '✅ Dropped existing functions';
+DO $$ 
+BEGIN
+    DROP FUNCTION IF EXISTS public.get_email_from_identity(text);
+    DROP FUNCTION IF EXISTS public.delete_user(uuid);
+    DROP FUNCTION IF EXISTS public.update_updated_at();
+    
+    RAISE NOTICE '✅ Dropped existing functions';
+END $$;
 
 -- =====================================================
 -- 4. FIX: Check current table structure
@@ -107,7 +113,10 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_email_from_identity(text) TO anon, authenticated;
 
-RAISE NOTICE '✅ Created get_email_from_identity function';
+DO $$ 
+BEGIN
+    RAISE NOTICE '✅ Created get_email_from_identity function';
+END $$;
 
 -- Test the function
 DO $$
