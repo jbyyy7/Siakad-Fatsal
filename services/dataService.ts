@@ -5,6 +5,9 @@ import {
 } from '../types';
 import { toUserRoleEnum } from '../utils/roleMapping';
 
+// Re-export supabase for direct access
+export { supabase } from './supabaseClient';
+
 
 // Helper to convert snake_case from DB to camelCase for app
 const mapUserFromDb = (dbUser: any): User => ({

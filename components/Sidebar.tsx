@@ -57,8 +57,21 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/kelola-kelas" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kelas</NavItem>
       <NavItem to="/pantau-absensi" icon={<CalendarIcon className="h-5 w-5" />}>Pantau Absensi</NavItem>
       <NavItem to="/pantau-nilai" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Pantau Nilai</NavItem>
+      <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
       <hr className="my-2 border-gray-600" />
       <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan Sistem</NavItem>
+    </>
+  );
+
+  const staffLinks = (
+    <>
+      <NavItem to="/manage-users" icon={<UserGroupIcon className="h-5 w-5" />}>Kelola Pengguna</NavItem>
+      <NavItem to="/manage-classes" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kelas</NavItem>
+      <NavItem to="/manage-subjects" icon={<TagIcon className="h-5 w-5" />}>Kelola Mapel</NavItem>
+      <NavItem to="/student-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
+      <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
+      <NavItem to="/grades" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Nilai</NavItem>
+      <NavItem to="/announcements" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman</NavItem>
     </>
   );
 
@@ -75,6 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/data-guru" icon={<UserGroupIcon className="h-5 w-5" />}>Data Guru</NavItem>
       <NavItem to="/data-siswa" icon={<AcademicCapIcon className="h-5 w-5" />}>Data Siswa</NavItem>
       <NavItem to="/laporan-sekolah" icon={<ChartBarIcon className="h-5 w-5" />}>Laporan Sekolah</NavItem>
+      <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
       <NavItem to="/pengumuman" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman</NavItem>
     </>
   );
@@ -99,6 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
   const renderLinksByRole = () => {
     switch (user.role) {
       case UserRole.ADMIN: return adminLinks;
+      case UserRole.STAFF: return staffLinks;
       case UserRole.FOUNDATION_HEAD: return foundationHeadLinks;
       case UserRole.PRINCIPAL: return principalLinks;
       case UserRole.TEACHER: return teacherLinks;

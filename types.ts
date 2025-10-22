@@ -4,6 +4,7 @@
 
 export enum UserRole {
   ADMIN = 'Admin',
+  STAFF = 'Staff',
   FOUNDATION_HEAD = 'Kepala Yayasan',
   PRINCIPAL = 'Kepala Sekolah',
   TEACHER = 'Guru',
@@ -67,6 +68,19 @@ export interface AttendanceRecord {
     teacher_id: string;
     teacherName?: string;
     status: AttendanceStatus;
+}
+
+// Teacher/Staff Attendance (separate from student attendance)
+export interface TeacherAttendanceRecord {
+    id?: number;
+    date: string;
+    teacher_id: string;
+    teacherName?: string;
+    school_id: string;
+    check_in_time?: string; // HH:MM:SS
+    check_out_time?: string; // HH:MM:SS
+    status: AttendanceStatus;
+    notes?: string;
 }
 
 export interface Grade {

@@ -6,6 +6,7 @@ import Header from './Header';
 
 // Dashboards
 import AdminDashboard from './dashboards/AdminDashboard';
+import StaffDashboard from './dashboards/StaffDashboard';
 import FoundationHeadDashboard from './dashboards/FoundationHeadDashboard';
 import PrincipalDashboard from './dashboards/PrincipalDashboard';
 import TeacherDashboard from './dashboards/TeacherDashboard';
@@ -25,6 +26,7 @@ import StudentDataPage from './pages/StudentDataPage';
 import SchoolReportPage from './pages/SchoolReportPage';
 import InputGradesPage from './pages/InputGradesPage';
 import StudentAttendancePage from './pages/StudentAttendancePage';
+import TeacherAttendancePage from './pages/TeacherAttendancePage';
 import MyClassPage from './pages/MyClassPage';
 import TeachingJournalPage from './pages/TeachingJournalPage';
 import GradesPage from './pages/GradesPage';
@@ -48,6 +50,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     switch (user.role) {
       case UserRole.ADMIN:
         return <AdminDashboard user={user} />;
+      case UserRole.STAFF:
+        return <StaffDashboard user={user} />;
       case UserRole.FOUNDATION_HEAD:
         return <FoundationHeadDashboard user={user} />;
       case UserRole.PRINCIPAL:
@@ -73,6 +77,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/pantau-absensi" element={<AdminAttendancePage user={user} />} />
             <Route path="/pantau-nilai" element={<AdminGradesPage user={user} />} />
             <Route path="/pengaturan-sistem" element={<SystemSettingsPage />} />
+            <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
+          </>
+        );
+      case UserRole.STAFF:
+        return (
+          <>
+            <Route path="/manage-users" element={<ManageUsersPage />} />
+            <Route path="/manage-classes" element={<ManageClassesPage />} />
+            <Route path="/manage-subjects" element={<ManageSubjectsPage />} />
+            <Route path="/student-attendance" element={<AdminAttendancePage user={user} />} />
+            <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
+            <Route path="/grades" element={<AdminGradesPage user={user} />} />
+            <Route path="/announcements" element={<AnnouncementsPage user={user} />} />
           </>
         );
       case UserRole.FOUNDATION_HEAD:
@@ -89,6 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/data-guru" element={<TeacherDataPage user={user} />} />
             <Route path="/data-siswa" element={<StudentDataPage user={user} />} />
             <Route path="/laporan-sekolah" element={<SchoolReportPage user={user} />} />
+            <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
             <Route path="/pengumuman" element={<AnnouncementsPage user={user} />} />
           </>
         );
