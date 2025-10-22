@@ -28,14 +28,16 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [gradesData, noteData, classData] = await Promise.all([
+                const [gradesData, noteData, classData, attendanceData] = await Promise.all([
                     dataService.getGradesForStudent(user.id),
                     dataService.getTeacherNoteForStudent(user.id),
                     dataService.getClassForStudent(user.id),
+                    dataService.getAttendanceSummaryForStudent(user.id),
                 ]);
                 setMyGrades(gradesData);
                 setTeacherNote(noteData);
                 setStudentClass(classData);
+                setAttendanceSummary(attendanceData);
             } catch (error) {
                 console.error("Failed to fetch grades data:", error);
             } finally {
@@ -45,18 +47,12 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
         fetchData();
     }, [user.id]);
 
-    const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
+    const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, sakit: 0, izin: 0, alpha: 0 });
 
-    // Mock attendance data for the report card
-    const attendanceSummary = {
-        hadir: 20,
-        sakit: 2,
-        izin: 1,
-        alpha: 0,
-    };
+    const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
     
     const totalDays = Object.values(attendanceSummary).reduce((a, b) => a + b, 0);
-    const attendancePercentage = ((attendanceSummary.hadir / totalDays) * 100).toFixed(0);
+    const attendancePercentage = totalDays > 0 ? ((attendanceSummary.hadir / totalDays) * 100).toFixed(0) : '0';
 
     const aiReview = `Berdasarkan analisis nilai, ${user.name} menunjukkan keunggulan signifikan dalam bidang Sains dan Bahasa. Ini menandakan kemampuan analisis dan pemahaman konsep yang kuat. Untuk meningkatkan performa secara keseluruhan, disarankan untuk memberikan perhatian lebih pada mata pelajaran dengan skor lebih rendah. Strategi belajar visual dan praktik langsung mungkin bisa sangat membantu. Secara keseluruhan, potensi ${user.name} sangat besar!`;
 

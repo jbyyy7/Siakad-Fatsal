@@ -75,13 +75,37 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
     };
     
     const handleSaveGrades = async () => {
+        if (!selectedClassId || !selectedSubjectId) {
+            setSaveStatus('error');
+            return;
+        }
+        
         setSaveStatus('saving');
-        console.log("Saving grades:", grades);
-        // Here you would call a dataService function like `dataService.saveGrades(...)`
-        // For this mock, we'll just simulate a success
-        await new Promise(res => setTimeout(res, 1000));
-        setSaveStatus('success');
-        setTimeout(() => setSaveStatus('idle'), 2000);
+        try {
+            // Convert grades object to array of grade records
+            const gradeRecords = Object.entries(grades)
+                .filter(([_, value]) => value.score && value.score.trim() !== '')
+                .map(([studentId, value]) => ({
+                    student_id: studentId,
+                    subject_id: selectedSubjectId,
+                    score: parseFloat(value.score),
+                    notes: value.notes || '',
+                }));
+
+            if (gradeRecords.length === 0) {
+                setSaveStatus('error');
+                return;
+            }
+
+            // Save to database
+            await dataService.saveGrades(gradeRecords);
+            setSaveStatus('success');
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch (error) {
+            console.error("Failed to save grades:", error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        }
     };
 
     return (

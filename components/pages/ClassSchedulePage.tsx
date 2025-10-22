@@ -6,20 +6,29 @@ import { dataService } from '../../services/dataService';
 import { User } from '../../types'; // Assuming user prop is passed for context
 
 interface ClassSchedulePageProps {
-    // This component would ideally get the user to know which schedule to fetch
-    // For now, we hardcode it as a placeholder for a real implementation
-    // user: User;
+    user: User;
 }
 
-const ClassSchedulePage: React.FC<ClassSchedulePageProps> = () => {
+const ClassSchedulePage: React.FC<ClassSchedulePageProps> = ({ user }) => {
     const [scheduleData, setScheduleData] = useState<Record<string, {time: string, subject: string}[]>>({});
     const [isLoading, setIsLoading] = useState(true);
+    const [className, setClassName] = useState<string>('');
 
     useEffect(() => {
         const fetchSchedule = async () => {
             try {
-                // Placeholder: In a real app, user.level and user.schoolId would be dynamic
-                const data = await dataService.getClassSchedule('MA Kelas 10-A', 'ma_fs');
+                // Get student's class first
+                const studentClass = await dataService.getClassForStudent(user.id);
+                if (!studentClass) {
+                    console.warn("Student not assigned to any class");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                setClassName(studentClass);
+                
+                // Fetch schedule for the student's class
+                const data = await dataService.getClassSchedule(studentClass, user.schoolId || '');
                 setScheduleData(data);
             } catch (error) {
                 console.error("Failed to fetch class schedule:", error);
@@ -28,12 +37,12 @@ const ClassSchedulePage: React.FC<ClassSchedulePageProps> = () => {
             }
         }
         fetchSchedule();
-    }, []);
+    }, [user.id, user.schoolId]);
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Jadwal Pelajaran - MA Kelas 10-A</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Jadwal Pelajaran{className ? ` - ${className}` : ''}</h2>
                  <button
                     onClick={() => window.print()}
                     className="no-print flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
@@ -46,7 +55,7 @@ const ClassSchedulePage: React.FC<ClassSchedulePageProps> = () => {
             <div id="printable-schedule" className="printable-area">
                 <div className="hidden print-header">
                     <h1>Jadwal Pelajaran</h1>
-                    <p>MA Fathus Salafi - Kelas 10-A</p>
+                    <p>{user.schoolName || 'SIAKAD'}{className ? ` - ${className}` : ''}</p>
                 </div>
                 <Card title="Jadwal Mingguan" icon={CalendarIcon}>
                     {isLoading ? <p>Memuat jadwal...</p> : (

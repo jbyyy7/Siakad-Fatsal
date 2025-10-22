@@ -183,6 +183,27 @@ export const dataService = {
       if (error) throw error;
       return data;
   },
+
+  async getAttendanceSummaryForStudent(studentId: string): Promise<{ hadir: number; sakit: number; izin: number; alpha: number }> {
+      const { data, error } = await supabase
+          .from('attendance')
+          .select('status')
+          .eq('student_id', studentId);
+      
+      if (error) throw error;
+
+      const summary = { hadir: 0, sakit: 0, izin: 0, alpha: 0 };
+      
+      data.forEach((record: any) => {
+          const status = record.status.toLowerCase();
+          if (status === 'hadir') summary.hadir++;
+          else if (status === 'sakit') summary.sakit++;
+          else if (status === 'izin') summary.izin++;
+          else if (status === 'alpha') summary.alpha++;
+      });
+
+      return summary;
+  },
   async getTeacherNoteForStudent(studentId: string): Promise<{ note: string; teacherName: string; }> {
       // This is a placeholder as the table structure is not defined.
       return { note: 'Ananda menunjukkan perkembangan yang sangat baik semester ini. Terus tingkatkan!', teacherName: 'Dewi Lestari, S.Pd.' };
@@ -384,6 +405,12 @@ export const dataService = {
   async saveGradesForStudents(grades: Grade[]): Promise<void> {
     const recordsToSave = grades.map(({ studentName, ...rest }) => rest);
     const { error } = await supabase.from('grades').upsert(recordsToSave, { onConflict: 'student_id,class_id,subject_id'});
+    if (error) throw error;
+  },
+
+  async saveGrades(grades: any[]): Promise<void> {
+    // Alias for saveGradesForStudents - accepts any grade record format
+    const { error } = await supabase.from('grades').upsert(grades, { onConflict: 'student_id,subject_id'});
     if (error) throw error;
   },
 
