@@ -46,6 +46,16 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
+  // DEBUG: Log user role untuk troubleshooting
+  console.log('🎯 DASHBOARD USER:', {
+    name: user.name,
+    role: user.role,
+    roleType: typeof user.role,
+    expectedAdmin: UserRole.ADMIN,
+    isAdmin: user.role === UserRole.ADMIN,
+    allRoles: Object.entries(UserRole)
+  });
+
   const renderDashboardByRole = () => {
     switch (user.role) {
       case UserRole.ADMIN:
@@ -123,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return (
           <>
             <Route path="/lihat-nilai" element={<GradesPage user={user} />} />
-            <Route path="/jadwal-pelajaran" element={<ClassSchedulePage />} />
+            <Route path="/jadwal-pelajaran" element={<ClassSchedulePage user={user} />} />
             <Route path="/absensi" element={<MyAttendancePage user={user} />} />
           </>
         );

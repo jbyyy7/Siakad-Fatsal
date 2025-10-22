@@ -97,12 +97,22 @@ const getAppUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
     }
 
 
+    const mappedRole = toUserRoleEnum(profile.role);
+    
+    // DEBUG: Log untuk troubleshooting
+    console.log('🔍 DEBUG LOGIN:', {
+      rawRole: profile.role,
+      mappedRole: mappedRole,
+      userName: profile.full_name,
+      identityNumber: profile.identity_number
+    });
+
     const appUser: User = {
       id: profile.id,
       email: supabaseUser.email || '',
       identityNumber: profile.identity_number,
       name: profile.full_name,
-      role: toUserRoleEnum(profile.role), // Use mapping function for safety
+      role: mappedRole,
       avatarUrl: profile.avatar_url,
       schoolId: profile.school_id,
       schoolName: schoolName,
