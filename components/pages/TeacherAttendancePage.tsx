@@ -74,10 +74,12 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
     try {
       setLoading(true);
       
-      // Fetch attendance records
+      // Use foreign key relationship for auto-join
+      // After running ADD_TEACHER_ATTENDANCE_FOREIGN_KEYS.sql migration,
+      // Supabase can auto-join profiles table using the FK constraint
       let query = supabase
         .from('teacher_attendance')
-        .select('*')
+        .select('*, profiles!teacher_id(full_name)')
         .eq('date', selectedDate);
       
       // Only filter by school_id if it exists
@@ -85,30 +87,15 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
         query = query.eq('school_id', currentUser.schoolId);
       }
 
-      const { data: attendanceData, error: attendanceError } = await query;
+      const { data, error } = await query;
 
-      if (attendanceError) throw attendanceError;
+      if (error) throw error;
 
-      // Get unique teacher IDs
-      const teacherIds = [...new Set(attendanceData.map((r: any) => r.teacher_id))];
-      
-      // Fetch teacher names separately
-      const { data: teacherData, error: teacherError } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', teacherIds);
-      
-      if (teacherError) throw teacherError;
-
-      // Create lookup map
-      const teacherMap = new Map(teacherData.map((t: any) => [t.id, t.full_name]));
-
-      // Combine data
-      const records: TeacherAttendanceRecord[] = attendanceData.map((r: any) => ({
+      const records: TeacherAttendanceRecord[] = data.map((r: any) => ({
         id: r.id,
         date: r.date,
         teacher_id: r.teacher_id,
-        teacherName: teacherMap.get(r.teacher_id) || 'Unknown',
+        teacherName: r.profiles?.full_name || 'Unknown',
         school_id: r.school_id,
         check_in_time: r.check_in_time,
         check_out_time: r.check_out_time,
