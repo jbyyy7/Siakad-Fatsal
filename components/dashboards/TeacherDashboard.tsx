@@ -181,6 +181,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                 <p className="text-sm text-gray-600">Catat kehadiran siswa hari ini</p>
               </Link>
 
+              <Link to="/absensi-saya" className="group bg-gradient-to-br from-rose-50 to-red-50 hover:from-rose-100 hover:to-red-100 p-5 rounded-lg border-2 border-transparent hover:border-rose-300 transition-all">
+                <div className="flex items-center mb-2">
+                  <CalendarIcon className="h-6 w-6 text-rose-600 group-hover:scale-110 transition-transform" />
+                  <h4 className="ml-2 font-bold text-gray-800">Absensi Saya</h4>
+                </div>
+                <p className="text-sm text-gray-600">Check-in/out dengan lokasi GPS</p>
+              </Link>
+
               <Link to="/jurnal-mengajar" className="group bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 p-5 rounded-lg border-2 border-transparent hover:border-purple-300 transition-all">
                 <div className="flex items-center mb-2">
                   <BookOpenIcon className="h-6 w-6 text-purple-600 group-hover:scale-110 transition-transform" />

@@ -87,6 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Absensi & Nilai</div>
       <NavItem to="/student-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
       <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
+      <NavItem to="/absensi-saya" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
       <NavItem to="/grades" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Nilai</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Gate & Rapor</div>
@@ -122,6 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Laporan & Absensi</div>
       <NavItem to="/laporan-sekolah" icon={<ChartBarIcon className="h-5 w-5" />}>Laporan Sekolah</NavItem>
       <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
+      <NavItem to="/absensi-saya" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Komunikasi</div>
       <NavItem to="/pengumuman" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman Sekolah</NavItem>
@@ -137,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Penilaian</div>
       <NavItem to="/input-nilai" icon={<PencilSquareIcon className="h-5 w-5" />}>Input Nilai</NavItem>
       <NavItem to="/absensi-siswa" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
+      <NavItem to="/absensi-saya" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
       <NavItem to="/kelola-rapor" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Kelola Rapor</NavItem>
     </>
   );

@@ -27,6 +27,7 @@ import SchoolReportPage from './pages/SchoolReportPage';
 import InputGradesPage from './pages/InputGradesPage';
 import StudentAttendancePage from './pages/StudentAttendancePage';
 import TeacherAttendancePage from './pages/TeacherAttendancePage';
+import SelfAttendancePage from './pages/SelfAttendancePage';
 import MyClassPage from './pages/MyClassPage';
 import TeachingJournalPage from './pages/TeachingJournalPage';
 import GradesPage from './pages/GradesPage';
@@ -105,6 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/manage-subjects" element={<ManageSubjectsPage />} />
             <Route path="/student-attendance" element={<AdminAttendancePage user={user} />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
+            <Route path="/absensi-saya" element={<SelfAttendancePage user={user} />} />
             <Route path="/grades" element={<AdminGradesPage user={user} />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
@@ -129,6 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/data-siswa" element={<StudentDataPage user={user} />} />
             <Route path="/laporan-sekolah" element={<SchoolReportPage user={user} />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
+            <Route path="/absensi-saya" element={<SelfAttendancePage user={user} />} />
             <Route path="/pengumuman" element={<AnnouncementsPage user={user} />} />
           </>
         );
@@ -137,6 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <>
             <Route path="/input-nilai" element={<InputGradesPage user={user} />} />
             <Route path="/absensi-siswa" element={<StudentAttendancePage user={user} />} />
+            <Route path="/absensi-saya" element={<SelfAttendancePage user={user} />} />
             <Route path="/kelas-saya" element={<MyClassPage user={user} />} />
             <Route path="/jurnal-mengajar" element={<TeachingJournalPage user={user} />} />
             <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
