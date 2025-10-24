@@ -11,6 +11,11 @@ import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
+import { UserGroupIcon } from '../icons/UserGroupIcon';
+import { AcademicCapIcon } from '../icons/AcademicCapIcon';
+import { ShieldCheckIcon } from '../icons/ShieldCheckIcon';
+import { BriefcaseIcon } from '../icons/BriefcaseIcon';
+import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
 import UserForm from '../forms/UserForm';
 
 const ManageUsersPage: React.FC = () => {
@@ -22,6 +27,15 @@ const ManageUsersPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
     const [schoolFilter, setSchoolFilter] = useState<string | 'all'>('all');
+    
+    // Calculate stats
+    const stats = useMemo(() => ({
+        totalUsers: users.length,
+        students: users.filter(u => u.role === UserRole.STUDENT).length,
+        teachers: users.filter(u => u.role === UserRole.TEACHER).length,
+        staff: users.filter(u => u.role === UserRole.STAFF).length,
+        admins: users.filter(u => u.role === UserRole.ADMIN).length,
+    }), [users]);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -95,47 +109,135 @@ const ManageUsersPage: React.FC = () => {
     }, [users, searchTerm, roleFilter, schoolFilter]);
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Kelola Pengguna</h2>
-                <button
-                    onClick={() => openModal()}
-                    className="flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-                >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Tambah Pengguna
-                </button>
+        <div className="p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-3xl font-bold mb-2">Kelola Pengguna</h2>
+                        <p className="text-blue-100">Manajemen data pengguna sistem SIAKAD</p>
+                    </div>
+                    <button
+                        onClick={() => openModal()}
+                        className="flex items-center px-5 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-md"
+                    >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Tambah Pengguna
+                    </button>
+                </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Total Pengguna</p>
+                            <p className="text-3xl font-bold text-blue-600">{isLoading ? '...' : stats.totalUsers}</p>
+                        </div>
+                        <UserGroupIcon className="h-10 w-10 text-blue-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Siswa</p>
+                            <p className="text-3xl font-bold text-purple-600">{isLoading ? '...' : stats.students}</p>
+                        </div>
+                        <AcademicCapIcon className="h-10 w-10 text-purple-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Guru</p>
+                            <p className="text-3xl font-bold text-green-600">{isLoading ? '...' : stats.teachers}</p>
+                        </div>
+                        <AcademicCapIcon className="h-10 w-10 text-green-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-orange-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Staff</p>
+                            <p className="text-3xl font-bold text-orange-600">{isLoading ? '...' : stats.staff}</p>
+                        </div>
+                        <BriefcaseIcon className="h-10 w-10 text-orange-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Admin</p>
+                            <p className="text-3xl font-bold text-red-600">{isLoading ? '...' : stats.admins}</p>
+                        </div>
+                        <ShieldCheckIcon className="h-10 w-10 text-red-200" />
+                    </div>
+                </div>
             </div>
             
-            <Card className="mb-6">
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">🔍 Filter & Pencarian</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input
-                        type="text"
-                        placeholder="Cari nama pengguna..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500"
-                    />
-                    <select
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
-                    >
-                        <option value="all">Semua Peran</option>
-                        {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
-                    </select>
-                     <select
-                        value={schoolFilter}
-                        onChange={(e) => setSchoolFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
-                    >
-                        <option value="all">Semua Sekolah</option>
-                        {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
-                    </select>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Cari Nama</label>
+                        <input
+                            type="text"
+                            placeholder="Cari nama pengguna..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter Peran</label>
+                        <select
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        >
+                            <option value="all">Semua Peran</option>
+                            {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter Sekolah</label>
+                        <select
+                            value={schoolFilter}
+                            onChange={(e) => setSchoolFilter(e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        >
+                            <option value="all">Semua Sekolah</option>
+                            {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                        </select>
+                    </div>
                 </div>
-            </Card>
+                {(searchTerm || roleFilter !== 'all' || schoolFilter !== 'all') && (
+                    <div className="mt-4 flex items-center justify-between p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                        <p className="text-sm text-blue-700">
+                            Menampilkan <strong>{filteredUsers.length}</strong> dari <strong>{users.length}</strong> pengguna
+                        </p>
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setRoleFilter('all');
+                                setSchoolFilter('all');
+                            }}
+                            className="text-sm text-blue-600 hover:text-blue-800 font-semibold"
+                        >
+                            Reset Filter
+                        </button>
+                    </div>
+                )}
+            </div>
 
-            <Card>
+            {/* Table */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="overflow-x-auto">
                     {isLoading ? (
                         <Loading text="Memuat pengguna..." />
@@ -179,7 +281,7 @@ const ManageUsersPage: React.FC = () => {
                     </table>
                     )}
                 </div>
-            </Card>
+            </div>
 
             {isModalOpen && (
                 <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedUser ? "Edit Pengguna" : "Tambah Pengguna"}>
