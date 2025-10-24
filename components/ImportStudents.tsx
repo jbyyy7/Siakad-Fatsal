@@ -1,14 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { parseExcelFile, downloadStudentImportTemplate } from '../utils/excelUtils';
 import { logger } from '../utils/logger';
+import { supabase } from '../services/supabaseClient';
+import { Class, User } from '../types';
 
 type RawRow = Record<string, unknown>;
-type MappedRow = { full_name?: string; email?: string; phone?: string; class_name?: string };
+type MappedRow = { 
+  full_name?: string; 
+  email?: string; 
+  phone?: string; 
+  class_name?: string;
+  nis?: string;
+  parent_name?: string;
+  parent_email?: string;
+  parent_phone?: string;
+  date_of_birth?: string;
+  place_of_birth?: string;
+  address?: string;
+  blood_type?: string;
+};
 
-const REQUIRED_FIELDS = ['full_name', 'email'];
+const REQUIRED_FIELDS = ['full_name', 'email', 'nis'];
 
 export default function ImportStudents() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  
   const [rawRows, setRawRows] = useState<RawRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -17,15 +36,117 @@ export default function ImportStudents() {
   const [progress, setProgress] = useState({ done: 0, total: 0, running: false });
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<Record<number, boolean>>({});
+  const [showValidation, setShowValidation] = useState(false);
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadClasses();
+    }
+  }, [currentUser]);
+
+  const loadCurrentUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setCurrentUser(data);
+      }
+    } catch (error) {
+      console.error('Error loading user:', error);
+    }
+  };
+
+  const loadClasses = async () => {
+    try {
+      let query = supabase
+        .from('classes')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (currentUser?.role !== 'Admin' && currentUser?.schoolId) {
+        query = query.eq('school_id', currentUser.schoolId);
+      }
+
+      const { data } = await query;
+      setClasses(data || []);
+    } catch (error) {
+      console.error('Error loading classes:', error);
+    }
+  };
+
+  const validateRow = (row: MappedRow, index: number): string | null => {
+    // Required fields
+    const missing = REQUIRED_FIELDS.filter((f) => !row[f as keyof MappedRow]);
+    if (missing.length) return `Field wajib tidak ada: ${missing.join(', ')}`;
+    
+    // Email validation
+    if (row.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(row.email))) {
+      return 'Format email tidak valid';
+    }
+    
+    // Parent email validation
+    if (row.parent_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(row.parent_email))) {
+      return 'Format email orang tua tidak valid';
+    }
+    
+    // NIS validation (unique check will be done server-side)
+    if (row.nis && !/^[0-9]+$/.test(String(row.nis))) {
+      return 'NIS harus berupa angka';
+    }
+    
+    // Phone validation
+    if (row.phone && !/^[0-9+\-\s()]+$/.test(String(row.phone))) {
+      return 'Format nomor telepon tidak valid';
+    }
+    
+    if (row.parent_phone && !/^[0-9+\-\s()]+$/.test(String(row.parent_phone))) {
+      return 'Format nomor telepon orang tua tidak valid';
+    }
+    
+    // Date validation
+    if (row.date_of_birth) {
+      const date = new Date(row.date_of_birth);
+      if (isNaN(date.getTime())) {
+        return 'Format tanggal lahir tidak valid (gunakan YYYY-MM-DD)';
+      }
+    }
+    
+    // Blood type validation
+    if (row.blood_type && !['A', 'B', 'AB', 'O', 'A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'].includes(row.blood_type.toUpperCase())) {
+      return 'Golongan darah tidak valid (A/B/AB/O dengan +/-)';
+    }
+    
+    // Check for duplicate NIS in the same batch
+    const duplicateNIS = mappedRows.findIndex((r, i) => i !== index && r.nis === row.nis && row.nis);
+    if (duplicateNIS !== -1) {
+      return `NIS duplikat dengan baris ${duplicateNIS + 1}`;
+    }
+    
+    // Check for duplicate email in the same batch
+    const duplicateEmail = mappedRows.findIndex((r, i) => i !== index && r.email === row.email && row.email);
+    if (duplicateEmail !== -1) {
+      return `Email duplikat dengan baris ${duplicateEmail + 1}`;
+    }
+    
+    return null;
+  };
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Validate file size (5MB max)
-    const MAX_SIZE = 5 * 1024 * 1024;
+    // Validate file size (10MB max)
+    const MAX_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      toast.error('File terlalu besar. Maksimal 5MB');
+      toast.error('File terlalu besar. Maksimal 10MB');
       return;
     }
     
@@ -45,16 +166,26 @@ export default function ImportStudents() {
         setRawRows(json || []);
         const hdrs = (json[0] && Object.keys(json[0])) || [];
         setHeaders(hdrs);
+        
+        // Auto-detect column mapping
         const guess: Record<string, string> = {};
         hdrs.forEach((h) => {
           const key = h.toLowerCase().replace(/\s+/g, '_');
-          if (['name', 'fullname', 'full_name'].some((k) => key.includes(k))) guess['full_name'] = h;
-          if (['email'].some((k) => key.includes(k))) guess['email'] = h;
-          if (['phone', 'tel'].some((k) => key.includes(k))) guess['phone'] = h;
+          if (['name', 'fullname', 'full_name', 'nama'].some((k) => key.includes(k))) guess['full_name'] = h;
+          if (['email', 'e-mail', 'surel'].some((k) => key.includes(k))) guess['email'] = h;
+          if (['phone', 'tel', 'telepon', 'hp'].some((k) => key.includes(k))) guess['phone'] = h;
           if (['class', 'kelas'].some((k) => key.includes(k))) guess['class_name'] = h;
+          if (['nis', 'nisn', 'nomor_induk'].some((k) => key.includes(k))) guess['nis'] = h;
+          if (['parent', 'orang_tua', 'ortu', 'wali'].some((k) => key.includes(k)) && !key.includes('email') && !key.includes('phone')) guess['parent_name'] = h;
+          if (['parent_email', 'email_orang_tua', 'email_ortu'].some((k) => key.includes(k))) guess['parent_email'] = h;
+          if (['parent_phone', 'phone_orang_tua', 'hp_ortu', 'telepon_ortu'].some((k) => key.includes(k))) guess['parent_phone'] = h;
+          if (['birth_date', 'tanggal_lahir', 'tgl_lahir', 'date_of_birth'].some((k) => key.includes(k))) guess['date_of_birth'] = h;
+          if (['birth_place', 'tempat_lahir', 'place_of_birth'].some((k) => key.includes(k))) guess['place_of_birth'] = h;
+          if (['address', 'alamat'].some((k) => key.includes(k))) guess['address'] = h;
+          if (['blood', 'gol_darah', 'golongan_darah', 'blood_type'].some((k) => key.includes(k))) guess['blood_type'] = h;
         });
         setMapping(guess);
-        toast.success(`${json.length} baris berhasil dibaca`);
+        toast.success(`✅ ${json.length} baris berhasil dibaca`);
       })
       .catch((error) => {
         logger.error('Failed to parse Excel file', error);
@@ -64,29 +195,55 @@ export default function ImportStudents() {
 
   function mapRows() {
     const mapped: MappedRow[] = rawRows.map((r) => ({
-      full_name: mapping['full_name'] ? String(r[mapping['full_name']] || '') : undefined,
-      email: mapping['email'] ? String(r[mapping['email']] || '') : undefined,
-      phone: mapping['phone'] ? String(r[mapping['phone']] || '') : undefined,
-      class_name: mapping['class_name'] ? String(r[mapping['class_name']] || '') : undefined,
+      full_name: mapping['full_name'] ? String(r[mapping['full_name']] || '').trim() : undefined,
+      email: mapping['email'] ? String(r[mapping['email']] || '').trim().toLowerCase() : undefined,
+      phone: mapping['phone'] ? String(r[mapping['phone']] || '').trim() : undefined,
+      class_name: mapping['class_name'] ? String(r[mapping['class_name']] || '').trim() : undefined,
+      nis: mapping['nis'] ? String(r[mapping['nis']] || '').trim() : undefined,
+      parent_name: mapping['parent_name'] ? String(r[mapping['parent_name']] || '').trim() : undefined,
+      parent_email: mapping['parent_email'] ? String(r[mapping['parent_email']] || '').trim().toLowerCase() : undefined,
+      parent_phone: mapping['parent_phone'] ? String(r[mapping['parent_phone']] || '').trim() : undefined,
+      date_of_birth: mapping['date_of_birth'] ? String(r[mapping['date_of_birth']] || '').trim() : undefined,
+      place_of_birth: mapping['place_of_birth'] ? String(r[mapping['place_of_birth']] || '').trim() : undefined,
+      address: mapping['address'] ? String(r[mapping['address']] || '').trim() : undefined,
+      blood_type: mapping['blood_type'] ? String(r[mapping['blood_type']] || '').trim().toUpperCase() : undefined,
     }));
     setMappedRows(mapped);
-    const errs = mapped.map((row) => {
-      const missing = REQUIRED_FIELDS.filter((f) => !row[f as keyof MappedRow]);
-      if (missing.length) return `Missing fields: ${missing.join(', ')}`;
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(row.email))) return 'Invalid email';
-      return null;
-    });
+    
+    // Run validation
+    const errs = mapped.map((row, index) => validateRow(row, index));
     setErrors(errs);
+    setShowValidation(true);
+    
+    const validCount = errs.filter(e => e === null).length;
+    const errorCount = errs.filter(e => e !== null).length;
+    
+    toast.success(`✅ Validasi selesai: ${validCount} valid, ${errorCount} error`);
   }
 
   async function submit() {
+    if (!selectedClass) {
+      toast.error('⚠️ Pilih kelas terlebih dahulu');
+      return;
+    }
+    
     const validRows = mappedRows.map((r, i) => ({ row: r, idx: i })).filter((x) => errors[x.idx] == null);
-    if (!validRows.length) return toast.error('No valid rows to import');
+    if (!validRows.length) {
+      toast.error('❌ Tidak ada baris valid untuk diimpor');
+      return;
+    }
+    
     const batchSize = 20;
     setProgress({ done: 0, total: validRows.length, running: true });
+    
     for (let i = 0; i < validRows.length; i += batchSize) {
       const slice = validRows.slice(i, i + batchSize);
-      const batch = slice.map((v) => v.row);
+      const batch = slice.map((v) => ({
+        ...v.row,
+        class_id: selectedClass,
+        school_id: currentUser?.schoolId
+      }));
+      
       try {
         const res = await fetch('/api/import-students', {
           method: 'POST',
@@ -94,10 +251,12 @@ export default function ImportStudents() {
           body: JSON.stringify({ rows: batch }),
         });
         const json = await res.json();
+        
         if (!res.ok) {
-          toast.error('Batch import failed: ' + (json?.error || res.statusText));
+          toast.error('❌ Batch import gagal: ' + (json?.error || res.statusText));
           break;
         }
+        
         const { results } = json as { results: Array<any> };
         results.forEach((r, idx) => {
           const globalIndex = slice[idx].idx ?? (i + idx);
@@ -107,14 +266,17 @@ export default function ImportStudents() {
             return arr;
           });
         });
+        
         setProgress((p) => ({ ...p, done: p.done + batch.length }));
       } catch (err: any) {
         toast.error(String(err?.message || err));
         break;
       }
     }
+    
     setProgress((p) => ({ ...p, running: false }));
-    toast.success('Import finished');
+    const finalErrors = errors.filter(e => e === null);
+    toast.success(`✅ Import selesai: ${finalErrors.length} berhasil dari ${validRows.length}`);
   }
 
   async function retryRow(index: number) {
