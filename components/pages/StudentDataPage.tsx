@@ -27,18 +27,17 @@ const StudentDataPage: React.FC<StudentDataPageProps> = ({ user }) => {
   const [selectedStudent, setSelectedStudent] = useState<StudentWithDetails | null>(null);
 
   useEffect(() => {
-    if (!user.schoolId) {
-        setIsLoading(false);
-        return;
-    };
     const fetchStudentData = async () => {
       setIsLoading(true);
       try {
-    const [studentsData, classesData, membershipsData] = await Promise.all([
-      dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId }),
-      dataService.getClasses({ schoolId: user.schoolId }),
-      user.schoolId ? dataService.getClassMemberships(user.schoolId) : Promise.resolve([])
-    ]);
+        // If no schoolId (Admin/Kepala Yayasan), get all data
+        const filters = user.schoolId ? { schoolId: user.schoolId } : {};
+        
+        const [studentsData, classesData, membershipsData] = await Promise.all([
+          dataService.getUsers({ role: UserRole.STUDENT, ...filters }),
+          dataService.getClasses(filters),
+          user.schoolId ? dataService.getClassMemberships(user.schoolId) : Promise.resolve([])
+        ]);
         setAllStudents(studentsData);
         setClasses(classesData);
         setMemberships(membershipsData);

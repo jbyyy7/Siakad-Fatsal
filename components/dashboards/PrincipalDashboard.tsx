@@ -20,14 +20,13 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!user.schoolId) {
-        setIsLoading(false);
-        return;
-      }
       try {
+        // If no schoolId, get all users (for Admin/Kepala Yayasan)
+        const filters = user.schoolId ? { schoolId: user.schoolId } : {};
+        
         const [teachers, students] = await Promise.all([
-          dataService.getUsers({ role: UserRole.TEACHER, schoolId: user.schoolId }),
-          dataService.getUsers({ role: UserRole.STUDENT, schoolId: user.schoolId })
+          dataService.getUsers({ role: UserRole.TEACHER, ...filters }),
+          dataService.getUsers({ role: UserRole.STUDENT, ...filters })
         ]);
         setStats({
           teacherCount: teachers.length,

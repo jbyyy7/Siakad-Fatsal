@@ -15,10 +15,11 @@ const TeacherDataPage: React.FC<TeacherDataPageProps> = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   useEffect(() => {
-    if (!user.schoolId) return;
     const fetchTeachers = async () => {
       try {
-        const teachersData = await dataService.getUsers({ role: UserRole.TEACHER, schoolId: user.schoolId });
+        // If no schoolId (Admin/Kepala Yayasan), get all teachers
+        const filters = user.schoolId ? { schoolId: user.schoolId } : {};
+        const teachersData = await dataService.getUsers({ role: UserRole.TEACHER, ...filters });
         setAllTeachers(teachersData);
       } catch (error) {
         console.error("Failed to fetch teacher data:", error);

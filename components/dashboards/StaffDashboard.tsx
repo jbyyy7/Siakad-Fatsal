@@ -37,34 +37,53 @@ export default function StaffDashboard({ user }: StaffDashboardProps) {
         dataService.getSubjects(),
       ]);
 
-      // Filter by school
-      const schoolClasses = classesData.filter((c: Class) => c.schoolId === user.schoolId);
-      const schoolSubjects = subjectsData.filter((s: Subject) => s.schoolId === user.schoolId);
+      // Filter by school (if user has school_id)
+      const schoolClasses = user.schoolId 
+        ? classesData.filter((c: Class) => c.schoolId === user.schoolId)
+        : classesData;
+      const schoolSubjects = user.schoolId
+        ? subjectsData.filter((s: Subject) => s.schoolId === user.schoolId)
+        : subjectsData;
       
       setClasses(schoolClasses);
       setSubjects(schoolSubjects);
 
-      // Count students in this school
-      const { count: studentCount } = await supabase
+      // Count students in this school (or all schools if admin)
+      let studentQuery = supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('school_id', user.schoolId)
         .eq('role', 'Siswa');
+      
+      if (user.schoolId) {
+        studentQuery = studentQuery.eq('school_id', user.schoolId);
+      }
+      
+      const { count: studentCount } = await studentQuery;
 
-      // Count teachers and staff in this school
-      const { count: teacherCount } = await supabase
+      // Count teachers and staff (or all if admin)
+      let teacherQuery = supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('school_id', user.schoolId)
         .in('role', ['Guru', 'Kepala Sekolah', 'Staff']);
+      
+      if (user.schoolId) {
+        teacherQuery = teacherQuery.eq('school_id', user.schoolId);
+      }
+      
+      const { count: teacherCount } = await teacherQuery;
 
-      // Get today's teacher attendance
+      // Get today's teacher attendance (filter by school only if user has school_id)
       const today = new Date().toISOString().split('T')[0];
-      const { data: attendance } = await supabase
+      let attendanceQuery = supabase
         .from('teacher_attendance')
         .select('*, profiles!teacher_id(name)')
-        .eq('school_id', user.schoolId)
         .eq('date', today);
+      
+      if (user.schoolId) {
+        attendanceQuery = attendanceQuery.eq('school_id', user.schoolId);
+      }
+      
+      const { data: attendance } = await attendanceQuery;
 
       const attendanceWithNames = attendance?.map(a => ({
         ...a,
