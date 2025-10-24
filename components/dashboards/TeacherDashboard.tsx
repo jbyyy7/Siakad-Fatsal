@@ -23,37 +23,77 @@ interface DashboardStats {
   totalStudents: number;
   journalToday: number;
   attendanceMarked: number;
+  averageGrade: number;
+  attendanceRate: number;
+}
+
+interface ClassInfo {
+  id: string;
+  name: string;
+  level: string;
+  studentCount: number;
+}
+
+interface ScheduleItem {
+  id: string;
+  time: string;
+  subject: string;
+  className: string;
 }
 
 const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
   const [journalToday, setJournalToday] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [myClasses, setMyClasses] = useState<ClassInfo[]>([]);
+  const [todaySchedule, setTodaySchedule] = useState<ScheduleItem[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalClasses: 0,
     totalStudents: 0,
     journalToday: 0,
     attendanceMarked: 0,
+    averageGrade: 0,
+    attendanceRate: 0,
   });
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const fetchData = async () => {
       try {
+        // Fetch journal entries for today
         const journal = await dataService.getJournalForTeacher(user.id, today);
         setJournalToday(journal);
         
         // Fetch classes taught by this teacher
         const classes = await dataService.getClasses();
-        const myClasses = classes.filter((c: any) => c.homeroomTeacherId === user.id);
+        const myClassList = classes.filter((c: any) => c.homeroomTeacherId === user.id);
         
-        // Count total students
-        const totalStudents = myClasses.reduce((acc: number, c: any) => acc + (c.studentIds?.length || 0), 0);
+        // Count total students and prepare class info
+        const totalStudents = myClassList.reduce((acc: number, c: any) => acc + (c.studentIds?.length || 0), 0);
+        
+        const classInfo: ClassInfo[] = myClassList.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          level: c.level || 'MA',
+          studentCount: c.studentIds?.length || 0
+        }));
+        setMyClasses(classInfo);
+        
+        // TODO: Fetch real schedule data from database
+        // For now, empty schedule until we implement schedule table
+        setTodaySchedule([]);
+        
+        // TODO: Calculate real average grade and attendance rate
+        // For now, set to 0 until we implement the calculation
+        const averageGrade = 0;
+        const attendanceRate = 0;
         
         setStats({
-          totalClasses: myClasses.length,
+          totalClasses: myClassList.length,
           totalStudents,
           journalToday: journal.length,
-          attendanceMarked: journal.length, // Simplified - assumes journal entry means attendance marked
+          attendanceMarked: journal.length,
+          averageGrade,
+          attendanceRate,
         });
       } catch (error) {
         console.error("Failed to fetch teacher dashboard data:", error);
@@ -220,22 +260,27 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
               <CalendarIcon className="h-5 w-5 mr-2" />
               Jadwal Mengajar Hari Ini
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
-                <div>
-                  <p className="text-sm text-gray-600">⏰ 07:30 - 09:00</p>
-                  <p className="font-bold text-gray-800">Matematika - Kelas 10-A</p>
-                </div>
-                <BookOpenIcon className="h-8 w-8 text-green-400" />
+            {isLoading ? (
+              <p className="text-gray-500">Memuat jadwal...</p>
+            ) : todaySchedule.length > 0 ? (
+              <div className="space-y-3">
+                {todaySchedule.map((schedule) => (
+                  <div key={schedule.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
+                    <div>
+                      <p className="text-sm text-gray-600">⏰ {schedule.time}</p>
+                      <p className="font-bold text-gray-800">{schedule.subject} - {schedule.className}</p>
+                    </div>
+                    <BookOpenIcon className="h-8 w-8 text-green-400" />
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
-                <div>
-                  <p className="text-sm text-gray-600">⏰ 10:00 - 11:30</p>
-                  <p className="font-bold text-gray-800">Matematika - Kelas 10-B</p>
-                </div>
-                <BookOpenIcon className="h-8 w-8 text-blue-400" />
+            ) : (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <CalendarIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Tidak ada jadwal mengajar untuk hari ini</p>
+                <p className="text-xs text-gray-400 mt-2">Jadwal akan ditampilkan saat tersedia</p>
               </div>
-            </div>
+            )}
             <Link
               to="/jadwal-pelajaran"
               className="mt-4 inline-block text-sm font-semibold text-blue-600 hover:text-blue-800"
@@ -252,41 +297,67 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
               <UserGroupIcon className="h-5 w-5 mr-2" />
               Kelas Saya
             </h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-                <p className="font-semibold text-blue-800">MA Kelas 10-A</p>
-                <p className="text-xs text-blue-600">32 siswa</p>
+            {isLoading ? (
+              <p className="text-gray-500 text-sm">Memuat kelas...</p>
+            ) : myClasses.length > 0 ? (
+              <div className="space-y-3">
+                {myClasses.slice(0, 5).map((classItem, index) => {
+                  const colors = [
+                    'from-blue-50 to-indigo-50 border-blue-200 text-blue-800',
+                    'from-purple-50 to-pink-50 border-purple-200 text-purple-800',
+                    'from-green-50 to-emerald-50 border-green-200 text-green-800',
+                    'from-amber-50 to-orange-50 border-amber-200 text-amber-800',
+                    'from-teal-50 to-cyan-50 border-teal-200 text-teal-800',
+                  ];
+                  const colorClass = colors[index % colors.length];
+                  
+                  return (
+                    <div key={classItem.id} className={`p-3 bg-gradient-to-br rounded-lg border-2 ${colorClass}`}>
+                      <p className="font-semibold">{classItem.level} {classItem.name}</p>
+                      <p className="text-xs opacity-75">{classItem.studentCount} siswa</p>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-                <p className="font-semibold text-purple-800">MA Kelas 10-B</p>
-                <p className="text-xs text-purple-600">30 siswa</p>
+            ) : (
+              <div className="text-center py-6 bg-gray-50 rounded-lg">
+                <UserGroupIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Belum ada kelas yang diampu</p>
               </div>
-              <div className="p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
-                <p className="font-semibold text-green-800">MA Kelas 11-A</p>
-                <p className="text-xs text-green-600">28 siswa</p>
-              </div>
-            </div>
+            )}
             <Link
               to="/kelas-saya"
               className="mt-4 block text-center w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors"
             >
-              Lihat Semua Kelas
+              {myClasses.length > 5 ? 'Lihat Semua Kelas' : 'Kelola Kelas'}
             </Link>
           </div>
 
           {/* Performance Summary */}
           <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
             <h3 className="text-lg font-semibold mb-3">📊 Performa Kelas</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-amber-100">Rata-rata Nilai</span>
-                <span className="font-bold text-2xl">85.2</span>
+            {isLoading ? (
+              <p className="text-amber-100">Memuat data...</p>
+            ) : stats.averageGrade > 0 || stats.attendanceRate > 0 ? (
+              <div className="space-y-2">
+                {stats.averageGrade > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-amber-100">Rata-rata Nilai</span>
+                    <span className="font-bold text-2xl">{stats.averageGrade.toFixed(1)}</span>
+                  </div>
+                )}
+                {stats.attendanceRate > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-amber-100">Kehadiran</span>
+                    <span className="font-bold text-2xl">{stats.attendanceRate.toFixed(0)}%</span>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-amber-100">Kehadiran</span>
-                <span className="font-bold text-2xl">92%</span>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-amber-100 text-sm">Data performa akan tersedia setelah ada nilai dan absensi siswa</p>
               </div>
-            </div>
+            )}
             <Link
               to="/lihat-nilai"
               className="mt-4 block text-center w-full py-2 bg-white text-orange-600 font-semibold rounded-lg hover:bg-amber-50 transition-colors"
