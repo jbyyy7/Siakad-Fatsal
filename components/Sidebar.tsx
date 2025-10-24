@@ -122,17 +122,17 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
     }
   };
 
-  const sidebarClasses = `fixed inset-y-0 left-0 bg-brand-900 w-64 p-4 transform transition-transform duration-300 ease-in-out z-30 md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`;
+  const sidebarClasses = `fixed inset-y-0 left-0 bg-brand-900 w-64 p-4 transform transition-transform duration-300 ease-in-out z-30 md:relative md:translate-x-0 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`;
   const overlayClasses = `fixed inset-0 bg-black opacity-50 z-20 md:hidden ${isOpen ? 'block' : 'hidden'}`;
 
   return (
     <>
         <div className={sidebarClasses}>
-          <div className="flex items-center justify-center text-white mb-6">
+          <div className="flex items-center justify-center text-white mb-6 flex-shrink-0">
             <AcademicCapIcon className="h-8 w-8 mr-2" />
             <span className="text-lg font-bold">SIAKAD Fathus Salafi</span>
           </div>
-          <nav className="space-y-2">
+          <nav className="space-y-2 overflow-y-auto flex-1 pb-4">
               <NavItem to="/" icon={<HomeIcon className="h-5 w-5" />} end={true}>Dashboard</NavItem>
               <NavItem to="/pengaturan-akun" icon={<UserCircleIcon className="h-5 w-5" />}>Pengaturan Akun</NavItem>
               <hr className="my-2 border-gray-600" />

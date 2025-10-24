@@ -145,7 +145,9 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
         </select>
       </div>
        <div>
-            <label htmlFor="studentIds" className="block text-sm font-medium text-gray-700">Siswa di Kelas (tahan Ctrl/Cmd untuk memilih lebih dari satu)</label>
+            <label htmlFor="studentIds" className="block text-sm font-medium text-gray-700">
+              Siswa di Kelas <span className="text-xs text-gray-500">(tahan Ctrl/Cmd untuk pilih beberapa)</span>
+            </label>
             <select
                 id="studentIds"
                 name="studentIds"
@@ -153,12 +155,15 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
                 value={formData.studentIds}
                 onChange={handleStudentSelect}
                 disabled={!formData.schoolId}
-                className="mt-1 block w-full h-40 p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                className="mt-1 block w-full h-32 p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100 text-sm"
             >
                 {availableStudents.map(student => (
                     <option key={student.id} value={student.id}>{student.name}</option>
                 ))}
             </select>
+            {formData.studentIds.length > 0 && (
+              <p className="mt-1 text-xs text-green-600">{formData.studentIds.length} siswa dipilih</p>
+            )}
         </div>
 
       <div className="flex justify-end pt-4 space-x-2">
