@@ -30,6 +30,10 @@ export interface User {
   phoneNumber?: string;
   parentName?: string;
   parentPhoneNumber?: string;
+  
+  // Student Card fields
+  photoUrl?: string; // Photo for student card
+  bloodType?: string; // A, B, AB, O, A+, B+, AB+, O+, A-, B-, AB-, O-
 }
 
 export interface School {
@@ -308,7 +312,7 @@ export interface GateAttendanceRecord {
   late_minutes?: number;
 }
 
-// Parent Contact Information
+// Parent Contact Information (Enhanced with WhatsApp verification)
 export interface ParentContact {
   id?: number;
   student_id: string;
@@ -318,6 +322,8 @@ export interface ParentContact {
   email?: string;
   whatsapp_number?: string;
   is_primary: boolean;
+  whatsapp_verified?: boolean; // NEW for WhatsApp notifications
+  notification_enabled?: boolean; // NEW for opt-in/out
   created_at?: string;
   updated_at?: string;
 }
@@ -365,3 +371,142 @@ export interface LateArrivalReport {
   average_late_minutes: number;
   max_late_minutes: number;
 }
+
+// ================================================
+// ACADEMIC YEAR & SEMESTER TYPES
+// ================================================
+
+export interface AcademicYear {
+  id: string;
+  schoolId: string;
+  name: string; // "2024/2025"
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Semester {
+  id: string;
+  academicYearId: string;
+  name: string; // "Semester 1", "Semester 2"
+  semesterNumber: 1 | 2;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ================================================
+// REPORT CARD TYPES (RAPOR DIGITAL)
+// ================================================
+
+export interface ReportCard {
+  id: string;
+  studentId: string;
+  classId?: string;
+  semesterId: string;
+  schoolId?: string;
+  
+  // Student info snapshot
+  studentName: string;
+  studentNis: string;
+  className?: string;
+  
+  // Attendance summary
+  totalDays: number;
+  presentDays: number;
+  sickDays: number;
+  permissionDays: number;
+  absentDays: number;
+  
+  // Overall performance
+  totalScore?: number;
+  averageScore?: number;
+  rank?: number;
+  totalStudents?: number;
+  
+  // Status
+  status: 'Draft' | 'Published' | 'Archived';
+  publishedAt?: string;
+  publishedBy?: string;
+  
+  // Teachers
+  homeroomTeacherId?: string;
+  homeroomTeacherName?: string;
+  principalName?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+  
+  // Relations (populated)
+  subjects?: ReportCardSubject[];
+  comments?: ReportCardComment[];
+  semester?: Semester;
+}
+
+export interface ReportCardSubject {
+  id: string;
+  reportCardId: string;
+  subjectId?: string;
+  subjectName: string;
+  
+  // Scores
+  knowledgeScore?: number; // Pengetahuan
+  skillScore?: number; // Keterampilan
+  finalScore?: number; // Nilai Akhir
+  grade?: string; // A, B, C, D, E or predicate
+  
+  // Description
+  description?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportCardComment {
+  id: string;
+  reportCardId: string;
+  commentType: 'Attitude' | 'Achievement' | 'Homeroom' | 'Principal';
+  comment: string;
+  commentedBy?: string;
+  commentedByName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ================================================
+// NOTIFICATION TYPES
+// ================================================
+
+export type NotificationRecipientType = 'Parent' | 'Student' | 'Teacher' | 'Staff' | 'Admin';
+export type NotificationType = 'GateCheckIn' | 'GateCheckOut' | 'GateLate' | 'ReportCard' | 'Payment' | 'General';
+export type NotificationChannel = 'WhatsApp' | 'Email' | 'InApp' | 'SMS';
+export type NotificationStatus = 'Pending' | 'Sent' | 'Delivered' | 'Failed';
+
+export interface NotificationLog {
+  id: string;
+  recipientType: NotificationRecipientType;
+  recipientId?: string;
+  recipientPhone?: string;
+  recipientEmail?: string;
+  
+  notificationType: NotificationType;
+  channel: NotificationChannel;
+  
+  message: string;
+  status: NotificationStatus;
+  
+  // External service response
+  externalId?: string; // Twilio message SID, etc
+  errorMessage?: string;
+  
+  sentAt?: string;
+  deliveredAt?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
