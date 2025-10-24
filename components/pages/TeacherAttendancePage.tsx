@@ -73,9 +73,11 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
   async function loadAttendance() {
     try {
       setLoading(true);
+      
+      // Fetch attendance records
       let query = supabase
         .from('teacher_attendance')
-        .select('*, profiles(full_name)')
+        .select('*')
         .eq('date', selectedDate);
       
       // Only filter by school_id if it exists
@@ -83,15 +85,30 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
         query = query.eq('school_id', currentUser.schoolId);
       }
 
-      const { data, error } = await query;
+      const { data: attendanceData, error: attendanceError } = await query;
 
-      if (error) throw error;
+      if (attendanceError) throw attendanceError;
 
-      const records: TeacherAttendanceRecord[] = data.map((r: any) => ({
+      // Get unique teacher IDs
+      const teacherIds = [...new Set(attendanceData.map((r: any) => r.teacher_id))];
+      
+      // Fetch teacher names separately
+      const { data: teacherData, error: teacherError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', teacherIds);
+      
+      if (teacherError) throw teacherError;
+
+      // Create lookup map
+      const teacherMap = new Map(teacherData.map((t: any) => [t.id, t.full_name]));
+
+      // Combine data
+      const records: TeacherAttendanceRecord[] = attendanceData.map((r: any) => ({
         id: r.id,
         date: r.date,
         teacher_id: r.teacher_id,
-        teacherName: r.profiles?.full_name || 'Unknown',
+        teacherName: teacherMap.get(r.teacher_id) || 'Unknown',
         school_id: r.school_id,
         check_in_time: r.check_in_time,
         check_out_time: r.check_out_time,
@@ -299,29 +316,29 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
           </div>
         )}
 
-        {/* Summary */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-green-900 bg-opacity-30 border border-green-600 p-4 rounded">
-            <div className="text-sm text-green-300">Hadir</div>
-            <div className="text-2xl font-bold text-green-400">
+        {/* Summary Cards - Improved Colors */}
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 border-2 border-green-500/40 p-5 rounded-xl shadow-lg shadow-green-500/10 hover:shadow-green-500/20 transition-all">
+            <div className="text-xs font-semibold text-green-300 uppercase tracking-wide mb-1">✓ Hadir</div>
+            <div className="text-3xl font-bold text-green-400">
               {attendanceRecords.filter(r => r.status === 'Hadir').length}
             </div>
           </div>
-          <div className="bg-blue-900 bg-opacity-30 border border-blue-600 p-4 rounded">
-            <div className="text-sm text-blue-300">Sakit</div>
-            <div className="text-2xl font-bold text-blue-400">
+          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-2 border-blue-500/40 p-5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all">
+            <div className="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-1">🏥 Sakit</div>
+            <div className="text-3xl font-bold text-blue-400">
               {attendanceRecords.filter(r => r.status === 'Sakit').length}
             </div>
           </div>
-          <div className="bg-yellow-900 bg-opacity-30 border border-yellow-600 p-4 rounded">
-            <div className="text-sm text-yellow-300">Izin</div>
-            <div className="text-2xl font-bold text-yellow-400">
+          <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 border-2 border-yellow-500/40 p-5 rounded-xl shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all">
+            <div className="text-xs font-semibold text-yellow-300 uppercase tracking-wide mb-1">📝 Izin</div>
+            <div className="text-3xl font-bold text-yellow-400">
               {attendanceRecords.filter(r => r.status === 'Izin').length}
             </div>
           </div>
-          <div className="bg-red-900 bg-opacity-30 border border-red-600 p-4 rounded">
-            <div className="text-sm text-red-300">Alpha</div>
-            <div className="text-2xl font-bold text-red-400">
+          <div className="bg-gradient-to-br from-red-500/20 to-red-600/10 border-2 border-red-500/40 p-5 rounded-xl shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all">
+            <div className="text-xs font-semibold text-red-300 uppercase tracking-wide mb-1">✗ Alpha</div>
+            <div className="text-3xl font-bold text-red-400">
               {attendanceRecords.filter(r => r.status === 'Alpha').length}
             </div>
           </div>
