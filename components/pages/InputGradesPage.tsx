@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { dataService } from '../../services/dataService';
 import { User, Class, Subject } from '../../types';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
-import CheckIcon from '../icons/CheckIcon';
+import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
+import { CheckIcon } from '../icons/CheckIcon';
 
 interface InputGradesPageProps {
   user: User;

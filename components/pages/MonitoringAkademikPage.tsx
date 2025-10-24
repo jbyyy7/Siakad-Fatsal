@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import ChartBarIcon from '../icons/ChartBarIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
-import DownloadIcon from '../icons/DownloadIcon';
+import { ChartBarIcon } from '../icons/ChartBarIcon';
+import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
+import { DownloadIcon } from '../icons/DownloadIcon';
 
 interface School {
   id: string;

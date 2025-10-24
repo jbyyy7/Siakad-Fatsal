@@ -75,10 +75,14 @@ const StudentCardPage: React.FC<StudentCardPageProps> = ({ user }) => {
   async function loadStudents(classId: string) {
     try {
       setLoading(true);
-      const studentsData = await dataService.getUsers({
+      const allStudents = await dataService.getUsers({
         role: UserRole.STUDENT,
-        classId: classId
+        schoolId: user.schoolId
       });
+      // Filter by classId if needed
+      const studentsData = classId
+        ? allStudents.filter(s => (s as any).classId === classId)
+        : allStudents;
       setStudents(studentsData);
     } catch (error) {
       console.error('Failed to load students:', error);

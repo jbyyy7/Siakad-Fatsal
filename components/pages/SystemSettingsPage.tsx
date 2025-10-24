@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import Card from '../Card';
 import ToggleSwitch from '../ui/ToggleSwitch';
-import CogIcon from '../icons/CogIcon';
-import LockClosedIcon from '../icons/LockClosedIcon';
-import BellIcon from '../icons/BellIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
+import { CogIcon } from '../icons/CogIcon';
+import { LockClosedIcon } from '../icons/LockClosedIcon';
+import { BellIcon } from '../icons/BellIcon';
+import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 
 type SettingsTab = 'general' | 'security' | 'notifications' | 'database';
 

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { User } from '../types';
-import { UserCircleIcon } from './icons/UserCircleIcon';
-import { CameraIcon } from './icons/CameraIcon';
-import { dataService } from '../services/dataService';
+import { User } from '../../types';
+import { UserCircleIcon } from '../icons/UserCircleIcon';
+import { CameraIcon } from '../icons/CameraIcon';
+import { dataService } from '../../services/dataService';
 
 interface AccountSettingsPageProps {
   user: User;
