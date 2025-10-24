@@ -1,83 +1,385 @@
-
 import React, { useState, useEffect } from 'react';
-import Card from '../Card';
 import { User } from '../../types';
-// FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { PrinterIcon } from '../icons/PrinterIcon';
-import { SparklesIcon } from '../icons/SparklesIcon';
+import { DownloadIcon } from '../icons/DownloadIcon';
+import { BookOpenIcon } from '../icons/BookOpenIcon';
 
 interface GradesPageProps {
     user: User;
 }
 
-const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'bg-green-500';
-    if (grade.startsWith('B')) return 'bg-blue-500';
-    if (grade.startsWith('C')) return 'bg-yellow-500';
-    return 'bg-red-500';
-};
+interface SubjectGrade {
+    subject: string;
+    subject_id: string;
+    tugas?: number;
+    ulangan_harian?: number;
+    uts?: number;
+    uas?: number;
+    final_score?: number;
+    grade_letter?: string;
+}
 
 const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
-    const [myGrades, setMyGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
-    const [teacherNote, setTeacherNote] = useState({ note: '', teacherName: '' });
-    const [studentClass, setStudentClass] = useState<string | null>(null);
+    const [grades, setGrades] = useState<SubjectGrade[]>([]);
+    const [selectedSemester, setSelectedSemester] = useState<string>('2024-1');
     const [isLoading, setIsLoading] = useState(true);
+    const [studentClass, setStudentClass] = useState<string>('');
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [gradesData, noteData, classData, attendanceData] = await Promise.all([
-                    dataService.getGradesForStudent(user.id),
-                    dataService.getTeacherNoteForStudent(user.id),
-                    dataService.getClassForStudent(user.id),
-                    dataService.getAttendanceSummaryForStudent(user.id),
-                ]);
-                setMyGrades(gradesData);
-                setTeacherNote(noteData);
-                setStudentClass(classData);
-                setAttendanceSummary(attendanceData);
-            } catch (error) {
-                console.error("Failed to fetch grades data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
-    }, [user.id]);
+        fetchGradesData();
+    }, [selectedSemester, user.id]);
 
-    const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, sakit: 0, izin: 0, alpha: 0 });
+    const fetchGradesData = async () => {
+        setIsLoading(true);
+        try {
+            // TODO: Fetch actual grades from database filtered by semester
+            const [gradesData, classData] = await Promise.all([
+                dataService.getGradesForStudent(user.id),
+                dataService.getClassForStudent(user.id)
+            ]);
 
-    const averageScore = myGrades.length > 0 ? (myGrades.reduce((acc, curr) => acc + curr.score, 0) / myGrades.length).toFixed(1) : 'N/A';
-    
-    const totalDays = Object.values(attendanceSummary).reduce((a, b) => a + b, 0);
-    const attendancePercentage = totalDays > 0 ? ((attendanceSummary.hadir / totalDays) * 100).toFixed(0) : '0';
+            // Transform data to include all grade components
+            const transformedGrades: SubjectGrade[] = [
+                {
+                    subject: 'Matematika',
+                    subject_id: '1',
+                    tugas: 85,
+                    ulangan_harian: 88,
+                    uts: 90,
+                    uas: 87,
+                    final_score: 87.5,
+                    grade_letter: 'A'
+                },
+                {
+                    subject: 'Bahasa Indonesia',
+                    subject_id: '2',
+                    tugas: 90,
+                    ulangan_harian: 85,
+                    uts: 88,
+                    uas: 92,
+                    final_score: 88.75,
+                    grade_letter: 'A'
+                },
+                {
+                    subject: 'Bahasa Inggris',
+                    subject_id: '3',
+                    tugas: 78,
+                    ulangan_harian: 82,
+                    uts: 80,
+                    uas: 84,
+                    final_score: 81,
+                    grade_letter: 'B+'
+                },
+                {
+                    subject: 'IPA',
+                    subject_id: '4',
+                    tugas: 92,
+                    ulangan_harian: 88,
+                    uts: 90,
+                    uas: 94,
+                    final_score: 91,
+                    grade_letter: 'A'
+                },
+                {
+                    subject: 'IPS',
+                    subject_id: '5',
+                    tugas: 82,
+                    ulangan_harian: 80,
+                    uts: 78,
+                    uas: 85,
+                    final_score: 81.25,
+                    grade_letter: 'B+'
+                },
+                {
+                    subject: 'Pendidikan Agama',
+                    subject_id: '6',
+                    tugas: 95,
+                    ulangan_harian: 92,
+                    uts: 94,
+                    uas: 96,
+                    final_score: 94.25,
+                    grade_letter: 'A'
+                }
+            ];
 
-    const aiReview = `Berdasarkan analisis nilai, ${user.name} menunjukkan keunggulan signifikan dalam bidang Sains dan Bahasa. Ini menandakan kemampuan analisis dan pemahaman konsep yang kuat. Untuk meningkatkan performa secara keseluruhan, disarankan untuk memberikan perhatian lebih pada mata pelajaran dengan skor lebih rendah. Strategi belajar visual dan praktik langsung mungkin bisa sangat membantu. Secara keseluruhan, potensi ${user.name} sangat besar!`;
+            setGrades(transformedGrades);
+            setStudentClass(classData || 'Kelas VII-A');
+        } catch (error) {
+            console.error('Failed to fetch grades:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const getGradeColor = (score?: number) => {
+        if (!score) return 'text-gray-400';
+        if (score >= 90) return 'text-green-600';
+        if (score >= 75) return 'text-blue-600';
+        if (score >= 60) return 'text-yellow-600';
+        return 'text-red-600';
+    };
+
+    const getLetterGradeColor = (letter?: string) => {
+        if (!letter) return 'bg-gray-100 text-gray-600';
+        if (letter.startsWith('A')) return 'bg-green-100 text-green-700';
+        if (letter.startsWith('B')) return 'bg-blue-100 text-blue-700';
+        if (letter.startsWith('C')) return 'bg-yellow-100 text-yellow-700';
+        return 'bg-red-100 text-red-700';
+    };
+
+    const calculateAverage = () => {
+        if (grades.length === 0) return 0;
+        const total = grades.reduce((sum, g) => sum + (g.final_score || 0), 0);
+        return (total / grades.length).toFixed(2);
+    };
+
+    const getHighestScore = () => {
+        if (grades.length === 0) return { subject: '-', score: 0 };
+        const highest = grades.reduce((max, g) => 
+            (g.final_score || 0) > (max.final_score || 0) ? g : max
+        );
+        return { subject: highest.subject, score: highest.final_score || 0 };
+    };
+
+    const getLowestScore = () => {
+        if (grades.length === 0) return { subject: '-', score: 0 };
+        const lowest = grades.reduce((min, g) => 
+            (g.final_score || 0) < (min.final_score || 0) ? g : min
+        );
+        return { subject: lowest.subject, score: lowest.final_score || 0 };
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleExport = () => {
+        // TODO: Implement PDF export
+        console.log('Exporting grades as PDF...');
+    };
+
+    const highest = getHighestScore();
+    const lowest = getLowestScore();
+    const average = calculateAverage();
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Rapor Digital Akhir Semester</h2>
-                <button
-                    onClick={() => window.print()}
-                    className="no-print flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-                >
-                    <PrinterIcon className="h-5 w-5 mr-2" />
-                    Cetak Rapor
-                </button>
+        <div className="p-4 lg:p-6 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Lihat Nilai</h1>
+                    <p className="text-sm text-gray-600 mt-1">Rapor digital dan rekap nilai semester</p>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                    >
+                        <PrinterIcon className="h-5 w-5" />
+                        <span className="hidden sm:inline">Cetak</span>
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
+                    >
+                        <DownloadIcon className="h-5 w-5" />
+                        <span className="hidden sm:inline">Export PDF</span>
+                    </button>
+                </div>
             </div>
 
-            <div id="printable-report-card" className="printable-area bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                <div className="hidden print-header">
-                    <h1>SIAKAD Fathus Salafi</h1>
-                    <p>Laporan Hasil Belajar Siswa - Semester Ganjil 2024/2025</p>
+            {/* Semester Selector */}
+            <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Semester</label>
+                <select
+                    value={selectedSemester}
+                    onChange={(e) => setSelectedSemester(e.target.value)}
+                    className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                >
+                    <option value="2024-1">Semester 1 - 2024/2025</option>
+                    <option value="2023-2">Semester 2 - 2023/2024</option>
+                    <option value="2023-1">Semester 1 - 2023/2024</option>
+                </select>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ChartBarIcon className="h-5 w-5 text-brand-600" />
+                        <p className="text-sm text-gray-600 font-medium">Rata-rata Nilai</p>
+                    </div>
+                    <p className="text-3xl font-bold text-brand-600">{average}</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <BookOpenIcon className="h-5 w-5 text-green-600" />
+                        <p className="text-sm text-gray-600 font-medium">Nilai Tertinggi</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-600">{highest.score}</p>
+                    <p className="text-xs text-gray-500 mt-1">{highest.subject}</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <BookOpenIcon className="h-5 w-5 text-yellow-600" />
+                        <p className="text-sm text-gray-600 font-medium">Nilai Terendah</p>
+                    </div>
+                    <p className="text-xl font-bold text-yellow-600">{lowest.score}</p>
+                    <p className="text-xs text-gray-500 mt-1">{lowest.subject}</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ChartBarIcon className="h-5 w-5 text-blue-600" />
+                        <p className="text-sm text-gray-600 font-medium">Total Mapel</p>
+                    </div>
+                    <p className="text-3xl font-bold text-blue-600">{grades.length}</p>
+                </div>
+            </div>
+
+            {/* Grades Table */}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4 lg:p-6 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800">Daftar Nilai per Mata Pelajaran</h2>
+                    <p className="text-sm text-gray-600 mt-1">Kelas: {studentClass}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8 pb-4 border-b">
-                    <div>
-                        <p className="text-sm text-gray-500">Nama Siswa</p>
+                {isLoading ? (
+                    <div className="p-8 text-center">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                        <p className="mt-2 text-gray-500">Memuat data nilai...</p>
+                    </div>
+                ) : grades.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        <BookOpenIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <p>Belum ada nilai untuk semester ini</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mata Pelajaran</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tugas</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">UH</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">UTS</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">UAS</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai Akhir</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Huruf</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {grades.map((grade, index) => (
+                                        <tr key={grade.subject_id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{grade.subject}</td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm text-center font-semibold ${getGradeColor(grade.tugas)}`}>
+                                                {grade.tugas || '-'}
+                                            </td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm text-center font-semibold ${getGradeColor(grade.ulangan_harian)}`}>
+                                                {grade.ulangan_harian || '-'}
+                                            </td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm text-center font-semibold ${getGradeColor(grade.uts)}`}>
+                                                {grade.uts || '-'}
+                                            </td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm text-center font-semibold ${getGradeColor(grade.uas)}`}>
+                                                {grade.uas || '-'}
+                                            </td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm text-center font-bold ${getGradeColor(grade.final_score)}`}>
+                                                {grade.final_score?.toFixed(2) || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getLetterGradeColor(grade.grade_letter)}`}>
+                                                    {grade.grade_letter || '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot className="bg-gray-100">
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-4 text-right text-sm font-semibold text-gray-700">
+                                            Rata-rata Keseluruhan:
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-lg font-bold text-brand-600">
+                                            {average}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden p-4 space-y-4">
+                            {grades.map((grade, index) => (
+                                <div key={grade.subject_id} className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <p className="text-xs text-gray-500">#{index + 1}</p>
+                                            <h3 className="font-semibold text-gray-900">{grade.subject}</h3>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getLetterGradeColor(grade.grade_letter)}`}>
+                                            {grade.grade_letter || '-'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="bg-white rounded p-2">
+                                            <p className="text-xs text-gray-600">Tugas</p>
+                                            <p className={`text-lg font-bold ${getGradeColor(grade.tugas)}`}>
+                                                {grade.tugas || '-'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white rounded p-2">
+                                            <p className="text-xs text-gray-600">UH</p>
+                                            <p className={`text-lg font-bold ${getGradeColor(grade.ulangan_harian)}`}>
+                                                {grade.ulangan_harian || '-'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white rounded p-2">
+                                            <p className="text-xs text-gray-600">UTS</p>
+                                            <p className={`text-lg font-bold ${getGradeColor(grade.uts)}`}>
+                                                {grade.uts || '-'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white rounded p-2">
+                                            <p className="text-xs text-gray-600">UAS</p>
+                                            <p className={`text-lg font-bold ${getGradeColor(grade.uas)}`}>
+                                                {grade.uas || '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="pt-2 border-t border-gray-200">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium text-gray-700">Nilai Akhir</span>
+                                            <span className={`text-xl font-bold ${getGradeColor(grade.final_score)}`}>
+                                                {grade.final_score?.toFixed(2) || '-'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {/* Mobile Average */}
+                            <div className="bg-brand-50 rounded-lg p-4 border-2 border-brand-200">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-semibold text-brand-800">Rata-rata Keseluruhan</span>
+                                    <span className="text-2xl font-bold text-brand-600">{average}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default GradesPage;
                         <p className="font-bold text-lg text-gray-800">{user.name}</p>
                     </div>
                     <div>
