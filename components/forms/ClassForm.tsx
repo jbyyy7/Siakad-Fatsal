@@ -14,10 +14,15 @@ interface ClassFormProps {
 }
 
 const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, allStudents, onClose, onSave, initialSchoolId }) => {
+  // Generate default academic year (e.g., "2024/2025")
+  const currentYear = new Date().getFullYear();
+  const defaultAcademicYear = `${currentYear}/${currentYear + 1}`;
+  
   const [formData, setFormData] = useState({
     name: '',
     schoolId: '',
     homeroomTeacherId: '',
+    academicYear: defaultAcademicYear,
     studentIds: [] as string[],
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -28,12 +33,13 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
         name: classData.name || '',
         schoolId: classData.schoolId || '',
         homeroomTeacherId: classData.homeroomTeacherId || '',
+        academicYear: classData.academicYear || defaultAcademicYear,
         studentIds: classData.studentIds || [],
       });
     } else if (initialSchoolId) {
       setFormData(prev => ({ ...prev, schoolId: initialSchoolId }));
     }
-  }, [classData, initialSchoolId]);
+  }, [classData, initialSchoolId, defaultAcademicYear]);
 
   const availableTeachers = useMemo(() => {
     if (!formData.schoolId) return [];
@@ -104,6 +110,20 @@ const ClassForm: React.FC<ClassFormProps> = ({ classData, schools, allTeachers, 
           value={formData.name}
           onChange={handleChange}
           required
+          disabled={!formData.schoolId}
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+        />
+      </div>
+      <div>
+        <label htmlFor="academicYear" className="block text-sm font-medium text-gray-700">Tahun Ajaran</label>
+        <input
+          type="text"
+          id="academicYear"
+          name="academicYear"
+          value={formData.academicYear}
+          onChange={handleChange}
+          required
+          placeholder="2024/2025"
           disabled={!formData.schoolId}
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
         />

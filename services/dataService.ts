@@ -241,9 +241,13 @@ export const dataService = {
     throw new Error('Data kelas tidak ditemukan');
   }
   return data.map(c => ({
-    ...c,
+    id: c.id,
+    name: c.name,
+    schoolId: c.school_id,
     schoolName: c.school?.name,
+    homeroomTeacherId: c.homeroom_teacher_id,
     homeroomTeacherName: c.homeroom_teacher?.full_name,
+    academicYear: c.academic_year,
   }));
   },
   async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
@@ -322,7 +326,8 @@ export const dataService = {
   const { data: newClass, error } = await supabase.from('classes').insert({
     name: classData.name,
     school_id: classData.schoolId,
-    homeroom_teacher_id: classData.homeroomTeacherId || null
+    homeroom_teacher_id: classData.homeroomTeacherId || null,
+    academic_year: classData.academicYear
   }).select().single();
   if (error) {
     console.error('[Supabase][createClass] Error:', error);
@@ -346,7 +351,8 @@ export const dataService = {
     const { error } = await supabase.from('classes').update({
         name: classData.name,
         school_id: classData.schoolId,
-        homeroom_teacher_id: classData.homeroomTeacherId || null
+        homeroom_teacher_id: classData.homeroomTeacherId || null,
+        academic_year: classData.academicYear
     }).eq('id', id);
     if (error) throw error;
 

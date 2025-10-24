@@ -52,6 +52,7 @@ export interface Class {
   schoolName?: string;
   homeroomTeacherId?: string;
   homeroomTeacherName?: string;
+  academicYear: string; // e.g., "2024/2025"
   studentIds?: string[];
 }
 
