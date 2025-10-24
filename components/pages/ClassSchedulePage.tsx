@@ -1,87 +1,244 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../Card';
 import { CalendarIcon } from '../icons/CalendarIcon';
 import { PrinterIcon } from '../icons/PrinterIcon';
+import { ClockIcon } from '../icons/ClockIcon';
+import { BookOpenIcon } from '../icons/BookOpenIcon';
 import { dataService } from '../../services/dataService';
-import { User } from '../../types'; // Assuming user prop is passed for context
+import { User } from '../../types';
 
 interface ClassSchedulePageProps {
     user: User;
 }
 
+interface ScheduleItem {
+    time: string;
+    subject: string;
+    teacher?: string;
+    room?: string;
+}
+
+type WeekSchedule = {
+    [key: string]: ScheduleItem[];
+};
+
 const ClassSchedulePage: React.FC<ClassSchedulePageProps> = ({ user }) => {
-    const [scheduleData, setScheduleData] = useState<Record<string, {time: string, subject: string}[]>>({});
+    const [scheduleData, setScheduleData] = useState<WeekSchedule>({});
     const [isLoading, setIsLoading] = useState(true);
     const [className, setClassName] = useState<string>('');
+    const [selectedDay, setSelectedDay] = useState<string>('Senin');
+
+    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
     useEffect(() => {
-        const fetchSchedule = async () => {
-            try {
-                // Get student's class first
-                const studentClass = await dataService.getClassForStudent(user.id);
-                if (!studentClass) {
-                    console.warn("Student not assigned to any class");
-                    setIsLoading(false);
-                    return;
-                }
-                
-                setClassName(studentClass);
-                
-                // Fetch schedule for the student's class
-                const data = await dataService.getClassSchedule(studentClass, user.schoolId || '');
-                setScheduleData(data);
-            } catch (error) {
-                console.error("Failed to fetch class schedule:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
         fetchSchedule();
     }, [user.id, user.schoolId]);
 
+    const fetchSchedule = async () => {
+        setIsLoading(true);
+        try {
+            const studentClass = await dataService.getClassForStudent(user.id);
+            if (!studentClass) {
+                console.warn("Student not assigned to any class");
+                setIsLoading(false);
+                return;
+            }
+            
+            setClassName(studentClass);
+            
+            // TODO: Fetch actual schedule from database
+            const demoSchedule: WeekSchedule = {
+                'Senin': [
+                    { time: '07:00 - 07:45', subject: 'Upacara Bendera', teacher: 'Pembina', room: 'Lapangan' },
+                    { time: '07:45 - 08:30', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
+                    { time: '08:30 - 09:15', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
+                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
+                    { time: '09:30 - 10:15', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
+                    { time: '10:15 - 11:00', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
+                    { time: '11:00 - 11:45', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
+                    { time: '11:45 - 12:15', subject: 'Istirahat', teacher: '', room: '' },
+                    { time: '12:15 - 13:00', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
+                ],
+                'Selasa': [
+                    { time: '07:00 - 07:45', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
+                    { time: '07:45 - 08:30', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
+                    { time: '08:30 - 09:15', subject: 'IPS', teacher: 'Bu Ratna', room: 'Kelas 7A' },
+                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
+                    { time: '09:30 - 10:15', subject: 'IPS', teacher: 'Bu Ratna', room: 'Kelas 7A' },
+                    { time: '10:15 - 11:00', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
+                    { time: '11:00 - 11:45', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
+                ],
+                'Rabu': [
+                    { time: '07:00 - 07:45', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
+                    { time: '07:45 - 08:30', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
+                    { time: '08:30 - 09:15', subject: 'PJOK', teacher: 'Pak Dedi', room: 'Lapangan' },
+                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
+                    { time: '09:30 - 10:15', subject: 'PJOK', teacher: 'Pak Dedi', room: 'Lapangan' },
+                    { time: '10:15 - 11:00', subject: 'PKN', teacher: 'Bu Wati', room: 'Kelas 7A' },
+                ],
+                'Kamis': [
+                    { time: '07:00 - 07:45', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
+                    { time: '07:45 - 08:30', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
+                    { time: '08:30 - 09:15', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
+                ],
+                'Jumat': [
+                    { time: '07:00 - 07:45', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
+                    { time: '07:45 - 08:30', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
+                    { time: '08:30 - 09:15', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
+                ],
+            };
+
+            setScheduleData(demoSchedule);
+        } catch (error) {
+            console.error("Failed to fetch class schedule:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Jadwal Pelajaran{className ? ` - ${className}` : ''}</h2>
-                 <button
+        <div className="p-4 lg:p-6 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Jadwal Pelajaran</h1>
+                    <p className="text-sm text-gray-600 mt-1">{className} - Semester Ganjil 2024/2025</p>
+                </div>
+                <button
                     onClick={() => window.print()}
-                    className="no-print flex items-center px-4 py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
                 >
-                    <PrinterIcon className="h-5 w-5 mr-2" />
-                    Cetak Jadwal
+                    <PrinterIcon className="h-5 w-5" />
+                    <span className="hidden sm:inline">Cetak Jadwal</span>
                 </button>
             </div>
-            
-            <div id="printable-schedule" className="printable-area">
-                <div className="hidden print-header">
-                    <h1>Jadwal Pelajaran</h1>
-                    <p>{user.schoolName || 'SIAKAD'}{className ? ` - ${className}` : ''}</p>
-                </div>
-                <Card title="Jadwal Mingguan" icon={CalendarIcon}>
-                    {isLoading ? <p>Memuat jadwal...</p> : (
-                        <div className="space-y-6">
-                            {Object.entries(scheduleData).map(([day, classes]) => (
-                                <div key={day}>
-                                    <h3 className="text-lg font-semibold text-brand-800 border-b-2 border-brand-200 pb-1 mb-3">{day}</h3>
-                                    {/* FIX: Add type guard to ensure `classes` is an array before accessing properties. */}
-                                    {Array.isArray(classes) && classes.length > 0 ? (
-                                        <ul className="space-y-2">
-                                            {/* FIX: The `map` method is now safe to call due to the type guard above. */}
-                                            {classes.map((cls, index) => (
-                                                <li key={index} className="flex items-center p-2 bg-gray-50 rounded-md">
-                                                    <span className="font-bold text-gray-700 w-32">{cls.time}</span>
-                                                    <span className="text-gray-600">{cls.subject}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-gray-500">Tidak ada jadwal.</p>
-                                    )}
-                                </div>
-                            ))}
+
+            {/* Day Selector - Mobile */}
+            <div className="lg:hidden bg-white rounded-lg shadow-sm p-2">
+                <select
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                >
+                    {days.map(day => (
+                        <option key={day} value={day}>{day}</option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Desktop: Full Week View */}
+            <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    {isLoading ? (
+                        <div className="p-8 text-center">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                            <p className="mt-2 text-gray-500">Memuat jadwal...</p>
                         </div>
+                    ) : (
+                        <table className="w-full">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">Waktu</th>
+                                    {days.map(day => (
+                                        <th key={day} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{day}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {[...new Set(Object.values(scheduleData).flatMap(d => d.map(i => i.time)))].map(timeSlot => (
+                                    <tr key={timeSlot} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3 text-sm font-medium text-gray-700 whitespace-nowrap">{timeSlot}</td>
+                                        {days.map(day => {
+                                            const item = scheduleData[day]?.find(i => i.time === timeSlot);
+                                            const isBreak = item?.subject?.toLowerCase().includes('istirahat');
+                                            
+                                            return (
+                                                <td key={day} className="px-4 py-3">
+                                                    {item ? (
+                                                        <div className={`text-sm ${isBreak ? 'text-gray-400 italic' : ''}`}>
+                                                            <div className={`font-semibold ${isBreak ? 'text-gray-500' : 'text-gray-900'}`}>
+                                                                {item.subject}
+                                                            </div>
+                                                            {!isBreak && item.teacher && (
+                                                                <>
+                                                                    <div className="text-gray-600 text-xs mt-1">{item.teacher}</div>
+                                                                    {item.room && <div className="text-gray-500 text-xs">{item.room}</div>}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-gray-400 text-sm">-</div>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
-                </Card>
+                </div>
+            </div>
+
+            {/* Mobile: Single Day View */}
+            <div className="lg:hidden bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-200 bg-gray-50">
+                    <h2 className="text-lg font-semibold text-gray-800">{selectedDay}</h2>
+                </div>
+
+                {isLoading ? (
+                    <div className="p-8 text-center">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                        <p className="mt-2 text-gray-500">Memuat jadwal...</p>
+                    </div>
+                ) : !scheduleData[selectedDay] || scheduleData[selectedDay].length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        <BookOpenIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <p>Tidak ada jadwal untuk hari ini</p>
+                    </div>
+                ) : (
+                    <div className="p-4 space-y-3">
+                        {scheduleData[selectedDay].map((item, index) => {
+                            const isBreak = item.subject.toLowerCase().includes('istirahat');
+                            
+                            return (
+                                <div
+                                    key={index}
+                                    className={`rounded-lg p-4 ${isBreak ? 'bg-gray-50 border border-gray-200' : 'bg-gradient-to-r from-brand-50 to-blue-50 border border-brand-200'}`}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div className={`flex-shrink-0 ${isBreak ? 'text-gray-400' : 'text-brand-600'}`}>
+                                            {isBreak ? <ClockIcon className="h-6 w-6" /> : <BookOpenIcon className="h-6 w-6" />}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className={`font-semibold ${isBreak ? 'text-gray-600 italic' : 'text-gray-900'}`}>{item.subject}</h3>
+                                            <p className={`text-sm mt-1 ${isBreak ? 'text-gray-500' : 'text-gray-600'}`}>{item.time}</p>
+                                            {!isBreak && (
+                                                <>
+                                                    {item.teacher && <p className="text-sm text-gray-600 mt-1"><span className="font-medium">Guru:</span> {item.teacher}</p>}
+                                                    {item.room && <p className="text-sm text-gray-600"><span className="font-medium">Ruang:</span> {item.room}</p>}
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Info Footer */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                <div className="flex items-start gap-2">
+                    <CalendarIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800">
+                        <p className="font-medium">Informasi Jadwal</p>
+                        <ul className="mt-2 space-y-1 list-disc list-inside">
+                            <li>Setiap pelajaran berlangsung 45 menit</li>
+                            <li>Jadwal dapat berubah sewaktu-waktu</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     );
