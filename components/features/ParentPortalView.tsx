@@ -60,7 +60,7 @@ const ParentPortalView: React.FC<ParentPortalViewProps> = ({ user, onBack }) => 
     }
     
     const handleSave = () => {
-        console.log("Saving settings:", settings);
+        // TODO: Save settings to backend
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
     }

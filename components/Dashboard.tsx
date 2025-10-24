@@ -58,41 +58,21 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  // DEBUG: SUPER DETAILED DASHBOARD LOG
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🎯 DASHBOARD ROUTING DEBUG:');
-  console.log('  👤 User:', user.name);
-  console.log('  🎭 User Role:', user.role, `(type: ${typeof user.role})`);
-  console.log('  ✅ UserRole.ADMIN:', UserRole.ADMIN);
-  console.log('  ✅ UserRole.STUDENT:', UserRole.STUDENT);
-  console.log('  ❓ user.role === UserRole.ADMIN?:', user.role === UserRole.ADMIN);
-  console.log('  ❓ user.role === UserRole.STUDENT?:', user.role === UserRole.STUDENT);
-  console.log('  📋 All UserRole values:', Object.values(UserRole));
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
   const renderDashboardByRole = () => {
-    console.log('🔀 Switching on role:', user.role);
     switch (user.role) {
       case UserRole.ADMIN:
-        console.log('✅ MATCHED: AdminDashboard');
         return <AdminDashboard user={user} />;
       case UserRole.STAFF:
-        console.log('✅ MATCHED: StaffDashboard');
         return <StaffDashboard user={user} />;
       case UserRole.FOUNDATION_HEAD:
-        console.log('✅ MATCHED: FoundationHeadDashboard');
         return <FoundationHeadDashboard user={user} />;
       case UserRole.PRINCIPAL:
-        console.log('✅ MATCHED: PrincipalDashboard');
         return <PrincipalDashboard user={user} />;
       case UserRole.TEACHER:
-        console.log('✅ MATCHED: TeacherDashboard');
         return <TeacherDashboard user={user} />;
       case UserRole.STUDENT:
-        console.log('✅ MATCHED: StudentDashboard');
         return <StudentDashboard user={user} />;
       default:
-        console.log('⚠️  NO MATCH - Using WelcomePlaceholder');
         return <WelcomePlaceholder user={user} />;
     }
   };
@@ -188,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
           <Routes>
             <Route path="/" element={renderDashboardByRole()} />
-            <Route path="/pengaturan-akun" element={<AccountSettingsPage user={user} onUpdate={(updatedUser) => console.log('User updated:', updatedUser)} />} />
+            <Route path="/pengaturan-akun" element={<AccountSettingsPage user={user} onUpdate={() => {}} />} />
             {renderRoutesByRole()}
             {/* Fallback route can be added here for 404 */}
           </Routes>
