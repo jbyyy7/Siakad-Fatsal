@@ -15,6 +15,11 @@ import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { BookOpenIcon } from '../icons/BookOpenIcon';
 import { IdentificationIcon } from '../icons/IdentificationIcon';
 import { EnvelopeIcon } from '../icons/EnvelopeIcon';
+import { ShieldCheckIcon } from '../icons/ShieldCheckIcon';
+import { BriefcaseIcon } from '../icons/BriefcaseIcon';
+import { ArrowRightOnRectangleIcon } from '../icons/ArrowRightOnRectangleIcon';
+import { ClockIcon } from '../icons/ClockIcon';
+import { CreditCardIcon } from '../icons/CreditCardIcon';
 
 interface AdminDashboardProps {
   user: User;
@@ -149,7 +154,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <p className="text-xs text-gray-500 uppercase">Admin</p>
                 <p className="text-2xl font-bold text-red-600">{isLoading ? '...' : stats.adminCount}</p>
               </div>
-              <div className="text-3xl">👨‍💼</div>
+              <ShieldCheckIcon className="h-10 w-10 text-red-200" />
             </div>
           </div>
 
@@ -159,7 +164,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <p className="text-xs text-gray-500 uppercase">Staff</p>
                 <p className="text-2xl font-bold text-orange-600">{isLoading ? '...' : stats.staffCount}</p>
               </div>
-              <div className="text-3xl">👔</div>
+              <BriefcaseIcon className="h-10 w-10 text-orange-200" />
             </div>
           </div>
 
@@ -169,7 +174,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <p className="text-xs text-gray-500 uppercase">Guru</p>
                 <p className="text-2xl font-bold text-green-600">{isLoading ? '...' : stats.teacherCount}</p>
               </div>
-              <div className="text-3xl">👨‍🏫</div>
+              <AcademicCapIcon className="h-10 w-10 text-green-200" />
             </div>
           </div>
 
@@ -245,7 +250,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           <div className="bg-white rounded-lg shadow-md p-5 border-t-4 border-green-500">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-semibold text-gray-700">Check-in Gerbang</h4>
-              <div className="text-2xl">🚪</div>
+              <ArrowRightOnRectangleIcon className="h-8 w-8 text-green-400" />
             </div>
             <p className="text-4xl font-bold text-green-600 mb-1">{isLoading ? '...' : stats.todayGateCheckIns}</p>
             <p className="text-xs text-gray-500">siswa masuk hari ini</p>
@@ -254,7 +259,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           <div className="bg-white rounded-lg shadow-md p-5 border-t-4 border-yellow-500">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-semibold text-gray-700">Keterlambatan</h4>
-              <div className="text-2xl">⏰</div>
+              <ClockIcon className="h-8 w-8 text-yellow-400" />
             </div>
             <p className="text-4xl font-bold text-yellow-600 mb-1">{isLoading ? '...' : stats.todayLateArrivals}</p>
             <p className="text-xs text-gray-500">siswa terlambat hari ini</p>
@@ -312,7 +317,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
           <Link to="/kartu-pelajar" className="group bg-white hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 p-5 rounded-lg shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-purple-300">
             <div className="flex items-center mb-3">
-              <div className="text-3xl group-hover:scale-110 transition-transform">🪪</div>
+              <CreditCardIcon className="h-8 w-8 text-purple-600 group-hover:scale-110 transition-transform" />
               <h4 className="ml-3 font-bold text-gray-800">Kartu Pelajar</h4>
             </div>
             <p className="text-sm text-gray-600">Generate kartu identitas siswa digital</p>
@@ -336,7 +341,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
           <Link to="/absensi-gerbang" className="group bg-white hover:bg-gradient-to-br hover:from-teal-50 hover:to-cyan-50 p-5 rounded-lg shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-teal-300">
             <div className="flex items-center mb-3">
-              <div className="text-3xl group-hover:scale-110 transition-transform">🚪</div>
+              <ArrowRightOnRectangleIcon className="h-8 w-8 text-teal-600 group-hover:scale-110 transition-transform" />
               <h4 className="ml-3 font-bold text-gray-800">Absensi Gerbang</h4>
             </div>
             <p className="text-sm text-gray-600">Monitoring check-in/out siswa real-time</p>

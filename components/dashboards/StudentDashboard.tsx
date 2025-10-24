@@ -14,6 +14,10 @@ import { CalendarIcon } from '../icons/CalendarIcon';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { BookOpenIcon } from '../icons/BookOpenIcon';
 import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
+import { BeakerIcon } from '../icons/BeakerIcon';
+import { TrophyIcon } from '../icons/TrophyIcon';
+import { MegaphoneIcon } from '../icons/MegaphoneIcon';
+import { CreditCardIcon } from '../icons/CreditCardIcon';
 
 interface StudentDashboardProps {
   user: User;
@@ -113,7 +117,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
               <p className="text-xs text-gray-500 uppercase">Poin Badge</p>
               <p className="text-3xl font-bold text-amber-600">1,250</p>
             </div>
-            <div className="text-3xl">🏆</div>
+            <TrophyIcon className="h-10 w-10 text-amber-200" />
           </div>
         </div>
       </div>
@@ -152,12 +156,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
               </Link>
 
               <Link to="/kartu-pelajar" className="group bg-gradient-to-br from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 p-4 rounded-lg border-2 border-transparent hover:border-indigo-300 transition-all text-center">
-                <div className="text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform">🪪</div>
+                <CreditCardIcon className="h-8 w-8 text-indigo-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                 <p className="font-semibold text-gray-800 text-sm">Kartu Pelajar</p>
               </Link>
 
               <Link to="/pengumuman" className="group bg-gradient-to-br from-rose-50 to-red-50 hover:from-rose-100 hover:to-red-100 p-4 rounded-lg border-2 border-transparent hover:border-rose-300 transition-all text-center">
-                <div className="text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform">📢</div>
+                <MegaphoneIcon className="h-8 w-8 text-rose-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                 <p className="font-semibold text-gray-800 text-sm">Pengumuman</p>
               </Link>
             </div>
@@ -176,7 +180,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
                   <p className="font-bold text-gray-800">Matematika</p>
                   <p className="text-xs text-gray-500">Guru: Bu Siti</p>
                 </div>
-                <div className="text-3xl">📐</div>
+                <ChartBarIcon className="h-10 w-10 text-blue-400" />
               </div>
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
                 <div>
@@ -184,7 +188,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
                   <p className="font-bold text-gray-800">Bahasa Indonesia</p>
                   <p className="text-xs text-gray-500">Guru: Pak Ahmad</p>
                 </div>
-                <div className="text-3xl">📚</div>
+                <BookOpenIcon className="h-10 w-10 text-green-400" />
               </div>
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
                 <div>
@@ -192,7 +196,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
                   <p className="font-bold text-gray-800">Fisika</p>
                   <p className="text-xs text-gray-500">Guru: Pak Budi</p>
                 </div>
-                <div className="text-3xl">🔬</div>
+                <BeakerIcon className="h-10 w-10 text-purple-400" />
               </div>
             </div>
             <Link to="/jadwal-pelajaran" className="mt-4 inline-block text-sm font-semibold text-blue-600 hover:text-blue-800">

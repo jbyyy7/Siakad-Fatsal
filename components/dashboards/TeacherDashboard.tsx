@@ -12,6 +12,7 @@ import { BookOpenIcon } from '../icons/BookOpenIcon';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { AcademicCapIcon } from '../icons/AcademicCapIcon';
 import { PencilSquareIcon } from '../icons/PencilSquareIcon';
+import { BeakerIcon } from '../icons/BeakerIcon';
 
 interface TeacherDashboardProps {
   user: User;
@@ -225,14 +226,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                   <p className="text-sm text-gray-600">⏰ 07:30 - 09:00</p>
                   <p className="font-bold text-gray-800">Matematika - Kelas 10-A</p>
                 </div>
-                <div className="text-2xl">📐</div>
+                <BookOpenIcon className="h-8 w-8 text-green-400" />
               </div>
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
                 <div>
                   <p className="text-sm text-gray-600">⏰ 10:00 - 11:30</p>
                   <p className="font-bold text-gray-800">Matematika - Kelas 10-B</p>
                 </div>
-                <div className="text-2xl">📐</div>
+                <BookOpenIcon className="h-8 w-8 text-blue-400" />
               </div>
             </div>
             <Link
