@@ -45,8 +45,8 @@ export default function ReportCardViewPage() {
     try {
       let studentId = currentUser?.id;
 
-      // If parent, get children
-      if (currentUser?.role === 'Parent') {
+      // If parent, get children (note: Parent role might not exist in UserRole enum yet)
+      if (currentUser?.email && currentUser.role?.toString() === 'Parent') {
         const { data: contacts } = await supabase
           .from('parent_contacts')
           .select('student_id')
@@ -85,7 +85,7 @@ export default function ReportCardViewPage() {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Rapor-${selectedReportCard?.student_name}-${selectedReportCard?.semester?.name}`,
   });
 

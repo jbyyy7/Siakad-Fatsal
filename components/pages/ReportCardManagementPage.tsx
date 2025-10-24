@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { AcademicYear, Semester, Class, Subject, User, ReportCard, ReportCardSubject } from '../../types';
+import { AcademicYear, Semester, Class, Subject, User, ReportCard, ReportCardSubject, UserRole } from '../../types';
 
 export default function ReportCardManagementPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -133,10 +133,10 @@ export default function ReportCardManagementPage() {
         .select('*')
         .order('name', { ascending: true });
 
-      if (currentUser?.role === 'Teacher') {
+      if (currentUser?.role === UserRole.TEACHER) {
         // Load classes where this teacher is homeroom teacher
         query = query.eq('homeroom_teacher_id', currentUser.id);
-      } else if (currentUser?.role !== 'Admin' && currentUser?.schoolId) {
+      } else if (currentUser?.role !== UserRole.ADMIN && currentUser?.schoolId) {
         query = query.eq('school_id', currentUser.schoolId);
       }
 
@@ -315,8 +315,8 @@ export default function ReportCardManagementPage() {
         student_id: selectedStudent,
         class_id: selectedClass,
         semester_id: selectedSemester,
-        student_name: student.full_name,
-        student_nis: student.nis,
+        student_name: student.name || student.email,
+        student_nis: student.email, // Using email as identifier since nis might not exist
         class_name: classes.find(c => c.id === selectedClass)?.name || '',
         total_days: attendance.totalDays,
         present_days: attendance.presentDays,
@@ -328,7 +328,7 @@ export default function ReportCardManagementPage() {
         rank: rank,
         total_students: totalStudents,
         status: status,
-        homeroom_teacher_name: currentUser?.full_name || '',
+        homeroom_teacher_name: currentUser?.name || currentUser?.email || '',
         principal_name: '' // To be filled by principal
       };
 
@@ -432,7 +432,7 @@ export default function ReportCardManagementPage() {
               <option value="">Pilih Tahun Ajaran</option>
               {academicYears.map(year => (
                 <option key={year.id} value={year.id}>
-                  {year.name} {year.is_active && '✓'}
+                  {year.name} {year.isActive && '✓'}
                 </option>
               ))}
             </select>
@@ -449,7 +449,7 @@ export default function ReportCardManagementPage() {
               <option value="">Pilih Semester</option>
               {semesters.map(sem => (
                 <option key={sem.id} value={sem.id}>
-                  {sem.name} {sem.is_active && '✓'}
+                  {sem.name} {sem.isActive && '✓'}
                 </option>
               ))}
             </select>
@@ -480,7 +480,7 @@ export default function ReportCardManagementPage() {
               <option value="">Pilih Siswa</option>
               {students.map(student => (
                 <option key={student.id} value={student.id}>
-                  {student.full_name} - {student.nis}
+                  {student.name || student.email}
                 </option>
               ))}
             </select>

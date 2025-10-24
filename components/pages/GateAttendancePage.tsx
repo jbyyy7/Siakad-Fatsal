@@ -154,7 +154,7 @@ const GateAttendancePage: React.FC = () => {
           const checkInTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
           await notifyParentGateCheckIn(
             student.name,
-            student.nis || student.email,
+            student.email,
             checkInTime,
             user?.schoolId || ''
           );

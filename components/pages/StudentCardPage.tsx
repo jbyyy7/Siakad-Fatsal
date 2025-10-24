@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Class, School } from '../../types';
+import { User, Class, School, UserRole } from '../../types';
 import { dataService } from '../../services/dataService';
 import QRCode from 'react-qr-code';
 import jsPDF from 'jspdf';
@@ -76,7 +76,7 @@ const StudentCardPage: React.FC<StudentCardPageProps> = ({ user }) => {
     try {
       setLoading(true);
       const studentsData = await dataService.getUsers({
-        role: 'Siswa',
+        role: UserRole.STUDENT,
         classId: classId
       });
       setStudents(studentsData);
@@ -229,8 +229,10 @@ const StudentCardPage: React.FC<StudentCardPageProps> = ({ user }) => {
    * Print handler
    */
   const handlePrint = useReactToPrint({
-    content: () => cardRef.current,
-    documentTitle: `Kartu-Pelajar-${selectedStudent?.identityNumber}`
+    contentRef: cardRef,
+    documentTitle: viewMode === 'single' && selectedStudent 
+      ? `Kartu-Pelajar-${selectedStudent.name}`
+      : `Kartu-Pelajar-${selectedClassId ? classes.find(c => c.id === selectedClassId)?.name : 'Batch'}`,
   });
 
   /**
