@@ -2,9 +2,10 @@
 -- Migration: Add Gate Attendance Columns to Schools Table
 -- Date: 2024-10-24
 -- Purpose: Add all gate attendance related columns for check-in/out features
+-- CRITICAL: These column names MUST match the snake_case mapping in dataService.ts
 -- ============================================================================
 
--- Add gate attendance columns to schools table
+-- Add gate attendance columns to schools table (snake_case for PostgreSQL)
 ALTER TABLE schools 
 ADD COLUMN IF NOT EXISTS gate_attendance_enabled BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS gate_qr_enabled BOOLEAN DEFAULT true,

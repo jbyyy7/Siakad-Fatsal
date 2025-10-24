@@ -47,6 +47,55 @@ const mapUserToDb = (appUser: any) => ({
     parent_phone_number: appUser.parentPhoneNumber || null,
 });
 
+// Helper to convert camelCase School from app to snake_case for DB
+const mapSchoolToDb = (appSchool: any) => ({
+    name: appSchool.name,
+    level: appSchool.level,
+    address: appSchool.address || null,
+    latitude: appSchool.latitude || null,
+    longitude: appSchool.longitude || null,
+    location_name: appSchool.locationName || null,
+    radius: appSchool.radius || null,
+    location_attendance_enabled: appSchool.locationAttendanceEnabled || false,
+    // Gate attendance fields
+    gate_attendance_enabled: appSchool.gateAttendanceEnabled || false,
+    gate_qr_enabled: appSchool.gateQREnabled !== false, // default true
+    gate_face_enabled: appSchool.gateFaceEnabled || false,
+    gate_manual_enabled: appSchool.gateManualEnabled !== false, // default true
+    gate_check_in_start: appSchool.gateCheckInStart || '05:00:00',
+    gate_check_in_end: appSchool.gateCheckInEnd || '23:59:59',
+    gate_late_threshold: appSchool.gateLateThreshold || '07:30:00',
+    gate_check_out_start: appSchool.gateCheckOutStart || '05:00:00',
+    gate_check_out_end: appSchool.gateCheckOutEnd || '23:59:59',
+    gate_notify_parents: appSchool.gateNotifyParents !== false, // default true
+    gate_notify_on_late: appSchool.gateNotifyOnLate !== false, // default true
+});
+
+// Helper to convert snake_case School from DB to camelCase for app
+const mapSchoolFromDb = (dbSchool: any): School => ({
+    id: dbSchool.id,
+    name: dbSchool.name,
+    level: dbSchool.level,
+    address: dbSchool.address,
+    latitude: dbSchool.latitude,
+    longitude: dbSchool.longitude,
+    locationName: dbSchool.location_name,
+    radius: dbSchool.radius,
+    locationAttendanceEnabled: dbSchool.location_attendance_enabled,
+    // Gate attendance fields
+    gateAttendanceEnabled: dbSchool.gate_attendance_enabled,
+    gateQREnabled: dbSchool.gate_qr_enabled,
+    gateFaceEnabled: dbSchool.gate_face_enabled,
+    gateManualEnabled: dbSchool.gate_manual_enabled,
+    gateCheckInStart: dbSchool.gate_check_in_start,
+    gateCheckInEnd: dbSchool.gate_check_in_end,
+    gateLateThreshold: dbSchool.gate_late_threshold,
+    gateCheckOutStart: dbSchool.gate_check_out_start,
+    gateCheckOutEnd: dbSchool.gate_check_out_end,
+    gateNotifyParents: dbSchool.gate_notify_parents,
+    gateNotifyOnLate: dbSchool.gate_notify_on_late,
+});
+
 
 const getGradeLetter = (score: number) => {
     if (score >= 90) return 'A';
@@ -133,7 +182,7 @@ export const dataService = {
   async getSchools(): Promise<School[]> {
     const { data, error } = await supabase.from('schools').select('*');
     if (error) throw error;
-    return data;
+    return data.map(mapSchoolFromDb);
   },
   async getSchoolCount(): Promise<number> { 
       const { count, error } = await supabase.from('schools').select('*', { count: 'exact', head: true });
@@ -141,11 +190,13 @@ export const dataService = {
       return count ?? 0;
   },
   async createSchool(schoolData: Omit<School, 'id'>): Promise<void> {
-      const { error } = await supabase.from('schools').insert(schoolData);
+      const dbSchool = mapSchoolToDb(schoolData);
+      const { error } = await supabase.from('schools').insert(dbSchool);
       if (error) throw error;
   },
   async updateSchool(schoolId: string, schoolData: Omit<School, 'id'>): Promise<void> {
-      const { error } = await supabase.from('schools').update(schoolData).eq('id', schoolId);
+      const dbSchool = mapSchoolToDb(schoolData);
+      const { error } = await supabase.from('schools').update(dbSchool).eq('id', schoolId);
       if (error) throw error;
   },
   async deleteSchool(schoolId: string): Promise<void> {
