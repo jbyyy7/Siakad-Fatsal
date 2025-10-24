@@ -11,6 +11,8 @@ import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
+import { BookOpenIcon } from '../icons/BookOpenIcon';
+import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
 import SubjectForm from '../forms/SubjectForm';
 
 const ManageSubjectsPage: React.FC = () => {
@@ -94,8 +96,47 @@ const ManageSubjectsPage: React.FC = () => {
     }, {} as Record<string, Subject[]>);
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Mata Pelajaran</h2>
+        <div className="p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-pink-600 to-rose-600 rounded-xl shadow-lg p-6 mb-6 text-white">
+                <h2 className="text-3xl font-bold mb-2">Kelola Mata Pelajaran</h2>
+                <p className="text-pink-100">Manajemen mata pelajaran untuk semua sekolah</p>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-pink-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Total Mata Pelajaran</p>
+                            <p className="text-3xl font-bold text-pink-600">{isLoading ? '...' : subjects.length}</p>
+                        </div>
+                        <BookOpenIcon className="h-10 w-10 text-pink-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-rose-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Sekolah</p>
+                            <p className="text-3xl font-bold text-rose-600">{isLoading ? '...' : schools.length}</p>
+                        </div>
+                        <BuildingLibraryIcon className="h-10 w-10 text-rose-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Rata-rata per Sekolah</p>
+                            <p className="text-3xl font-bold text-purple-600">
+                                {isLoading ? '...' : schools.length > 0 ? Math.round(subjects.length / schools.length) : 0}
+                            </p>
+                        </div>
+                        <BookOpenIcon className="h-10 w-10 text-purple-200" />
+                    </div>
+                </div>
+            </div>
             
             {isLoading ? (
                 <Loading text="Memuat data mata pelajaran..." />
@@ -108,12 +149,18 @@ const ManageSubjectsPage: React.FC = () => {
                         />
                     ) : (
                         schools.map(school => (
-                        <Card key={school.id}>
-                            <div className="flex justify-between items-center p-4 border-b">
-                                <h3 className="text-lg font-semibold">{school.name}</h3>
+                        <div key={school.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div className="flex justify-between items-center p-5 bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-pink-200">
+                                <div className="flex items-center">
+                                    <BuildingLibraryIcon className="h-6 w-6 text-pink-600 mr-3" />
+                                    <h3 className="text-lg font-bold text-gray-800">{school.name}</h3>
+                                    <span className="ml-3 px-2 py-1 text-xs font-semibold bg-pink-100 text-pink-700 rounded-full">
+                                        {(subjectsBySchool[school.id] || []).length} mapel
+                                    </span>
+                                </div>
                                 <button
                                     onClick={() => openModal(null, school.id)}
-                                    className="flex items-center text-sm px-3 py-1.5 bg-brand-100 text-brand-700 font-semibold rounded-md hover:bg-brand-200"
+                                    className="flex items-center text-sm px-4 py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-700 transition-colors shadow-sm"
                                 >
                                     <PlusIcon className="h-4 w-4 mr-1" />
                                     Tambah Mapel
@@ -137,7 +184,7 @@ const ManageSubjectsPage: React.FC = () => {
                                     </tbody>
                                 </table>
                             </div>
-                        </Card>
+                        </div>
                     ))
                     )}
                 </div>
