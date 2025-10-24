@@ -1,5 +1,6 @@
 import serverSupabase from './serverSupabase';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).send({ error: 'Method not allowed' });
 
@@ -21,6 +22,7 @@ export default async function handler(req: any, res: any) {
     if (authError) throw authError;
 
     return res.status(200).send({ ok: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error('delete-user error', e);
     return res.status(500).send({ error: e.message || String(e) });

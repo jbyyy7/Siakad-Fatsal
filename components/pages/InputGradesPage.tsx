@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
@@ -17,7 +17,6 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
     
     const [selectedClassId, setSelectedClassId] = useState<string>('');
     const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-    const [selectedStudentId, setSelectedStudentId] = useState<string>('');
     
     const [grades, setGrades] = useState<Record<string, { score: string, notes: string }>>({});
     
@@ -84,7 +83,7 @@ const InputGradesPage: React.FC<InputGradesPageProps> = ({ user }) => {
         try {
             // Convert grades object to array of grade records
             const gradeRecords = Object.entries(grades)
-                .filter(([_, value]) => value.score && value.score.trim() !== '')
+                .filter(([, value]) => value.score && value.score.trim() !== '')
                 .map(([studentId, value]) => ({
                     student_id: studentId,
                     subject_id: selectedSubjectId,

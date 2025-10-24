@@ -4,11 +4,13 @@ import toast from 'react-hot-toast';
 import Modal from '../ui/Modal';
 import { dataService } from '../../services/dataService';
 
+type UserFormData = Omit<User, 'id' | 'createdAt'> & { password?: string };
+
 interface UserFormProps {
   user: User | null;
   schools: School[];
   onClose: () => void;
-  onSave: (formData: any) => Promise<void>;
+  onSave: (formData: Partial<UserFormData>) => Promise<void>;
 }
 
 const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) => {
@@ -106,9 +108,9 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     }
     const dataToSave = { ...formData };
     if (isEditMode) {
-      // @ts-ignore
+      // @ts-expect-error - Delete password field on edit mode
       delete dataToSave.password; // Don't send empty password on edit
-      // @ts-ignore
+      // @ts-expect-error - Delete email field on edit mode
       delete dataToSave.email; // Email cannot be changed
     }
     

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { parseExcelFile, downloadStudentImportTemplate } from '../utils/excelUtils';
-import { StudentImportRow, ImportValidationError } from '../types';
 import { logger } from '../utils/logger';
 
 type RawRow = Record<string, unknown>;

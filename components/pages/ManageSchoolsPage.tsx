@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
@@ -19,11 +20,14 @@ const ManageSchoolsPage: React.FC = () => {
 
     const fetchSchools = async () => {
         setIsLoading(true);
+        setError(null);
         try {
             const data = await dataService.getSchools();
             setSchools(data);
         } catch (err) {
-            setError('Gagal memuat data sekolah.');
+            const errorMessage = 'Gagal memuat data sekolah';
+            setError(errorMessage);
+            toast.error(errorMessage);
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -48,14 +52,16 @@ const ManageSchoolsPage: React.FC = () => {
         try {
             if (selectedSchool) {
                 await dataService.updateSchool(selectedSchool.id, formData);
+                toast.success('Sekolah berhasil diperbarui');
             } else {
                 await dataService.createSchool(formData);
+                toast.success('Sekolah berhasil ditambahkan');
             }
             fetchSchools();
             closeModal();
         } catch (error: any) {
              console.error('Failed to save school:', error);
-             alert(`Gagal menyimpan sekolah: ${error.message}`);
+             toast.error(`Gagal menyimpan sekolah: ${error.message}`);
         }
     };
     
@@ -63,10 +69,11 @@ const ManageSchoolsPage: React.FC = () => {
         if (window.confirm('Apakah Anda yakin ingin menghapus sekolah ini? Pengguna yang terhubung dengan sekolah ini tidak akan terhapus.')) {
             try {
                 await dataService.deleteSchool(schoolId);
+                toast.success('Sekolah berhasil dihapus');
                 fetchSchools();
             } catch (error: any) {
                 console.error('Failed to delete school:', error);
-                alert(`Gagal menghapus sekolah: ${error.message}`);
+                toast.error(`Gagal menghapus sekolah: ${error.message}`);
             }
         }
     };

@@ -10,6 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Rate limiting
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rateLimitResponse = checkRateLimit(req as any, RATE_LIMITS.CHECK_EMAIL);
   if (rateLimitResponse) {
     const body = await rateLimitResponse.json();

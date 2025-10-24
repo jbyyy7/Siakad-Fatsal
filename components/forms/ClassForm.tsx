@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Class, School, User } from '../../types';
 
+type ClassFormData = Omit<Class, 'id'> & { studentIds?: string[] };
+
 interface ClassFormProps {
   classData: (Partial<Class> & { studentIds?: string[] }) | null;
   schools: School[];
   allTeachers: User[];
   allStudents: User[];
   onClose: () => void;
-  onSave: (formData: any) => Promise<void>;
+  onSave: (formData: ClassFormData) => Promise<void>;
   initialSchoolId?: string;
 }
 

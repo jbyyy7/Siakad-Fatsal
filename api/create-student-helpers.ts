@@ -1,10 +1,12 @@
 import serverSupabase from './serverSupabase';
 import { initSendGrid, sendEmailNotification } from '../services/notificationService';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createStudent(row: any) {
   // row: { full_name, email, phone, class_name }
   // Create auth user via Admin API with a random password (not returned)
   const password = Math.random().toString(36).slice(2, 10) + 'A1!';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await serverSupabase.auth.admin.createUser({
     email: row.email,
     password,

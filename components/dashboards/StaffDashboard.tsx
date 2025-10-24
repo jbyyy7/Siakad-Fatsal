@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User, Class, Subject, TeacherAttendanceRecord } from '../../types';
 import { supabase, dataService } from '../../services/dataService';
 import { logger } from '../../utils/logger';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 
 interface StaffDashboardProps {

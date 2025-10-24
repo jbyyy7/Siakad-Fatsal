@@ -77,6 +77,7 @@ const JournalForm: React.FC<JournalFormProps> = ({ journal, user, onClose, onSav
             await dataService.createTeachingJournal(journalData);
         }
         await onSave();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch(error: any) {
         alert(`Gagal menyimpan jurnal: ${error.message}`);
     } finally {

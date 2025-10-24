@@ -66,9 +66,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <AdminDashboard user={user} />;
       case UserRole.STAFF:
         console.log('✅ MATCHED: StaffDashboard');
-        return <AdminDashboard user={user} />;
-      case UserRole.STAFF:
-        console.log('✅ MATCHED: StaffDashboard');
         return <StaffDashboard user={user} />;
       case UserRole.FOUNDATION_HEAD:
         console.log('✅ MATCHED: FoundationHeadDashboard');

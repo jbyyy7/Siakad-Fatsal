@@ -3,7 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
-import { User, Class, Subject, AttendanceStatus, AttendanceRecord } from '../../types';
+import { User, Class, Subject, AttendanceStatus, AttendanceRecord, School } from '../../types';
+import { getCurrentLocation, validateLocation, formatDistance, Coordinates } from '../../utils/geolocation';
+import toast from 'react-hot-toast';
 
 interface StudentAttendancePageProps {
   user: User;
@@ -13,12 +15,19 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
     const [students, setStudents] = useState<User[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [school, setSchool] = useState<School | null>(null);
     const [isLoading, setIsLoading] = useState({ page: true, students: false });
     const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
     const [selectedClassId, setSelectedClassId] = useState<string>('');
     const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
     const [selectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+    const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
+    const [locationStatus, setLocationStatus] = useState<{
+        isValid: boolean;
+        distance?: number;
+        error?: string;
+    } | null>(null);
 
     // Fetch initial data (classes and subjects for the teacher)
     useEffect(() => {
@@ -30,12 +39,28 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
                 if (teacherClasses.length > 0) {
                     const firstClass = teacherClasses[0];
                     setSelectedClassId(firstClass.id);
+                    
+                    // Fetch school data
+                    if (firstClass.schoolId) {
+                        const schools = await dataService.getSchools();
+                        const teacherSchool = schools.find(s => s.id === firstClass.schoolId);
+                        setSchool(teacherSchool || null);
+                    }
+                    
                     // Fetch subjects for the first class
                     const schoolSubjects = await dataService.getSubjects({ schoolId: firstClass.schoolId });
                     setSubjects(schoolSubjects);
                     if (schoolSubjects.length > 0) {
                         setSelectedSubjectId(schoolSubjects[0].id);
                     }
+                }
+
+                // Get current location
+                try {
+                    const coords = await getCurrentLocation();
+                    setCurrentLocation(coords);
+                } catch (error) {
+                    console.error('Error getting location:', error);
                 }
             } catch (error) {
                 console.error("Failed to fetch initial data for attendance:", error);
@@ -71,13 +96,23 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
             }, {} as Record<string, AttendanceStatus>);
             setAttendance(initialAttendance);
 
+            // Validate location if school has coordinates
+            if (school?.latitude && school?.longitude && currentLocation) {
+                const validation = validateLocation(
+                    currentLocation,
+                    { latitude: school.latitude, longitude: school.longitude },
+                    school.radius || 100
+                );
+                setLocationStatus(validation);
+            }
+
         } catch (error) {
             console.error("Failed to fetch students or attendance:", error);
             setSaveStatus('error');
         } finally {
             setIsLoading({ page: false, students: false });
         }
-    }, [selectedClassId, selectedSubjectId, selectedDate]);
+    }, [selectedClassId, selectedSubjectId, selectedDate, school, currentLocation]);
     
     useEffect(() => {
         fetchStudentAndAttendanceData();
@@ -90,6 +125,12 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
     };
 
     const handleSave = async () => {
+        // Validate location before saving (only if feature is enabled)
+        if (school?.locationAttendanceEnabled && school?.latitude && school?.longitude && !locationStatus?.isValid) {
+            toast.error(`Anda berada di luar jangkauan sekolah (jarak: ${formatDistance(locationStatus?.distance || 0)}). Tidak dapat menyimpan absensi.`);
+            return;
+        }
+
         setSaveStatus('saving');
         const recordsToSave: AttendanceRecord[] = students.map(student => ({
             date: selectedDate,
@@ -97,24 +138,61 @@ const StudentAttendancePage: React.FC<StudentAttendancePageProps> = ({ user }) =
             class_id: selectedClassId,
             subject_id: selectedSubjectId,
             teacher_id: user.id,
-            status: attendance[student.id]
+            status: attendance[student.id],
+            // Add teacher location
+            teacher_latitude: currentLocation?.latitude,
+            teacher_longitude: currentLocation?.longitude,
+            teacher_location_name: school?.locationName || (currentLocation ? `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}` : undefined),
         }));
 
         try {
             await dataService.saveAttendance(recordsToSave);
             setSaveStatus('success');
+            toast.success('✅ Absensi berhasil disimpan!');
+
             setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (error) {
             console.error("Failed to save attendance:", error);
             setSaveStatus('error');
         }
     };
-    
-    const selectedClassName = classes.find(c => c.id === selectedClassId)?.name || '';
 
     return (
         <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Absensi Siswa</h2>
+
+            {/* Location Status Alert */}
+            {school?.locationAttendanceEnabled && school?.latitude && school?.longitude && (
+                <div className="mb-4">
+                    {locationStatus?.error ? (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <p className="text-red-700 text-sm">❌ {locationStatus.error}</p>
+                        </div>
+                    ) : locationStatus?.isValid ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-green-700 text-sm">
+                                ✅ Anda berada di dalam jangkauan sekolah (Jarak: {formatDistance(locationStatus.distance || 0)})
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <p className="text-yellow-700 text-sm font-semibold">
+                                ⚠️ Anda berada di luar jangkauan sekolah
+                            </p>
+                            <p className="text-yellow-600 text-xs mt-1">
+                                Jarak: {formatDistance(locationStatus?.distance || 0)} dari lokasi sekolah
+                            </p>
+                            <p className="text-yellow-600 text-xs">
+                                Radius yang diizinkan: {formatDistance(school?.radius || 100)}
+                            </p>
+                            <p className="text-yellow-600 text-xs font-semibold mt-2">
+                                Anda tidak dapat menyimpan absensi di lokasi ini.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <Card>
                 <div className="p-4 border-b grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>

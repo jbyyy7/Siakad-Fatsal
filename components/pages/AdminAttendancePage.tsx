@@ -9,7 +9,7 @@ interface AdminAttendancePageProps {
   user: User;
 }
 
-const AdminAttendancePage: React.FC<AdminAttendancePageProps> = ({ user }) => {
+const AdminAttendancePage: React.FC<AdminAttendancePageProps> = ({ user: _user }) => {
   const [schools, setSchools] = useState<School[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);

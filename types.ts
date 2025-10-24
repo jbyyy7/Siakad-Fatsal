@@ -37,6 +37,12 @@ export interface School {
   name: string;
   level: string; // e.g., 'SMA', 'SMP'
   address: string;
+  // Location fields for attendance validation
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
+  radius?: number; // radius in meters for geofencing
+  locationAttendanceEnabled?: boolean; // Enable/disable location-based attendance
 }
 
 export interface Class {
@@ -68,6 +74,10 @@ export interface AttendanceRecord {
     teacher_id: string;
     teacherName?: string;
     status: AttendanceStatus;
+    // Teacher location when marking attendance
+    teacher_latitude?: number;
+    teacher_longitude?: number;
+    teacher_location_name?: string;
 }
 
 // Teacher/Staff Attendance (separate from student attendance)
@@ -81,6 +91,10 @@ export interface TeacherAttendanceRecord {
     check_out_time?: string; // HH:MM:SS
     status: AttendanceStatus;
     notes?: string;
+    // Location fields
+    latitude?: number;
+    longitude?: number;
+    location_name?: string;
 }
 
 export interface Grade {
@@ -137,6 +151,18 @@ export interface GamificationProfile {
         icon: string;
         description: string;
     }[];
+}
+
+// Schedule for class subjects
+export interface ClassSchedule {
+    id: string;
+    class_id: string;
+    subject_id: string;
+    teacher_id: string;
+    day_of_week: number; // 0-6, 0=Sunday
+    start_time: string; // HH:MM
+    end_time: string; // HH:MM
+    room?: string;
 }
 
 // Additional types for better type safety

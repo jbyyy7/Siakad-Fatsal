@@ -3,6 +3,7 @@ import { checkRateLimit, RATE_LIMITS } from '../utils/rateLimiter';
 import { logger } from '../utils/logger';
 
 // Simple serverless endpoint to send email notifications. Protect with a secret in env: SEND_NOTIFICATION_SECRET
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   try {
     // Rate limiting
@@ -27,6 +28,7 @@ export default async function handler(req: any, res: any) {
     await sendEmailNotification({ to, subject, html, text });
     logger.info('Email sent successfully', { to, subject });
     return res.status(200).json({ ok: true });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error('Send-notification error', err, 'send-notification');
     return res.status(500).json({ error: String(err?.message || err) });

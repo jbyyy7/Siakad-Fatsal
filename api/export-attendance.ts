@@ -14,11 +14,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (date) q = q.eq('occurred_at', date as string);
     const { data, error } = await q;
     if (error) return res.status(500).json({ error: String(error.message || error) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = (data || []).map((r: any) => ({ student: r.student?.full_name || '', status: r.status, occurred_at: r.occurred_at }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const csv = ['student,status,occurred_at'].concat(rows.map((r: any) => `${JSON.stringify(r.student)},${JSON.stringify(r.status)},${JSON.stringify(r.occurred_at)}`)).join('\n');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="attendance_export.csv"');
     res.send(csv);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     res.status(500).json({ error: String(err?.message || err) });
   }

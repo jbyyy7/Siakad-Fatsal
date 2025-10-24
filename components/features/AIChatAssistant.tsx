@@ -18,7 +18,6 @@ const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -29,7 +28,6 @@ const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onClose }) => {
   
   const handleReset = () => {
       setMessages([initialMessage]);
-      setError(null);
   }
 
   const handleSend = async () => {
@@ -39,7 +37,6 @@ const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onClose }) => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    setError(null);
 
     let fullResponseText = '';
     const aiMessage: Message = { sender: 'ai', text: '' };
@@ -77,7 +74,6 @@ const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onClose }) => {
     } catch (err) {
       console.error("AI chat error:", err);
       const errorMessage = 'Maaf, terjadi kesalahan. Silakan coba lagi nanti.';
-      setError(errorMessage);
        setMessages(prev => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = { sender: 'ai', text: errorMessage };

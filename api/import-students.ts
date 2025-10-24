@@ -1,5 +1,6 @@
 import { createStudent } from './create-student-helpers';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   try {
     const secret = process.env.CREATE_USER_SECRET;
@@ -15,11 +16,13 @@ export default async function handler(req: any, res: any) {
       try {
         const r = await createStudent(row);
         results.push({ ok: true, id: r.id, email_sent: r.email_sent });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         results.push({ ok: false, error: String(err?.message || err) });
       }
     }
     return res.status(200).json({ results });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return res.status(500).json({ error: String(err?.message || err) });
   }

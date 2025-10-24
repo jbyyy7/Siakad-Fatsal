@@ -3,6 +3,7 @@ import { checkRateLimit, RATE_LIMITS } from '../utils/rateLimiter';
 import { logger } from '../utils/logger';
 
 // Simple shared-secret check (set CREATE_USER_SECRET in Vercel env)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).send({ error: 'Method not allowed' });
 
@@ -25,6 +26,7 @@ export default async function handler(req: any, res: any) {
   }
   try {
     // Create user via admin.createUser. We avoid returning any password.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: authData, error: authError } = await serverSupabase.auth.admin.createUser({
       email,
       password: password || Math.random().toString(36).slice(2, 10) + 'A1!',
@@ -60,6 +62,7 @@ export default async function handler(req: any, res: any) {
     }
 
     return res.status(201).send({ ok: true, userId: authData.user.id });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error('create-user error', e);
     return res.status(500).send({ error: e.message || String(e) });

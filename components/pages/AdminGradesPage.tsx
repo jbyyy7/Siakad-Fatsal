@@ -9,7 +9,7 @@ interface AdminGradesPageProps {
   user: User;
 }
 
-const AdminGradesPage: React.FC<AdminGradesPageProps> = ({ user }) => {
+const AdminGradesPage: React.FC<AdminGradesPageProps> = ({ user: _user }) => {
     const [schools, setSchools] = useState<School[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);

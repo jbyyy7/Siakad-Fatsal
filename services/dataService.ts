@@ -1,7 +1,8 @@
 import { supabase } from './supabaseClient';
 import { 
   User, UserRole, School, Announcement, Subject, Class, 
-  AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry, Grade
+  AttendanceRecord, AttendanceStatus, GamificationProfile, TeachingJournal, JournalEntry, Grade,
+  TeacherAttendanceRecord
 } from '../types';
 import { toUserRoleEnum } from '../utils/roleMapping';
 
@@ -437,5 +438,35 @@ export const dataService = {
         'Senin': [{ time: '07:30 - 09:00', subject: 'Matematika' }, { time: '10:00 - 11:30', subject: 'Bahasa Indonesia'}],
         'Selasa': [{ time: '07:30 - 09:00', subject: 'Fisika' }],
     };
-  }
+  },
+
+  // TEACHER ATTENDANCE
+  async getTeacherAttendance(filters?: { teacherId?: string; schoolId?: string; date?: string }): Promise<TeacherAttendanceRecord[]> {
+    let query = supabase.from('teacher_attendance').select('*, teacher:profiles(full_name)');
+    if (filters?.teacherId) {
+      query = query.eq('teacher_id', filters.teacherId);
+    }
+    if (filters?.schoolId) {
+      query = query.eq('school_id', filters.schoolId);
+    }
+    if (filters?.date) {
+      query = query.eq('date', filters.date);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []).map(a => ({
+      ...a,
+      teacherName: Array.isArray(a.teacher) ? a.teacher[0]?.full_name : a.teacher?.full_name,
+    }));
+  },
+
+  async createTeacherAttendance(attendance: Omit<TeacherAttendanceRecord, 'id'>): Promise<void> {
+    const { error } = await supabase.from('teacher_attendance').insert(attendance);
+    if (error) throw error;
+  },
+
+  async updateTeacherAttendance(id: number, updates: Partial<TeacherAttendanceRecord>): Promise<void> {
+    const { error } = await supabase.from('teacher_attendance').update(updates).eq('id', id);
+    if (error) throw error;
+  },
 };

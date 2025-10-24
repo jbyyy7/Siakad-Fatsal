@@ -145,7 +145,7 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
                     </Card>
                     <Card title="Catatan Wali Kelas" className="shadow-none border">
                          <blockquote className="text-sm italic text-gray-700 border-l-4 border-brand-300 pl-4">
-                           "{isLoading ? 'Memuat catatan...' : teacherNote.note}"
+                           &ldquo;{isLoading ? 'Memuat catatan...' : teacherNote.note}&rdquo;
                          </blockquote>
                          {teacherNote.teacherName && <p className="text-right text-sm font-semibold mt-4">- {teacherNote.teacherName}</p>}
                     </Card>
