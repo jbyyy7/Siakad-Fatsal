@@ -142,7 +142,7 @@ export const authService = {
   async login(identityNumber: string, password: string):Promise<User> {
     // Step 1: Call the PostgreSQL function to get the email from the identity number
     const { data: email, error: rpcError } = await supabase.rpc('get_email_from_identity', {
-      identity_number_input: identityNumber
+      identity_num: identityNumber
     });
 
     // Enhanced Error Handling
