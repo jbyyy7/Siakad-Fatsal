@@ -75,7 +75,7 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
       setLoading(true);
       let query = supabase
         .from('teacher_attendance')
-        .select('*, profiles!teacher_id(name)')
+        .select('*, profiles(full_name)')
         .eq('date', selectedDate);
       
       // Only filter by school_id if it exists
@@ -91,7 +91,7 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
         id: r.id,
         date: r.date,
         teacher_id: r.teacher_id,
-        teacherName: r.profiles?.name || 'Unknown',
+        teacherName: r.profiles?.full_name || 'Unknown',
         school_id: r.school_id,
         check_in_time: r.check_in_time,
         check_out_time: r.check_out_time,
@@ -163,12 +163,12 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
 
         <div className="mb-6 flex gap-4 items-center">
           <div>
-            <label className="block text-sm mb-2">Tanggal:</label>
+            <label className="block text-sm mb-2 font-medium">Tanggal:</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded"
+              className="px-4 py-2 bg-white/10 border border-blue-500/30 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               max={new Date().toISOString().split('T')[0]}
             />
           </div>
@@ -176,34 +176,34 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
           {canEdit && (
             <button
               onClick={() => loadAttendance()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded self-end"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded self-end transition-colors"
             >
-              Refresh
+              🔄 Refresh
             </button>
           )}
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Loading...</div>
+          <div className="text-center py-8">⏳ Loading...</div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border border-blue-500/20">
             <table className="w-full text-sm">
-              <thead className="bg-gray-700">
+              <thead className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur">
                 <tr>
-                  <th className="text-left p-3">Nama</th>
-                  <th className="text-left p-3">Role</th>
-                  <th className="text-left p-3">Status</th>
-                  <th className="text-left p-3">Check In</th>
-                  <th className="text-left p-3">Check Out</th>
-                  <th className="text-left p-3">Catatan</th>
-                  {canEdit && <th className="text-left p-3">Aksi</th>}
+                  <th className="text-left p-3 font-semibold">Nama</th>
+                  <th className="text-left p-3 font-semibold">Role</th>
+                  <th className="text-left p-3 font-semibold">Status</th>
+                  <th className="text-left p-3 font-semibold">Check In</th>
+                  <th className="text-left p-3 font-semibold">Check Out</th>
+                  <th className="text-left p-3 font-semibold">Catatan</th>
+                  {canEdit && <th className="text-left p-3 font-semibold">Aksi</th>}
                 </tr>
               </thead>
               <tbody>
                 {teachers.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center p-8 text-gray-400">
-                      Tidak ada data guru/staff
+                      📝 Tidak ada data guru/staff
                     </td>
                   </tr>
                 ) : (
@@ -212,7 +212,7 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
                     const isToday = selectedDate === new Date().toISOString().split('T')[0];
 
                     return (
-                      <tr key={teacher.id} className="border-b border-gray-700 hover:bg-gray-800">
+                      <tr key={teacher.id} className="border-b border-blue-500/10 hover:bg-blue-500/5 transition-colors">
                         <td className="p-3">{teacher.name}</td>
                         <td className="p-3">{teacher.role}</td>
                         <td className="p-3">
@@ -220,20 +220,20 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
                             <select
                               value={record?.status || ''}
                               onChange={(e) => saveAttendance(teacher.id, e.target.value as AttendanceStatus)}
-                              className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
+                              className="px-3 py-1.5 bg-white/10 border border-blue-500/30 rounded text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             >
-                              <option value="">-- Pilih --</option>
+                              <option value="" className="bg-gray-800">-- Pilih Status --</option>
                               {statuses.map(s => (
-                                <option key={s} value={s}>{s}</option>
+                                <option key={s} value={s} className="bg-gray-800">{s}</option>
                               ))}
                             </select>
                           ) : (
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              record?.status === 'Hadir' ? 'bg-green-600' :
-                              record?.status === 'Sakit' ? 'bg-blue-600' :
-                              record?.status === 'Izin' ? 'bg-yellow-600' :
-                              record?.status === 'Alpha' ? 'bg-red-600' :
-                              'bg-gray-600'
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              record?.status === 'Hadir' ? 'bg-green-600/20 text-green-400 border border-green-500/30' :
+                              record?.status === 'Sakit' ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' :
+                              record?.status === 'Izin' ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30' :
+                              record?.status === 'Alpha' ? 'bg-red-600/20 text-red-400 border border-red-500/30' :
+                              'bg-gray-600/20 text-gray-400 border border-gray-500/30'
                             }`}>
                               {record?.status || '-'}
                             </span>
@@ -254,16 +254,16 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
                           )}
                         </td>
                         <td className="p-3">
-                          <span className="text-gray-400 text-xs">{record?.notes || '-'}</span>
+                          <span className="text-gray-300 text-xs italic">{record?.notes || '-'}</span>
                         </td>
                         {canEdit && (
                           <td className="p-3">
                             {isToday && !record && (
                               <button
                                 onClick={() => quickCheckIn(teacher.id)}
-                                className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-xs"
+                                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-xs font-medium transition-colors shadow-lg shadow-green-500/20"
                               >
-                                Check In
+                                ✓ Check In
                               </button>
                             )}
                             {isToday && record && record.status === 'Hadir' && !record.check_out_time && (
@@ -283,9 +283,9 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
                                     loadAttendance();
                                   }
                                 }}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-xs font-medium transition-colors shadow-lg shadow-blue-500/20"
                               >
-                                Check Out
+                                → Check Out
                               </button>
                             )}
                           </td>

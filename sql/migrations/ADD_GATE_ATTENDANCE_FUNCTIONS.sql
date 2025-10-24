@@ -90,13 +90,51 @@ $$;
 COMMENT ON FUNCTION get_gate_attendance_analytics IS 'Returns gate attendance analytics over date range (stub implementation)';
 
 -- ============================================================================
+-- FUNCTION 3: get_late_arrival_report
+-- Returns list of students who arrived late
+-- ============================================================================
+CREATE OR REPLACE FUNCTION get_late_arrival_report(
+    school_id_param UUID,
+    start_date_param DATE,
+    end_date_param DATE DEFAULT NULL
+)
+RETURNS TABLE (
+    student_id UUID,
+    student_name TEXT,
+    date DATE,
+    check_in_time TIME,
+    minutes_late INTEGER
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- For now, return empty result until gate_attendances table is created
+    -- TODO: Replace with real query when gate_attendances table exists
+    RETURN QUERY
+    SELECT 
+        NULL::UUID,
+        NULL::TEXT,
+        NULL::DATE,
+        NULL::TIME,
+        0::INTEGER
+    LIMIT 0; -- Return empty result set
+END;
+$$;
+
+COMMENT ON FUNCTION get_late_arrival_report IS 'Returns late arrival report for students (stub implementation)';
+
+-- ============================================================================
 -- Grant permissions to anon and authenticated roles
 -- ============================================================================
 GRANT EXECUTE ON FUNCTION get_gate_attendance_summary(DATE, UUID) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION get_gate_attendance_analytics(UUID, DATE, DATE) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION get_late_arrival_report(UUID, DATE, DATE) TO anon, authenticated;
 
 -- Note: Parameter names changed to match frontend calls
--- Function signature: get_gate_attendance_analytics(school_id_param, start_date_param, end_date_param)
+-- Function signatures:
+--   get_gate_attendance_analytics(school_id_param, start_date_param, end_date_param)
+--   get_late_arrival_report(school_id_param, start_date_param, end_date_param)
 
 -- ============================================================================
 -- Verify functions were created
