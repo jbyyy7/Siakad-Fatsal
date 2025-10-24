@@ -73,11 +73,17 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
   async function loadAttendance() {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('teacher_attendance')
         .select('*, profiles!teacher_id(name)')
-        .eq('school_id', currentUser.schoolId)
         .eq('date', selectedDate);
+      
+      // Only filter by school_id if it exists
+      if (currentUser.schoolId) {
+        query = query.eq('school_id', currentUser.schoolId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

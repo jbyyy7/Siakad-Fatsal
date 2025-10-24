@@ -13,6 +13,13 @@
 -- These functions are referenced in code but don't exist in database yet
 
 -- ============================================================================
+-- Drop existing functions first (if they exist)
+-- Drop ALL overloads using CASCADE
+-- ============================================================================
+DROP FUNCTION IF EXISTS get_gate_attendance_summary CASCADE;
+DROP FUNCTION IF EXISTS get_gate_attendance_analytics CASCADE;
+
+-- ============================================================================
 -- FUNCTION 1: get_gate_attendance_summary
 -- Returns summary of gate check-ins for a specific date and school
 -- ============================================================================
@@ -50,9 +57,9 @@ COMMENT ON FUNCTION get_gate_attendance_summary IS 'Returns daily gate attendanc
 -- Returns analytics data for gate attendance over a date range
 -- ============================================================================
 CREATE OR REPLACE FUNCTION get_gate_attendance_analytics(
-    p_school_id UUID,
-    p_start_date DATE,
-    p_end_date DATE DEFAULT NULL
+    school_id_param UUID,
+    start_date_param DATE,
+    end_date_param DATE DEFAULT NULL
 )
 RETURNS TABLE (
     date DATE,
@@ -87,6 +94,9 @@ COMMENT ON FUNCTION get_gate_attendance_analytics IS 'Returns gate attendance an
 -- ============================================================================
 GRANT EXECUTE ON FUNCTION get_gate_attendance_summary(DATE, UUID) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION get_gate_attendance_analytics(UUID, DATE, DATE) TO anon, authenticated;
+
+-- Note: Parameter names changed to match frontend calls
+-- Function signature: get_gate_attendance_analytics(school_id_param, start_date_param, end_date_param)
 
 -- ============================================================================
 -- Verify functions were created
