@@ -145,9 +145,18 @@ const AdminAttendancePage: React.FC<AdminAttendancePageProps> = ({ user }) => {
                 <PencilIcon className="h-5 w-5 mr-2" />
                 {isEditMode ? 'Batal' : 'Edit Data'}
             </button>
-            <button className="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">
+            <button 
+                onClick={() => { 
+                    const params = new URLSearchParams();
+                    if (filters.schoolId) params.append('schoolId', filters.schoolId);
+                    if (filters.classId) params.append('classId', filters.classId);
+                    if (filters.date) params.append('date', filters.date);
+                    window.location.href = `/api/export-attendance?${params.toString()}`; 
+                }}
+                className="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700"
+            >
                 <DownloadIcon className="h-5 w-5 mr-2" />
-                Ekspor
+                Ekspor CSV
             </button>
            </div>
         </div>

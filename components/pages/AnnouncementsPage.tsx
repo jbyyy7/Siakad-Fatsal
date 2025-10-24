@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
@@ -8,6 +9,8 @@ import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
 import Modal from '../ui/Modal';
+import Loading from '../ui/Loading';
+import EmptyState from '../ui/EmptyState';
 import AnnouncementForm from '../forms/AnnouncementForm';
 
 interface AnnouncementsPageProps {
@@ -17,7 +20,6 @@ interface AnnouncementsPageProps {
 const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
@@ -25,13 +27,12 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
 
     const fetchAnnouncements = useCallback(async () => {
         setIsLoading(true);
-        setError(null);
         try {
             // RLS policies now handle filtering, so we don't need to pass schoolId from client
             const data = await dataService.getAnnouncements();
             setAnnouncements(data);
         } catch (err) {
-            setError('Gagal memuat pengumuman.');
+            toast.error('Gagal memuat pengumuman');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -57,6 +58,7 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
             if (selectedAnnouncement) {
                 // Update
                 await dataService.updateAnnouncement(selectedAnnouncement.id, formData);
+                toast.success('Pengumuman berhasil diperbarui');
             } else {
                 // Create
                 const announcementData: any = {
@@ -67,11 +69,12 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
                     announcementData.school_id = user.schoolId;
                 }
                 await dataService.createAnnouncement(announcementData);
+                toast.success('Pengumuman berhasil ditambahkan');
             }
             await fetchAnnouncements();
             closeModal();
         } catch (error: any) {
-            alert(`Gagal menyimpan pengumuman: ${error.message}`);
+            toast.error(`Gagal menyimpan pengumuman: ${error.message}`);
         }
     };
     
@@ -79,9 +82,10 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
         if (window.confirm("Apakah Anda yakin ingin menghapus pengumuman ini?")) {
             try {
                 await dataService.deleteAnnouncement(id);
+                toast.success('Pengumuman berhasil dihapus');
                 await fetchAnnouncements();
             } catch (error: any) {
-                alert(`Gagal menghapus pengumuman: ${error.message}`);
+                toast.error(`Gagal menghapus pengumuman: ${error.message}`);
             }
         }
     };
@@ -119,10 +123,9 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
                 )}
             </div>
             
-            {isLoading && <p>Memuat pengumuman...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            
-            {!isLoading && !error && (
+            {isLoading ? (
+                <Loading text="Memuat pengumuman..." />
+            ) : (
                 <div className="space-y-4">
                     {announcements.length > 0 ? (
                         announcements.map(announcement => (
@@ -154,9 +157,10 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ user }) => {
                             </Card>
                         ))
                     ) : (
-                        <Card>
-                            <p className="p-4 text-center text-gray-500">Tidak ada pengumuman saat ini.</p>
-                        </Card>
+                        <EmptyState 
+                            message="Tidak ada pengumuman"
+                            submessage={canCreate ? 'Klik "Buat Pengumuman" untuk membuat pengumuman baru' : 'Belum ada pengumuman saat ini'}
+                        />
                     )}
                 </div>
             )}

@@ -1,10 +1,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { Class, School, User, UserRole } from '../../types';
 import Modal from '../ui/Modal';
+import Loading from '../ui/Loading';
+import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
@@ -16,14 +19,12 @@ const ManageClassesPage: React.FC = () => {
     const [allTeachers, setAllTeachers] = useState<User[]>([]);
     const [allStudents, setAllStudents] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClassWithStudents, setSelectedClassWithStudents] = useState<any>(null);
     const [initialSchoolIdForNewClass, setInitialSchoolIdForNewClass] = useState<string | undefined>();
 
     const fetchData = async () => {
         setIsLoading(true);
-        setError(null);
         try {
             const [classesData, schoolsData, teachersData, studentsData] = await Promise.all([
                 dataService.getClasses(),
@@ -36,7 +37,7 @@ const ManageClassesPage: React.FC = () => {
             setAllTeachers(teachersData);
             setAllStudents(studentsData);
         } catch (err) {
-            setError('Gagal memuat data.');
+            toast.error('Gagal memuat data kelas');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -71,14 +72,16 @@ const ManageClassesPage: React.FC = () => {
         try {
             if (selectedClassWithStudents?.id) {
                 await dataService.updateClass(selectedClassWithStudents.id, formData);
+                toast.success('Kelas berhasil diperbarui');
             } else {
                 await dataService.createClass(formData);
+                toast.success('Kelas berhasil ditambahkan');
             }
             await fetchData();
             closeModal();
         } catch (error: any) {
             console.error('Failed to save class:', error);
-            alert(`Gagal menyimpan kelas: ${error.message}`);
+            toast.error(`Gagal menyimpan kelas: ${error.message}`);
         }
     };
     
@@ -86,10 +89,11 @@ const ManageClassesPage: React.FC = () => {
         if (window.confirm('Apakah Anda yakin ingin menghapus kelas ini? Semua data siswa yang terhubung akan dilepaskan dari kelas ini.')) {
             try {
                 await dataService.deleteClass(classId);
+                toast.success('Kelas berhasil dihapus');
                 await fetchData();
             } catch (error: any) {
                 console.error('Failed to delete class:', error);
-                alert(`Gagal menghapus kelas: ${error.message}`);
+                toast.error(`Gagal menghapus kelas: ${error.message}`);
             }
         }
     };
@@ -107,12 +111,17 @@ const ManageClassesPage: React.FC = () => {
         <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Kelas</h2>
             
-            {isLoading && <p>Memuat...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-
-            {!isLoading && !error && (
+            {isLoading ? (
+                <Loading text="Memuat data kelas..." />
+            ) : (
                 <div className="space-y-6">
-                    {schools.map(school => (
+                    {schools.length === 0 ? (
+                        <EmptyState 
+                            message="Belum ada sekolah"
+                            submessage="Tambahkan sekolah terlebih dahulu untuk membuat kelas"
+                        />
+                    ) : (
+                        schools.map(school => (
                         <Card key={school.id}>
                             <div className="flex justify-between items-center p-4 border-b">
                                 <h3 className="text-lg font-semibold">{school.name}</h3>
@@ -145,13 +154,14 @@ const ManageClassesPage: React.FC = () => {
                                             </tr>
                                         ))}
                                         {(!classesBySchool[school.id] || classesBySchool[school.id].length === 0) && (
-                                            <tr><td colSpan={3} className="text-center text-gray-500 py-4">Belum ada kelas untuk sekolah ini.</td></tr>
+                                            <tr><td colSpan={3} className="text-center text-gray-400 py-8 italic">Belum ada kelas untuk sekolah ini.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
                         </Card>
-                    ))}
+                    ))
+                    )}
                 </div>
             )}
             

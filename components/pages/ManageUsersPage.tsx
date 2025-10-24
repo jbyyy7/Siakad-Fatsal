@@ -1,10 +1,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { User, UserRole, School } from '../../types';
 import Modal from '../ui/Modal';
+import Loading from '../ui/Loading';
+import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
@@ -14,7 +17,6 @@ const ManageUsersPage: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [schools, setSchools] = useState<School[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -31,7 +33,7 @@ const ManageUsersPage: React.FC = () => {
             setUsers(usersData);
             setSchools(schoolsData);
         } catch (err) {
-            setError('Gagal memuat data pengguna.');
+            toast.error('Gagal memuat data pengguna');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -57,16 +59,17 @@ const ManageUsersPage: React.FC = () => {
             if (selectedUser) {
                 // Update existing user
                 await dataService.updateUser(selectedUser.id, formData);
+                toast.success('Pengguna berhasil diperbarui');
             } else {
                 // Create new user
                 await dataService.createUser(formData);
+                toast.success('Pengguna berhasil ditambahkan');
             }
             fetchData(); // Refetch data
             closeModal();
         } catch (error: any) {
             console.error('Failed to save user:', error);
-            // Optionally, display error in the form
-            alert(`Gagal menyimpan pengguna: ${error.message}`);
+            toast.error(`Gagal menyimpan pengguna: ${error.message}`);
         }
     };
     
@@ -74,10 +77,11 @@ const ManageUsersPage: React.FC = () => {
         if (window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
             try {
                 await dataService.deleteUser(userId);
+                toast.success('Pengguna berhasil dihapus');
                 fetchData(); // Refetch data
             } catch (error: any) {
                 console.error('Failed to delete user:', error);
-                alert(`Gagal menghapus pengguna: ${error.message}`);
+                toast.error(`Gagal menghapus pengguna: ${error.message}`);
             }
         }
     };
@@ -133,8 +137,16 @@ const ManageUsersPage: React.FC = () => {
 
             <Card>
                 <div className="overflow-x-auto">
-                    {isLoading ? <p className="p-4">Memuat pengguna...</p> :
-                     error ? <p className="p-4 text-red-500">{error}</p> :
+                    {isLoading ? (
+                        <Loading text="Memuat pengguna..." />
+                    ) : filteredUsers.length === 0 ? (
+                        <EmptyState 
+                            message="Tidak ada pengguna"
+                            submessage={searchTerm || roleFilter !== 'all' || schoolFilter !== 'all' 
+                                ? 'Coba ubah filter pencarian' 
+                                : 'Klik "Tambah Pengguna" untuk membuat pengguna baru'}
+                        />
+                    ) : (
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
@@ -165,7 +177,7 @@ const ManageUsersPage: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
-                    }
+                    )}
                 </div>
             </Card>
 

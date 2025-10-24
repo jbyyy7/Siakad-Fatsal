@@ -1,10 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import Card from '../Card';
 // FIX: Fix import path for dataService
 import { dataService } from '../../services/dataService';
 import { Subject, School } from '../../types';
 import Modal from '../ui/Modal';
+import Loading from '../ui/Loading';
+import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
@@ -14,14 +17,12 @@ const ManageSubjectsPage: React.FC = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [schools, setSchools] = useState<School[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
     const [currentSchoolId, setCurrentSchoolId] = useState<string>('');
 
     const fetchData = async () => {
         setIsLoading(true);
-        setError(null);
         try {
             const [subjectsData, schoolsData] = await Promise.all([
                 dataService.getSubjects(),
@@ -30,7 +31,7 @@ const ManageSubjectsPage: React.FC = () => {
             setSubjects(subjectsData);
             setSchools(schoolsData);
         } catch (err) {
-            setError('Gagal memuat data.');
+            toast.error('Gagal memuat data mata pelajaran');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -57,14 +58,16 @@ const ManageSubjectsPage: React.FC = () => {
         try {
             if (selectedSubject) {
                 await dataService.updateSubject(selectedSubject.id, formData);
+                toast.success('Mata pelajaran berhasil diperbarui');
             } else {
                 await dataService.createSubject(formData);
+                toast.success('Mata pelajaran berhasil ditambahkan');
             }
             await fetchData();
             closeModal();
         } catch (error: any) {
              console.error('Failed to save subject:', error);
-             alert(`Gagal menyimpan mata pelajaran: ${error.message}`);
+             toast.error(`Gagal menyimpan mata pelajaran: ${error.message}`);
         }
     };
     
@@ -72,10 +75,11 @@ const ManageSubjectsPage: React.FC = () => {
         if (window.confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?')) {
             try {
                 await dataService.deleteSubject(subjectId);
+                toast.success('Mata pelajaran berhasil dihapus');
                 await fetchData();
             } catch (error: any) {
                 console.error('Failed to delete subject:', error);
-                alert(`Gagal menghapus mata pelajaran: ${error.message}`);
+                toast.error(`Gagal menghapus mata pelajaran: ${error.message}`);
             }
         }
     };
@@ -93,12 +97,17 @@ const ManageSubjectsPage: React.FC = () => {
         <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Mata Pelajaran</h2>
             
-            {isLoading && <p>Memuat...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-
-            {!isLoading && !error && (
+            {isLoading ? (
+                <Loading text="Memuat data mata pelajaran..." />
+            ) : (
                 <div className="space-y-6">
-                    {schools.map(school => (
+                    {schools.length === 0 ? (
+                        <EmptyState 
+                            message="Belum ada sekolah"
+                            submessage="Tambahkan sekolah terlebih dahulu untuk membuat mata pelajaran"
+                        />
+                    ) : (
+                        schools.map(school => (
                         <Card key={school.id}>
                             <div className="flex justify-between items-center p-4 border-b">
                                 <h3 className="text-lg font-semibold">{school.name}</h3>
@@ -123,13 +132,14 @@ const ManageSubjectsPage: React.FC = () => {
                                             </tr>
                                         ))}
                                         {(!subjectsBySchool[school.id] || subjectsBySchool[school.id].length === 0) && (
-                                            <tr><td colSpan={2} className="text-center text-gray-500 py-4">Belum ada mata pelajaran untuk sekolah ini.</td></tr>
+                                            <tr><td colSpan={2} className="text-center text-gray-400 py-8 italic">Belum ada mata pelajaran untuk sekolah ini.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
                         </Card>
-                    ))}
+                    ))
+                    )}
                 </div>
             )}
             

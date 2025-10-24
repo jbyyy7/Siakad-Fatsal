@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { User } from '../types';
+import { User, Announcement } from '../types';
 import { LogoutIcon } from './icons/LogoutIcon';
 import { MenuIcon } from './icons/MenuIcon';
 import { BellIcon } from './icons/BellIcon';
+import { dataService } from '../services/dataService';
 
 interface HeaderProps {
   user: User;
@@ -21,7 +22,30 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
   const location = useLocation();
   const pageTitle = pathToPage(location.pathname);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  // Fetch announcements when notification dropdown is opened
+  useEffect(() => {
+    if (showNotifications && announcements.length === 0) {
+      fetchAnnouncements();
+    }
+  }, [showNotifications]);
+
+  const fetchAnnouncements = async () => {
+    setIsLoadingAnnouncements(true);
+    try {
+      const data = await dataService.getAnnouncements();
+      // Get latest 5 announcements
+      setAnnouncements(data.slice(0, 5));
+    } catch (error) {
+      console.error('Failed to fetch announcements:', error);
+      setAnnouncements([]);
+    } finally {
+      setIsLoadingAnnouncements(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,23 +85,57 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
           </button>
 
           {showNotifications && (
-             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-20 animate-fade-in-up origin-top-right">
-                <div className="p-3 font-semibold text-gray-800 border-b">Notifikasi</div>
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-20 animate-fade-in-up origin-top-right">
+              <div className="p-3 font-semibold text-gray-800 border-b">
+                Pengumuman Terbaru
+              </div>
+              
+              {isLoadingAnnouncements ? (
+                <div className="p-4 text-center text-gray-500">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-600 mx-auto mb-2"></div>
+                  Memuat pengumuman...
+                </div>
+              ) : announcements.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  <p className="text-sm">Belum ada pengumuman</p>
+                </div>
+              ) : (
                 <ul className="py-1 max-h-80 overflow-y-auto">
-                    <li className="px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                        <p className="text-sm text-gray-800 font-medium"> Tugas Matematika Baru</p>
-                        <p className="text-xs text-gray-500">Batas waktu: 30 Agustus 2024</p>
+                  {announcements.map((announcement) => (
+                    <li 
+                      key={announcement.id} 
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+                    >
+                      <p className="text-sm text-gray-800 font-medium line-clamp-2">
+                        {announcement.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {announcement.content}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(announcement.date).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
                     </li>
-                    <li className="px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                         <p className="text-sm text-gray-800 font-medium">Pengumuman: Libur Sekolah</p>
-                        <p className="text-xs text-gray-500">Sekolah akan diliburkan pada...</p>
-                    </li>
-                     <li className="px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                         <p className="text-sm text-gray-800 font-medium">Nilai Fisika Telah Dirilis</p>
-                         <p className="text-xs text-gray-500">Lihat nilai Anda sekarang.</p>
-                    </li>
+                  ))}
                 </ul>
-             </div>
+              )}
+              
+              <div className="p-2 border-t text-center">
+                <button
+                  onClick={() => {
+                    setShowNotifications(false);
+                    window.location.hash = '#/announcements';
+                  }}
+                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                >
+                  Lihat Semua Pengumuman
+                </button>
+              </div>
+            </div>
           )}
 
         </div>
