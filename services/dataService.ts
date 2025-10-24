@@ -167,6 +167,79 @@ export const dataService = {
       if (error) throw error;
   },
 
+  // NOTIFICATIONS
+  async getUnreadNotificationsCount(): Promise<number> {
+    try {
+      const { data, error } = await supabase.rpc('get_unread_notifications_count');
+      if (error) throw error;
+      return data || 0;
+    } catch (error) {
+      console.error('Error getting unread count:', error);
+      return 0;
+    }
+  },
+
+  async markNotificationAsRead(announcementId: string): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('mark_notification_read', { p_announcement_id: announcementId });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  },
+
+  async markAllNotificationsAsRead(announcementIds: string[]): Promise<void> {
+    try {
+      // Mark multiple notifications as read
+      for (const id of announcementIds) {
+        await this.markNotificationAsRead(id);
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      throw error;
+    }
+  },
+
+  async getUnreadAnnouncements(): Promise<Announcement[]> {
+    try {
+      // Get all announcements
+      const { data: announcements, error: announcementsError } = await supabase
+        .from('announcements')
+        .select('*, author:profiles(full_name), school:schools(name)')
+        .order('date', { ascending: false })
+        .limit(10);
+      
+      if (announcementsError) throw announcementsError;
+
+      // Get user's read notifications
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: readNotifications, error: readError } = await supabase
+        .from('user_notifications')
+        .select('announcement_id')
+        .eq('user_id', user.id)
+        .eq('is_read', true);
+      
+      if (readError) throw readError;
+
+      const readIds = new Set(readNotifications?.map(n => n.announcement_id) || []);
+      
+      // Filter out read announcements
+      return announcements
+        .filter(a => !readIds.has(a.id))
+        .map(a => ({
+          ...a,
+          author: a.author?.full_name || 'System',
+          schoolName: a.school?.name,
+        }));
+    } catch (error) {
+      console.error('Error getting unread announcements:', error);
+      return [];
+    }
+  },
+
   // STUDENT DATA
   async getGradesForStudent(studentId: string): Promise<{ subject: string; score: number; grade: string; }[]> {
     const { data, error } = await supabase.from('grades').select('score, subject:subjects(name)').eq('student_id', studentId);

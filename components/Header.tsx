@@ -23,8 +23,17 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
   const pageTitle = pathToPage(location.pathname);
   const [showNotifications, setShowNotifications] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  // Fetch unread count on mount and periodically
+  useEffect(() => {
+    fetchUnreadCount();
+    // Refresh count every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch announcements when notification dropdown is opened
   useEffect(() => {
@@ -33,17 +42,48 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
     }
   }, [showNotifications]);
 
+  const fetchUnreadCount = async () => {
+    try {
+      const count = await dataService.getUnreadNotificationsCount();
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  };
+
   const fetchAnnouncements = async () => {
     setIsLoadingAnnouncements(true);
     try {
-      const data = await dataService.getAnnouncements();
-      // Get latest 5 announcements
+      const data = await dataService.getUnreadAnnouncements();
       setAnnouncements(data.slice(0, 5));
+      setUnreadCount(data.length);
     } catch (error) {
       console.error('Failed to fetch announcements:', error);
       setAnnouncements([]);
     } finally {
       setIsLoadingAnnouncements(false);
+    }
+  };
+
+  const handleMarkAsRead = async (announcementId: string) => {
+    try {
+      await dataService.markNotificationAsRead(announcementId);
+      // Update local state
+      setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const announcementIds = announcements.map(a => a.id);
+      await dataService.markAllNotificationsAsRead(announcementIds);
+      setAnnouncements([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
     }
   };
 
@@ -84,10 +124,12 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
           >
             <BellIcon className="h-5 w-5 lg:h-6 lg:w-6" />
             {/* Only show badge if there are unread notifications */}
-            {announcements.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                <span className="relative inline-flex items-center justify-center rounded-full h-5 w-5 bg-red-500 text-white text-xs font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               </span>
             )}
           </button>
@@ -95,41 +137,72 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onMenuClick }) => {
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[90vh] flex flex-col animate-fade-in-up origin-top-right">
               <div className="p-4 font-semibold text-gray-900 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-                <span>Pengumuman Terbaru</span>
-                <span className="text-xs font-normal text-gray-500">{announcements.length} item</span>
+                <div className="flex items-center gap-2">
+                  <span>Notifikasi</span>
+                  {unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                {announcements.length > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="text-xs text-brand-600 hover:text-brand-700 font-medium hover:underline"
+                  >
+                    Tandai Semua Dibaca
+                  </button>
+                )}
               </div>
               
               {isLoadingAnnouncements ? (
                 <div className="p-6 text-center text-gray-500">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-3"></div>
-                  <p className="text-sm">Memuat pengumuman...</p>
+                  <p className="text-sm">Memuat notifikasi...</p>
                 </div>
               ) : announcements.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-sm font-medium">Belum ada pengumuman</p>
-                  <p className="text-xs mt-1">Pengumuman baru akan muncul di sini</p>
+                  <p className="text-sm font-medium">Tidak ada notifikasi baru</p>
+                  <p className="text-xs mt-1">Semua notifikasi sudah dibaca</p>
                 </div>
               ) : (
                 <ul className="flex-1 overflow-y-auto">
                   {announcements.map((announcement) => (
                     <li 
                       key={announcement.id} 
-                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                      className="group px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors relative"
                     >
-                      <p className="text-sm text-gray-900 font-medium line-clamp-2 mb-1">
-                        {announcement.title}
-                      </p>
-                      <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                        {announcement.content}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(announcement.date).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </p>
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-900 font-medium line-clamp-2 mb-1">
+                            {announcement.title}
+                          </p>
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-1">
+                            {announcement.content}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(announcement.date).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(announcement.id);
+                          }}
+                          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-brand-600 hover:text-brand-700 font-medium px-2 py-1 rounded hover:bg-brand-50"
+                          title="Tandai sudah dibaca"
+                        >
+                          ✓
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
