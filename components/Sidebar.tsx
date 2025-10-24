@@ -60,6 +60,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
       <NavItem to="/absensi-gerbang" icon={<BuildingLibraryIcon className="h-5 w-5" />}>🚪 Absensi Gerbang</NavItem>
       <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>📊 Analytics Gerbang</NavItem>
+      <NavItem to="/kartu-pelajar" icon={<IdentificationIcon className="h-5 w-5" />}>🪪 Kartu Pelajar</NavItem>
+      <NavItem to="/tahun-ajaran" icon={<CalendarIcon className="h-5 w-5" />}>📅 Tahun Ajaran</NavItem>
+      <NavItem to="/kelola-rapor" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>📋 Kelola Rapor</NavItem>
+      <NavItem to="/lihat-rapor" icon={<BookOpenIcon className="h-5 w-5" />}>📊 Lihat Rapor</NavItem>
       <hr className="my-2 border-gray-600" />
       <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan Sistem</NavItem>
     </>
@@ -75,6 +79,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/grades" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Nilai</NavItem>
       <NavItem to="/absensi-gerbang" icon={<BuildingLibraryIcon className="h-5 w-5" />}>🚪 Absensi Gerbang</NavItem>
       <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>📊 Analytics Gerbang</NavItem>
+      <NavItem to="/kartu-pelajar" icon={<IdentificationIcon className="h-5 w-5" />}>🪪 Kartu Pelajar</NavItem>
+      <NavItem to="/tahun-ajaran" icon={<CalendarIcon className="h-5 w-5" />}>📅 Tahun Ajaran</NavItem>
+      <NavItem to="/kelola-rapor" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>📋 Kelola Rapor</NavItem>
       <NavItem to="/announcements" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman</NavItem>
     </>
   );
@@ -103,6 +110,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/absensi-siswa" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
       <NavItem to="/kelas-saya" icon={<UserGroupIcon className="h-5 w-5" />}>Kelas Saya</NavItem>
       <NavItem to="/jurnal-mengajar" icon={<BookOpenIcon className="h-5 w-5" />}>Jurnal Mengajar</NavItem>
+      <NavItem to="/kelola-rapor" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>📋 Kelola Rapor</NavItem>
+      <NavItem to="/kartu-pelajar" icon={<IdentificationIcon className="h-5 w-5" />}>🪪 Kartu Pelajar</NavItem>
     </>
   );
 
@@ -112,6 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/jadwal-pelajaran" icon={<CalendarIcon className="h-5 w-5" />}>Jadwal Pelajaran</NavItem>
       <NavItem to="/absensi" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
       <NavItem to="/qr-gerbang" icon={<IdentificationIcon className="h-5 w-5" />}>🚪 QR Code Gerbang</NavItem>
+      <NavItem to="/rapor-saya" icon={<BookOpenIcon className="h-5 w-5" />}>📊 Rapor Saya</NavItem>
     </>
   );
 

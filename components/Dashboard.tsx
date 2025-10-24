@@ -39,6 +39,11 @@ import AdminGradesPage from './pages/AdminGradesPage';
 import GateAttendancePage from './pages/GateAttendancePage';
 import StudentGateQRPage from './pages/StudentGateQRPage';
 import GateAnalyticsPage from './pages/GateAnalyticsPage';
+// New Features - Student Cards & Report Cards
+import StudentCardPage from './pages/StudentCardPage';
+import ReportCardManagementPage from './pages/ReportCardManagementPage';
+import ReportCardViewPage from './pages/ReportCardViewPage';
+import AcademicYearManagementPage from './pages/AcademicYearManagementPage';
 
 
 interface DashboardProps {
@@ -101,6 +106,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/pantau-nilai" element={<AdminGradesPage user={user} />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
+            <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
+            <Route path="/tahun-ajaran" element={<AcademicYearManagementPage />} />
+            <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
+            <Route path="/lihat-rapor" element={<ReportCardViewPage />} />
             <Route path="/pengaturan-sistem" element={<SystemSettingsPage />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
           </>
@@ -116,6 +125,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/grades" element={<AdminGradesPage user={user} />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
+            <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
+            <Route path="/tahun-ajaran" element={<AcademicYearManagementPage />} />
+            <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
             <Route path="/announcements" element={<AnnouncementsPage user={user} />} />
           </>
         );
@@ -144,6 +156,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/absensi-siswa" element={<StudentAttendancePage user={user} />} />
             <Route path="/kelas-saya" element={<MyClassPage user={user} />} />
             <Route path="/jurnal-mengajar" element={<TeachingJournalPage user={user} />} />
+            <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
+            <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
           </>
         );
       case UserRole.STUDENT:
@@ -153,6 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/jadwal-pelajaran" element={<ClassSchedulePage user={user} />} />
             <Route path="/absensi" element={<MyAttendancePage user={user} />} />
             <Route path="/qr-gerbang" element={<StudentGateQRPage />} />
+            <Route path="/rapor-saya" element={<ReportCardViewPage />} />
           </>
         );
       default:
