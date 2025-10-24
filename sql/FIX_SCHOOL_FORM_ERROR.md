@@ -2,11 +2,16 @@
 
 ## ❌ Error yang Terjadi:
 ```
-Error: "Could not find the 'locationAttendanceEnabled' column of 'schools' in the schema cache"
 Error: "Could not find the 'gateAttendanceEnabled' column of 'schools' in the schema cache"
+PATCH /rest/v1/schools 400 (Bad Request)
 ```
 
 ## 🎯 Penyebab:
+1. **JavaScript menggunakan camelCase**: `gateAttendanceEnabled`
+2. **PostgreSQL menggunakan snake_case**: `gate_attendance_enabled`
+3. **Kolom belum ada** di database Supabase
+4. **Mapping sudah ditambahkan** di kode (commit 0a7791b)
+
 Aplikasi mencoba menyimpan kolom-kolom yang **belum ada** di database Supabase:
 - `location_attendance_enabled` ❌
 - `gate_attendance_enabled` ❌
@@ -22,6 +27,12 @@ Aplikasi mencoba menyimpan kolom-kolom yang **belum ada** di database Supabase:
 - `gate_notify_on_late` ❌
 
 ## ✅ Solusi: Tambah Kolom ke Database
+
+### **📝 Note: Kode Mapping Sudah Fixed**
+✅ Mapping camelCase → snake_case sudah ditambahkan di `services/dataService.ts`  
+⚠️ **Anda hanya perlu jalankan migration SQL di Supabase**
+
+---
 
 ### **LANGKAH 1: Buka Supabase SQL Editor**
 1. Login ke [Supabase Dashboard](https://app.supabase.com)
