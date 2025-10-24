@@ -85,8 +85,25 @@ Menambahkan kolom ke table:
 - Dengan RLS policies yang sesuai
 
 ### 4. **Fix School ID** 🏫
-- Update semua profiles yang `school_id`-nya NULL
-- Menghubungkan user ke sekolah pertama di database
+- Update profiles yang `school_id`-nya NULL
+- **HANYA untuk:** Guru, Staff, Kepala Sekolah, Siswa
+- **TIDAK untuk:** Admin dan Kepala Yayasan (mereka manage SEMUA sekolah)
+- Set Admin & Kepala Yayasan `school_id = NULL`
+
+---
+
+## 🔧 Fix Tambahan
+
+### **Kalau Admin Sudah Punya School ID (Salah)**
+Run file: **`sql/FIX_ADMIN_SCHOOL_ID.sql`**
+
+Script ini akan:
+- Set `school_id = NULL` untuk Admin & Kepala Yayasan
+- Tampilkan status semua user dengan indikator ✅/❌
+
+**Kapan harus run?**
+- Kalau kamu sudah run `SIMPLE_FIX.sql` versi lama
+- Kalau Admin/Kepala Yayasan punya school_id (seharusnya NULL)
 
 ---
 
