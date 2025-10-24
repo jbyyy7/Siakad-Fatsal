@@ -33,7 +33,8 @@ import GradesPage from './pages/GradesPage';
 import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
-// FIX: Import AdminAttendancePage and AdminGradesPage, which were previously missing files.
+// Monitoring Pages
+import MonitoringAkademikPage from './pages/MonitoringAkademikPage';
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
 import GateAttendancePage from './pages/GateAttendancePage';
@@ -102,8 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/kelola-sekolah" element={<ManageSchoolsPage />} />
             <Route path="/kelola-mapel" element={<ManageSubjectsPage />} />
             <Route path="/kelola-kelas" element={<ManageClassesPage />} />
-            <Route path="/pantau-absensi" element={<AdminAttendancePage user={user} />} />
-            <Route path="/pantau-nilai" element={<AdminGradesPage user={user} />} />
+            <Route path="/monitoring-akademik" element={<MonitoringAkademikPage />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
             <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
