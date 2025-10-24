@@ -71,7 +71,7 @@ BEGIN
       SELECT school_id FROM profiles WHERE id = auth.uid()
     ))
     AND (un.id IS NULL OR un.is_read = FALSE)
-    AND a.date >= NOW() - INTERVAL '30 days'; -- Only announcements from last 30 days
+    AND a.created_at >= NOW() - INTERVAL '30 days'; -- Only announcements from last 30 days
   
   RETURN COALESCE(v_count, 0);
 END;
