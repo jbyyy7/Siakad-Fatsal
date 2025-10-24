@@ -76,26 +76,34 @@ export const dataService = {
   },
 
   async createUser(userData: any): Promise<void> {
-    // This is a two-step process: create auth user, then create profile.
-    // In production, this should be a single transaction using a database function (RPC) for atomicity.
+    // DEVELOPMENT MODE: Use a workaround for custom email domains
+    // Replace .sch.id with .com temporarily for auth, but keep original in profile
+    const originalEmail = userData.email;
+    const isCustomDomain = originalEmail.includes('.sch.id');
+    const authEmail = isCustomDomain 
+      ? originalEmail.replace('.sch.id', '.com')
+      : originalEmail;
+
+    // Create auth user with modified email
     const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
+        email: authEmail,
         password: userData.password,
     });
+    
     if (authError) throw authError;
     if (!authData.user) throw new Error("Gagal membuat pengguna otentikasi.");
 
     const profileData = mapUserToDb(userData);
     
+    // Insert profile with ORIGINAL email
     const { error: profileError } = await supabase.from('profiles').insert({
         id: authData.user.id,
+        email: originalEmail, // Use original email in profile
         ...profileData
     });
     
     if (profileError) {
-        // Attempt to clean up the created auth user if profile creation fails
-        // This requires admin privileges and should ideally be an RPC call.
-        console.error("Gagal membuat profil, pengguna auth mungkin yatim piatu:", profileError);
+        console.error("Gagal membuat profil:", profileError);
         throw profileError;
     }
   },
