@@ -33,18 +33,18 @@ const mapUserFromDb = (dbUser: any): User => ({
 // Helper to convert camelCase from app to snake_case for DB
 const mapUserToDb = (appUser: any) => ({
     full_name: appUser.name,
-    identity_number: appUser.identityNumber,
+    identity_number: appUser.identityNumber || null,
     role: appUser.role,
     school_id: appUser.schoolId || null,
-    avatar_url: appUser.avatarUrl,
-    place_of_birth: appUser.placeOfBirth,
-    date_of_birth: appUser.dateOfBirth,
-    gender: appUser.gender,
-    religion: appUser.religion,
-    address: appUser.address,
-    phone_number: appUser.phoneNumber,
-    parent_name: appUser.parentName,
-    parent_phone_number: appUser.parentPhoneNumber,
+    avatar_url: appUser.avatarUrl || null,
+    place_of_birth: appUser.placeOfBirth || null,
+    date_of_birth: appUser.dateOfBirth || null, // Convert empty string to null
+    gender: appUser.gender || null,
+    religion: appUser.religion || null,
+    address: appUser.address || null,
+    phone_number: appUser.phoneNumber || null,
+    parent_name: appUser.parentName || null,
+    parent_phone_number: appUser.parentPhoneNumber || null,
 });
 
 
@@ -110,8 +110,9 @@ export const dataService = {
 
   async updateUser(userId: string, userData: any): Promise<void> {
     const dbData = mapUserToDb(userData);
-    // Remove fields that shouldn't be updated this way
-    delete (dbData as any).role;
+    // Keep role field for updates (Admin can change user roles)
+    // Remove email as it's stored separately in auth
+    delete (dbData as any).email;
     
     const { error } = await supabase.from('profiles').update(dbData).eq('id', userId);
     if (error) throw error;
@@ -121,7 +122,7 @@ export const dataService = {
     // Deleting a user requires deleting from both auth.users and public.profiles.
     // This MUST be done via a server-side RPC function with elevated privileges.
     // The function below (`delete_user`) needs to be created in your Supabase SQL Editor.
-    const { error } = await supabase.rpc('delete_user', { user_id: userId });
+    const { error } = await supabase.rpc('delete_user', { uid: userId });
     if (error) {
         console.error("Pastikan Anda telah membuat fungsi 'delete_user' di Supabase SQL Editor.", error);
         throw error;

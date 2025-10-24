@@ -23,8 +23,11 @@ const Loading: React.FC<LoadingProps> = ({
 
   return (
     <div className={containerClasses}>
-      <div className={`animate-spin rounded-full border-b-2 border-brand-600 ${sizeClasses[size]}`}></div>
-      {text && <span className="ml-3 text-gray-600">{text}</span>}
+      <div className="relative">
+        <div className={`animate-spin rounded-full border-2 border-gray-200 ${sizeClasses[size]}`}></div>
+        <div className={`animate-spin rounded-full border-2 border-brand-600 border-t-transparent absolute top-0 left-0 ${sizeClasses[size]}`}></div>
+      </div>
+      {text && <span className="ml-3 text-gray-600 animate-pulse">{text}</span>}
     </div>
   );
 };
