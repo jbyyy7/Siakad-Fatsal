@@ -36,6 +36,9 @@ import ProfileSettingsPage from './pages/ProfileSettingsPage';
 // FIX: Import AdminAttendancePage and AdminGradesPage, which were previously missing files.
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
+import GateAttendancePage from './pages/GateAttendancePage';
+import StudentGateQRPage from './pages/StudentGateQRPage';
+import GateAnalyticsPage from './pages/GateAnalyticsPage';
 
 
 interface DashboardProps {
@@ -96,6 +99,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/kelola-kelas" element={<ManageClassesPage />} />
             <Route path="/pantau-absensi" element={<AdminAttendancePage user={user} />} />
             <Route path="/pantau-nilai" element={<AdminGradesPage user={user} />} />
+            <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
+            <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
             <Route path="/pengaturan-sistem" element={<SystemSettingsPage />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
           </>
@@ -109,6 +114,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/student-attendance" element={<AdminAttendancePage user={user} />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
             <Route path="/grades" element={<AdminGradesPage user={user} />} />
+            <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
+            <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
             <Route path="/announcements" element={<AnnouncementsPage user={user} />} />
           </>
         );
@@ -145,6 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/lihat-nilai" element={<GradesPage user={user} />} />
             <Route path="/jadwal-pelajaran" element={<ClassSchedulePage user={user} />} />
             <Route path="/absensi" element={<MyAttendancePage user={user} />} />
+            <Route path="/qr-gerbang" element={<StudentGateQRPage />} />
           </>
         );
       default:

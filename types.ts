@@ -43,6 +43,19 @@ export interface School {
   locationName?: string;
   radius?: number; // radius in meters for geofencing
   locationAttendanceEnabled?: boolean; // Enable/disable location-based attendance
+  // Gate attendance settings - Phase 1
+  gateAttendanceEnabled?: boolean; // Enable/disable gate check-in/out
+  gateQREnabled?: boolean;         // Allow QR scan at gate
+  gateFaceEnabled?: boolean;       // Allow face recognition at gate (future)
+  gateManualEnabled?: boolean;     // Allow manual input by admin/staff
+  // Gate attendance settings - Phase 2
+  gateCheckInStart?: string;       // Check-in start time (HH:MM:SS)
+  gateCheckInEnd?: string;         // Check-in end time (HH:MM:SS)
+  gateLateThreshold?: string;      // Late threshold time (HH:MM:SS) default: 07:30:00
+  gateCheckOutStart?: string;      // Check-out start time (HH:MM:SS)
+  gateCheckOutEnd?: string;        // Check-out end time (HH:MM:SS)
+  gateNotifyParents?: boolean;     // Send notifications to parents
+  gateNotifyOnLate?: boolean;      // Send notification if student late
 }
 
 export interface Class {
@@ -267,4 +280,88 @@ export interface RealtimeNotification {
   recipientIds: string[];
   data?: Record<string, unknown>;
   read: boolean;
+}
+
+// Gate Attendance - Check-in/out at school gate
+export type GateAttendanceMethod = 'QR' | 'Face' | 'Manual';
+export type GateAttendanceStatus = 'inside_school' | 'outside_school';
+
+export interface GateAttendanceRecord {
+  id?: number;
+  student_id: string;
+  studentName?: string;
+  school_id: string;
+  date: string; // YYYY-MM-DD
+  check_in_time?: string; // ISO timestamp
+  check_in_method?: GateAttendanceMethod;
+  check_in_by?: string; // Admin/Staff user ID who did manual check-in
+  check_in_by_name?: string;
+  check_out_time?: string; // ISO timestamp
+  check_out_method?: GateAttendanceMethod;
+  check_out_by?: string; // Admin/Staff user ID who did manual check-out
+  check_out_by_name?: string;
+  status: GateAttendanceStatus;
+  notes?: string;
+  created_at?: string;
+  // Phase 2 fields
+  late_arrival?: boolean;
+  late_minutes?: number;
+}
+
+// Parent Contact Information
+export interface ParentContact {
+  id?: number;
+  student_id: string;
+  parent_name: string;
+  relationship: 'Father' | 'Mother' | 'Guardian';
+  phone_number: string;
+  email?: string;
+  whatsapp_number?: string;
+  is_primary: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Gate Attendance Notification
+export type GateNotificationType = 'CheckIn' | 'CheckOut' | 'LateArrival';
+export type NotificationDeliveryStatus = 'Pending' | 'Sent' | 'Failed';
+export type NotificationDeliveryMethod = 'InApp' | 'WhatsApp' | 'Email';
+
+export interface GateAttendanceNotification {
+  id?: number;
+  gate_attendance_id: number;
+  recipient_type: 'Parent' | 'Teacher' | 'Admin';
+  recipient_id: string;
+  notification_type: GateNotificationType;
+  message: string;
+  sent_at?: string;
+  delivery_status: NotificationDeliveryStatus;
+  delivery_method: NotificationDeliveryMethod;
+  error_message?: string;
+  created_at?: string;
+}
+
+// Gate Attendance Analytics
+export interface GateAttendanceAnalytics {
+  date: string;
+  total_students: number;
+  present_count: number;
+  absent_count: number;
+  late_count: number;
+  on_time_count: number;
+  average_check_in_time?: string;
+  average_check_out_time?: string;
+  late_percentage: number;
+}
+
+// Late Arrival Report
+export interface LateArrivalReport {
+  student_id: string;
+  student_name: string;
+  identity_number: string;
+  total_days: number;
+  late_days: number;
+  late_percentage: number;
+  average_late_minutes: number;
+  max_late_minutes: number;
 }

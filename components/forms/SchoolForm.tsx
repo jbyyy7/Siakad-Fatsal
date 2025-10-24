@@ -23,6 +23,18 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSave }) => {
     locationName: '',
     radius: 100, // default 100 meters
     locationAttendanceEnabled: false, // default disabled
+    gateAttendanceEnabled: false, // default disabled
+    gateQREnabled: true, // default enabled if gate attendance is on
+    gateFaceEnabled: false, // future feature
+    gateManualEnabled: true, // default enabled if gate attendance is on
+    // Phase 2 settings
+    gateCheckInStart: '05:00:00',
+    gateCheckInEnd: '23:59:59',
+    gateLateThreshold: '07:30:00',
+    gateCheckOutStart: '05:00:00',
+    gateCheckOutEnd: '23:59:59',
+    gateNotifyParents: true,
+    gateNotifyOnLate: true,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
@@ -38,6 +50,17 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSave }) => {
         locationName: school.locationName || '',
         radius: school.radius || 100,
         locationAttendanceEnabled: school.locationAttendanceEnabled || false,
+        gateAttendanceEnabled: school.gateAttendanceEnabled || false,
+        gateQREnabled: school.gateQREnabled !== false,
+        gateFaceEnabled: school.gateFaceEnabled || false,
+        gateManualEnabled: school.gateManualEnabled !== false,
+        gateCheckInStart: school.gateCheckInStart || '05:00:00',
+        gateCheckInEnd: school.gateCheckInEnd || '23:59:59',
+        gateLateThreshold: school.gateLateThreshold || '07:30:00',
+        gateCheckOutStart: school.gateCheckOutStart || '05:00:00',
+        gateCheckOutEnd: school.gateCheckOutEnd || '23:59:59',
+        gateNotifyParents: school.gateNotifyParents !== false,
+        gateNotifyOnLate: school.gateNotifyOnLate !== false,
       });
     } else {
       setFormData({ 
@@ -49,6 +72,17 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSave }) => {
         locationName: '', 
         radius: 100,
         locationAttendanceEnabled: false,
+        gateAttendanceEnabled: false,
+        gateQREnabled: true,
+        gateFaceEnabled: false,
+        gateManualEnabled: true,
+        gateCheckInStart: '05:00:00',
+        gateCheckInEnd: '23:59:59',
+        gateLateThreshold: '07:30:00',
+        gateCheckOutStart: '05:00:00',
+        gateCheckOutEnd: '23:59:59',
+        gateNotifyParents: true,
+        gateNotifyOnLate: true,
       });
     }
   }, [school]);
@@ -250,6 +284,165 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSave }) => {
               </p>
             </div>
           </>
+        )}
+      </div>
+
+      {/* Gate Attendance Settings */}
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="text-sm font-semibold text-blue-900 mb-3">🚪 Pengaturan Absensi Gerbang</h3>
+        
+        <div className="mb-4">
+          <label className="flex items-center cursor-pointer">
+            <div className="relative">
+              <input
+                type="checkbox"
+                name="gateAttendanceEnabled"
+                checked={formData.gateAttendanceEnabled || false}
+                onChange={handleChange}
+                className="sr-only"
+              />
+              <div className={`block w-14 h-8 rounded-full transition ${
+                formData.gateAttendanceEnabled ? 'bg-blue-600' : 'bg-gray-300'
+              }`}></div>
+              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${
+                formData.gateAttendanceEnabled ? 'translate-x-6' : ''
+              }`}></div>
+            </div>
+            <div className="ml-3 text-sm">
+              <span className={`font-medium ${formData.gateAttendanceEnabled ? 'text-blue-600' : 'text-gray-500'}`}>
+                {formData.gateAttendanceEnabled ? 'Aktif' : 'Nonaktif'}
+              </span>
+            </div>
+          </label>
+          <p className="text-xs text-gray-600 mt-2">
+            Aktifkan sistem check-in/check-out siswa di gerbang sekolah untuk monitoring keluar-masuk
+          </p>
+        </div>
+
+        {formData.gateAttendanceEnabled && (
+          <div className="space-y-3 pl-4 border-l-2 border-blue-300">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="gateQREnabled"
+                checked={formData.gateQREnabled !== false} // default true
+                onChange={handleChange}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">
+                📱 QR Code Scan (Siswa scan QR untuk check-in/out)
+              </span>
+            </label>
+
+            <label className="flex items-center cursor-pointer opacity-50 cursor-not-allowed">
+              <input
+                type="checkbox"
+                name="gateFaceEnabled"
+                checked={formData.gateFaceEnabled || false}
+                onChange={handleChange}
+                disabled
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-500">
+                👤 Face Recognition (Coming Soon)
+              </span>
+            </label>
+
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="gateManualEnabled"
+                checked={formData.gateManualEnabled !== false} // default true
+                onChange={handleChange}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">
+                ✍️ Manual Input (Admin/Staff input manual)
+              </span>
+            </label>
+
+            <hr className="my-3 border-blue-200" />
+
+            {/* Phase 2: Time Rules */}
+            <div className="bg-blue-50 p-3 rounded-lg space-y-3">
+              <h4 className="text-xs font-semibold text-blue-900 mb-2">⏰ Aturan Waktu</h4>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-700 mb-1">Batas Terlambat</label>
+                  <input
+                    type="time"
+                    name="gateLateThreshold"
+                    value={formData.gateLateThreshold}
+                    onChange={handleChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Default: 07:30</p>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-700 mb-1">Check-in Mulai</label>
+                  <input
+                    type="time"
+                    name="gateCheckInStart"
+                    value={formData.gateCheckInStart}
+                    onChange={handleChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-700 mb-1">Check-in Sampai</label>
+                  <input
+                    type="time"
+                    name="gateCheckInEnd"
+                    value={formData.gateCheckInEnd}
+                    onChange={handleChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-700 mb-1">Check-out Mulai</label>
+                  <input
+                    type="time"
+                    name="gateCheckOutStart"
+                    value={formData.gateCheckOutStart}
+                    onChange={handleChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Phase 2: Notification Settings */}
+            <div className="bg-blue-50 p-3 rounded-lg space-y-2">
+              <h4 className="text-xs font-semibold text-blue-900 mb-2">🔔 Notifikasi Orang Tua</h4>
+              
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="gateNotifyParents"
+                  checked={formData.gateNotifyParents !== false}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Kirim notifikasi saat check-in/out
+                </span>
+              </label>
+
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="gateNotifyOnLate"
+                  checked={formData.gateNotifyOnLate !== false}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-xs text-gray-700">
+                  Kirim notifikasi khusus saat terlambat
+                </span>
+              </label>
+            </div>
+          </div>
         )}
       </div>
 

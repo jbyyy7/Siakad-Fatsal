@@ -58,6 +58,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/pantau-absensi" icon={<CalendarIcon className="h-5 w-5" />}>Pantau Absensi</NavItem>
       <NavItem to="/pantau-nilai" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Pantau Nilai</NavItem>
       <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
+      <NavItem to="/absensi-gerbang" icon={<BuildingLibraryIcon className="h-5 w-5" />}>🚪 Absensi Gerbang</NavItem>
+      <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>📊 Analytics Gerbang</NavItem>
       <hr className="my-2 border-gray-600" />
       <NavItem to="/pengaturan-sistem" icon={<CogIcon className="h-5 w-5" />}>Pengaturan Sistem</NavItem>
     </>
@@ -71,6 +73,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/student-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Siswa</NavItem>
       <NavItem to="/teacher-attendance" icon={<CalendarIcon className="h-5 w-5" />}>Absensi Guru</NavItem>
       <NavItem to="/grades" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Nilai</NavItem>
+      <NavItem to="/absensi-gerbang" icon={<BuildingLibraryIcon className="h-5 w-5" />}>🚪 Absensi Gerbang</NavItem>
+      <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>📊 Analytics Gerbang</NavItem>
       <NavItem to="/announcements" icon={<EnvelopeIcon className="h-5 w-5" />}>Pengumuman</NavItem>
     </>
   );
@@ -107,6 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/lihat-nilai" icon={<AcademicCapIcon className="h-5 w-5" />}>Lihat Nilai</NavItem>
       <NavItem to="/jadwal-pelajaran" icon={<CalendarIcon className="h-5 w-5" />}>Jadwal Pelajaran</NavItem>
       <NavItem to="/absensi" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Absensi Saya</NavItem>
+      <NavItem to="/qr-gerbang" icon={<IdentificationIcon className="h-5 w-5" />}>🚪 QR Code Gerbang</NavItem>
     </>
   );
 
