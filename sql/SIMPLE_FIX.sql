@@ -240,6 +240,7 @@ CREATE POLICY "Teachers can manage their class schedules"
 -- ============================================
 -- Update semua profiles yang belum punya school_id
 -- Ambil school_id pertama yang ada di database
+-- KECUALI Admin dan Kepala Yayasan (mereka manage semua sekolah)
 
 DO $$ 
 DECLARE
@@ -250,12 +251,21 @@ BEGIN
   
   IF default_school_id IS NOT NULL THEN
     -- Update profiles yang school_id-nya NULL
+    -- HANYA untuk Guru, Staff, Kepala Sekolah, dan Siswa
+    -- TIDAK untuk Admin dan Kepala Yayasan (mereka tidak terikat ke 1 sekolah)
     UPDATE public.profiles
     SET school_id = default_school_id
     WHERE school_id IS NULL 
-    AND role IN ('Guru', 'Staff', 'Kepala Sekolah', 'Admin', 'Siswa');
+    AND role IN ('Guru', 'Staff', 'Kepala Sekolah', 'Siswa');
     
-    RAISE NOTICE 'School ID updated untuk profiles yang NULL';
+    RAISE NOTICE 'School ID updated untuk Guru, Staff, Kepala Sekolah, dan Siswa';
+    
+    -- Pastikan Admin dan Kepala Yayasan TIDAK punya school_id
+    UPDATE public.profiles
+    SET school_id = NULL
+    WHERE role IN ('Admin', 'Kepala Yayasan');
+    
+    RAISE NOTICE 'Admin dan Kepala Yayasan school_id di-set NULL (manage semua sekolah)';
   ELSE
     RAISE NOTICE 'Tidak ada school di database, buat sekolah dulu!';
   END IF;
