@@ -24,8 +24,8 @@ DROP FUNCTION IF EXISTS get_gate_attendance_analytics CASCADE;
 -- Returns summary of gate check-ins for a specific date and school
 -- ============================================================================
 CREATE OR REPLACE FUNCTION get_gate_attendance_summary(
-    p_date DATE,
-    p_school_id UUID
+    date_param DATE,
+    school_id_param UUID
 )
 RETURNS TABLE (
     total_students BIGINT,
@@ -131,8 +131,9 @@ GRANT EXECUTE ON FUNCTION get_gate_attendance_summary(DATE, UUID) TO anon, authe
 GRANT EXECUTE ON FUNCTION get_gate_attendance_analytics(UUID, DATE, DATE) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION get_late_arrival_report(UUID, DATE, DATE) TO anon, authenticated;
 
--- Note: Parameter names changed to match frontend calls
+-- Note: All parameter names use '_param' suffix to match frontend calls
 -- Function signatures:
+--   get_gate_attendance_summary(date_param, school_id_param)
 --   get_gate_attendance_analytics(school_id_param, start_date_param, end_date_param)
 --   get_late_arrival_report(school_id_param, start_date_param, end_date_param)
 
