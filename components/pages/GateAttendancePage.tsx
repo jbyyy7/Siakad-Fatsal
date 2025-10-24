@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GateAttendanceRecord, User } from '../../types';
 import { dataService } from '../../services/dataService';
 import { supabase } from '../../services/supabaseClient';
+import { notifyParentGateCheckIn, notifyParentGateCheckOut, notifyParentGateLate } from '../../services/whatsappService';
 import toast from 'react-hot-toast';
 import { ArrowPathIcon } from '../icons/ArrowPathIcon';
 import { ClockIcon } from '../icons/ClockIcon';
@@ -145,6 +146,24 @@ const GateAttendancePage: React.FC = () => {
       if (error) throw error;
 
       toast.success('Check-in berhasil');
+      
+      // Send WhatsApp notification to parents
+      try {
+        const student = students.find(s => s.id === studentId);
+        if (student) {
+          const checkInTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          await notifyParentGateCheckIn(
+            student.name,
+            student.nis || student.email,
+            checkInTime,
+            user?.schoolId || ''
+          );
+        }
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+        // Don't fail the check-in if notification fails
+      }
+      
       await fetchData();
     } catch (error: any) {
       console.error('Error check-in:', error);
@@ -172,6 +191,24 @@ const GateAttendancePage: React.FC = () => {
       if (error) throw error;
 
       toast.success('Check-out berhasil');
+      
+      // Send WhatsApp notification to parents
+      try {
+        const record = attendance.find((a: GateAttendanceRecord) => String(a.id) === attendanceId);
+        if (record) {
+          const student = students.find(s => s.id === record.student_id);
+          const checkOutTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          await notifyParentGateCheckOut(
+            student?.name || record.studentName || 'Siswa',
+            student?.email || '-',
+            checkOutTime,
+            user?.schoolId || ''
+          );
+        }
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+      
       await fetchData();
     } catch (error: any) {
       console.error('Error check-out:', error);
