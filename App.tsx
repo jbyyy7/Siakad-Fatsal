@@ -9,6 +9,7 @@ import { useRealtimeNotifications } from './services/realtimeService';
 
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
+const AboutPage = React.lazy(() => import('./components/pages/AboutPage'));
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -61,6 +62,9 @@ const App: React.FC = () => {
         <Toaster position="top-right" />
         <Suspense fallback={<div className="p-6">Memuat...</div>}>
           <Routes>
+            {/* Public Routes - No auth required */}
+            <Route path="/about" element={<AboutPage />} />
+            
             {!currentUser ? (
               <>
                 <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />

@@ -1,8 +1,9 @@
-# 📄 Prompt untuk Generate PDF Dokumentasi SIAKAD Fathus Salafi
+# 📄 Panduan Pengguna SIAKAD Fathus Salafi
 
-## Instruksi untuk AI Generator:
+## Dokumentasi Lengkap Sistem Informasi Akademik
 
-Buatkan dokumentasi PDF profesional untuk sistem SIAKAD Fathus Salafi dengan struktur berikut:
+**Untuk**: Guru, Siswa, Staff, Kepala Sekolah, dan Manajemen Yayasan  
+**Tujuan**: Memahami fitur dan cara menggunakan aplikasi SIAKAD
 
 ---
 
@@ -10,984 +11,920 @@ Buatkan dokumentasi PDF profesional untuk sistem SIAKAD Fathus Salafi dengan str
 
 ### COVER PAGE
 - **Judul Besar**: SIAKAD Fathus Salafi
-- **Subtitle**: Sistem Informasi Akademik Terintegrasi
-- **Logo/Icon**: FS dalam kotak ungu (#4F46E5)
-- **Tagline**: "Digitalisasi Pendidikan untuk Yayasan Modern"
-- **Versi**: v1.0 Beta
+- **Subtitle**: Panduan Lengkap Pengguna
+- **Logo/Icon**: FS dalam kotak ungu
+- **Tagline**: "Solusi Digital untuk Manajemen Sekolah Modern"
+- **Versi**: 1.0
 - **Tanggal**: Oktober 2024
-- **Status Completion**: 75-80% (Production Ready)
 
 ---
 
-### HALAMAN 1: EXECUTIVE SUMMARY
+### HALAMAN 1: TENTANG SIAKAD FATHUS SALAFI
 
-**Ringkasan Eksekutif:**
+**Apa itu SIAKAD Fathus Salafi?**
 
-SIAKAD Fathus Salafi adalah sistem informasi akademik berbasis web modern yang dirancang khusus untuk yayasan pendidikan multi-sekolah. Sistem ini mengintegrasikan manajemen akademik, absensi, penilaian, dan komunikasi dalam satu platform yang efisien.
+SIAKAD Fathus Salafi adalah aplikasi berbasis website yang memudahkan pengelolaan sekolah secara digital. Dengan aplikasi ini, semua kegiatan akademik dapat dikelola dalam satu tempat yang mudah diakses.
 
-**Teknologi:**
-- Frontend: React 18 + TypeScript
-- Styling: Tailwind CSS (Responsive Mobile-First)
-- Backend: Supabase (PostgreSQL + Auth + Realtime)
-- Deployment: Vercel
-- Total Development: 22+ commits, 5,000+ lines of code
+**Keuntungan Menggunakan SIAKAD:**
+- ✅ Akses kapan saja, dimana saja (via HP, Tablet, atau Komputer)
+- ✅ Data tersimpan aman di cloud
+- ✅ Tidak perlu install aplikasi, cukup buka di browser
+- ✅ Tampilan sederhana dan mudah dipahami
+- ✅ Real-time: data langsung update
+- ✅ Hemat kertas (paperless)
 
-**Status Proyek:**
-- ✅ 18 halaman fitur complete
-- ✅ 13 custom icon components
-- ✅ Mobile responsive (100%)
-- ✅ Role-based access control (6 roles)
-- ⚠️ Database migrations required (user action)
-- 🎯 75-80% completion untuk full production
+**Siapa yang Bisa Menggunakan?**
+1. **Admin** - Mengelola seluruh sistem
+2. **Kepala Yayasan** - Melihat laporan semua sekolah
+3. **Kepala Sekolah** - Mengelola sekolah masing-masing
+4. **Guru** - Input nilai, lihat kelas, absensi
+5. **Siswa** - Cek nilai, jadwal, tugas, materi
+6. **Staff** - Bantu administrasi sekolah
 
----
-
-### HALAMAN 2-3: FITUR UTAMA & ROLE MATRIX
-
-**Fitur Berdasarkan Role:**
-
-#### 1. 👨‍💼 Admin (Super User)
-**Akses Penuh:**
-- ✅ Monitoring Akademik Real-time
-  - Dashboard dengan KPI sekolah
-  - Grafik performa siswa
-  - Statistik kehadiran live
-  
-- ✅ Manajemen Pengguna
-  - Tambah/Edit/Hapus user
-  - Filter by role dan sekolah
-  - Export data user
-  
-- ✅ Pengaturan Sistem
-  - Konfigurasi aplikasi
-  - Manajemen sekolah
-  - Settings global
-
-**Screenshot Area**: [Dashboard Admin dengan 3 card KPI]
+**Status Aplikasi Saat Ini:**
+- ✅ Sudah bisa digunakan untuk kegiatan sehari-hari
+- ✅ Fitur utama sudah lengkap (75-80%)
+- 🔄 Beberapa fitur masih dalam pengembangan
+- 🎯 Siap untuk presentasi dan testing
 
 ---
 
-#### 2. 👔 Kepala Yayasan (Foundation Head)
-**Multi-School Analytics:**
-- ✅ Overview 4 Sekolah
-  - Total: 1,600 siswa, 121 guru
-  - Rata-rata nilai: 84.6
-  - Rata-rata kehadiran: 93%
-  
-- ✅ Ranking Sekolah
-  - Top performing schools (🥇🥈🥉)
-  - Comparison chart antar sekolah
-  
-- ✅ Cross-School Reports
-  - Perbandingan performa
-  - Attendance overview per sekolah
-
-**Screenshot Area**: [Dashboard Yayasan dengan school comparison]
+### HALAMAN 2-4: FITUR UNTUK SETIAP PENGGUNA
 
 ---
 
-#### 3. 🏫 Kepala Sekolah (Principal)
-**School Management:**
-- ✅ School KPI Dashboard
-  - Jumlah siswa & guru
-  - Rata-rata nilai sekolah
-  - Persentase kehadiran
-  
-- ✅ Quick Actions
-  - Kelola Guru
-  - Kelola Siswa
-  - Lihat Laporan
-  - Buat Pengumuman
-  
-- ✅ Class Performance
-  - 6 kelas (X-XII IPA)
-  - Status: Excellent/Good/Needs Improvement
-  - Detail kehadiran per kelas (90-96%)
-  
-- ✅ Teacher Attendance
-  - Weekly stats: 32 hadir, 2 izin, 1 alpha
-  
-- ✅ Recent Activities Feed
+## 👨‍💼 UNTUK ADMIN (Pengurus Sistem)
 
-**Screenshot Area**: [Principal Dashboard dengan class performance table]
+**Apa yang Bisa Admin Lakukan?**
 
----
-
-#### 4. 👨‍🏫 Guru (Teacher)
-**Teaching Tools:**
-
-**A. Input Nilai**
-- ✅ Pilih Kelas & Mata Pelajaran
-- ✅ List siswa dengan form nilai
-- ✅ Validasi: 0-100
-- ✅ Simpan batch atau per siswa
-- ✅ Responsive: table (desktop), cards (mobile)
-
-**B. Kelas Saya**
-- ✅ Daftar kelas yang diajar
-- ✅ Jumlah siswa per kelas
-- ✅ Jadwal mengajar per kelas
-- ✅ Tombol: Lihat Siswa, Input Nilai, Absensi
-
-**C. Absensi Siswa** (Coming Soon)
-**D. Jadwal Mengajar** (Coming Soon)
-
-**Screenshot Area**: [Input Nilai Page dengan tabel siswa]
-
----
-
-#### 5. 👨‍🎓 Siswa (Student)
-**Student Portal (5 Halaman Complete):**
-
-**A. 📊 Nilai Saya**
-- ✅ Report card dengan 8 mata pelajaran
-- ✅ Grafik performa (bar chart)
-- ✅ Status: Lulus/Perlu Perbaikan
-- ✅ Color-coded: hijau (≥75), kuning (60-74), merah (<60)
-- ✅ Rata-rata keseluruhan: 82.5
-
-**B. 📅 Jadwal Saya**
-- ✅ Weekly schedule (Senin-Sabtu)
-- ✅ Info: Mata pelajaran, Jam, Guru, Ruangan
-- ✅ Desktop: grid layout 6 hari
-- ✅ Mobile: day cards dengan accordion
-
-**C. 📚 Materi Pelajaran**
-- ✅ Library materi pembelajaran
-- ✅ Filter: Mata Pelajaran, Tipe (PDF/Video/Link/Doc/PPT)
-- ✅ Search by judul/deskripsi
-- ✅ 8 materi demo dengan info guru & tanggal upload
-- ✅ Download/View functionality
-- ✅ Desktop: tabel, Mobile: cards
-
-**D. 📝 Tugas Saya**
-- ✅ Assignment tracker dengan status
-- ✅ Filter: All/Pending/Submitted/Graded/Overdue
-- ✅ Stats cards: Total, Pending, Submitted, Graded, Overdue
-- ✅ Due date countdown dengan color coding
-- ✅ Upload submission modal
-- ✅ Teacher feedback display
-- ✅ 8 tugas demo dengan berbagai status
-
-**E. ✅ Absensi Saya**
-- ✅ Monthly calendar view
-- ✅ Overall stats: Hadir, Sakit, Izin, Alpha
-- ✅ Persentase kehadiran dengan progress bar
-- ✅ Subject-wise breakdown (8 mata pelajaran)
-- ✅ Month navigation (prev/next)
-- ✅ Desktop: 7-column calendar grid
-- ✅ Mobile: day list dengan status
-- ✅ Selected date detail modal
-- ✅ Color-coded: Green (hadir), Yellow (sakit), Blue (izin), Red (alpha)
-
-**Screenshot Area**: [5 screenshots student pages]
-
----
-
-#### 6. 🧑‍💼 Staff
-**Administrative Access:**
-- ✅ Manajemen data
-- ✅ Generate laporan
-- ✅ Support operations
-- ✅ Limited access vs Admin
-
----
-
-### HALAMAN 4: FITUR TAMBAHAN
-
-**Additional Features:**
-
-**1. 🔔 Notifikasi Real-time**
-- Bell icon dengan counter
-- Unread notifications
-- Real-time updates via Supabase
-- Mark as read functionality
-
-**2. 🎮 Gamification (Progress)**
-- Point system untuk siswa
-- Achievement badges
-- Leaderboard (coming soon)
-
-**3. 👨‍👩‍👧 Parent Portal (Progress)**
-- View anak's progress
-- Download reports
-- Communication with teachers
-
-**4. 🤖 AI Chat Assistant (Prototype)**
-- Gemini AI integration
-- Academic Q&A
-- Help & support
-
----
-
-### HALAMAN 5: TECHNICAL SPECIFICATIONS
-
-**Arsitektur Sistem:**
-
-**Frontend Stack:**
-```
-- React 18.2.0 (UI Framework)
-- TypeScript (Type Safety)
-- Tailwind CSS (Styling)
-- React Router v6 (Navigation)
-- Recharts (Data Visualization)
-- React Hot Toast (Notifications)
-```
-
-**Backend Stack:**
-```
-- Supabase (BaaS)
-  ├── PostgreSQL (Database)
-  ├── Auth (JWT-based)
-  ├── Row Level Security (RLS)
-  └── Realtime Subscriptions
-```
-
-**Database Schema:**
-- 12+ tables dengan relasi kompleks
-- RLS policies untuk security
-- Indexes untuk performance
-- Triggers untuk auto-update
-
-**Key Tables:**
-- profiles (users)
-- schools (multi-tenancy)
-- classes
-- subjects
-- attendances
-- grades
-- announcements
-- user_notifications (NEW)
-
----
-
-### HALAMAN 6: RESPONSIVE DESIGN
-
-**Mobile-First Approach:**
-
-**Breakpoints:**
-- Mobile: < 640px
-- Tablet: 640px - 1024px  
-- Desktop: > 1024px
-
-**Desktop View:**
-- Full tables dengan sorting
-- Multi-column layouts
-- Sidebar navigation
-- Hover effects
-
-**Mobile View:**
-- Card-based UI
-- Bottom navigation (optional)
-- Touch-friendly buttons (min 44x44px)
-- Collapsible sections
-- Swipeable modals
-
-**Responsive Patterns:**
-```
-Desktop: Table with 8 columns
-↓
-Mobile: Stacked cards with key info
-```
-
-**Example:**
-- Grades Page: Table → Report cards
-- Schedule: Grid → Day cards
-- Users List: Table → Profile cards
-
----
-
-### HALAMAN 7: SECURITY FEATURES
-
-**Authentication & Authorization:**
-
-**1. Supabase Auth**
-- JWT-based authentication
-- Email/password login
-- Secure password hashing
-- Session management
-
-**2. Row Level Security (RLS)**
-- User can only see own data
-- School-based data isolation
-- Role-based access control
-- Query-level security
-
-**3. Email Domain Workaround**
-- Custom domains (.sch.id) supported
-- Transparent auth layer
-- Original email stored in profile
-
-**4. API Security**
-- Rate limiting (100 req/15min)
-- Secret-based authentication
-- Service role isolation
-- CORS protection
-
-**5. Data Validation**
-- Client-side validation
-- Server-side constraints
-- Type checking (TypeScript)
-- SQL injection prevention
-
----
-
-### HALAMAN 8: USER INTERFACE SHOWCASE
-
-**Design System:**
-
-**Colors:**
-- Primary: #4F46E5 (Indigo 600)
-- Success: #10B981 (Green 500)
-- Warning: #F59E0B (Amber 500)
-- Error: #EF4444 (Red 500)
-- Gray Scale: 50-900
-
-**Typography:**
-- Font: System fonts (Arial, sans-serif)
-- Headings: Bold, 2xl-4xl
-- Body: Regular, base
-- Small: sm, xs
-
-**Components:**
-- 13 Custom Icons
-- Card components
-- Modal dialogs
-- Loading spinners (dual-ring)
-- Toast notifications
-- Form inputs with validation
-- Buttons (primary, secondary, danger)
-- Tables with sorting
-- Progress bars
-- Status badges
-
-**Accessibility:**
-- Semantic HTML
-- ARIA labels
-- Keyboard navigation
-- Focus indicators
-- Color contrast (WCAG AA)
-
----
-
-### HALAMAN 9: INSTALLATION & SETUP
-
-**Prerequisites:**
-```bash
-- Node.js v16+
-- npm atau yarn
-- Git
-- Akun Supabase
-- Akun Vercel (untuk deploy)
-```
-
-**Step 1: Clone Repository**
-```bash
-git clone https://github.com/jbyyy7/Siakad-Fatsal.git
-cd Siakad-Fatsal
-```
-
-**Step 2: Install Dependencies**
-```bash
-npm install
-```
-
-**Step 3: Environment Variables**
-```bash
-# Copy .env.example to .env
-cp .env.example .env
-
-# Edit .env dengan credentials Supabase
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJxxx...
-```
-
-**Step 4: Database Migrations**
-```bash
-# Run di Supabase SQL Editor (urutan penting!)
-1. sql/FIX_EXISTING_DATABASE.sql
-2. sql/migrations/ADD_DELETE_USER_FUNCTION.sql
-3. sql/migrations/FIX_GATE_ATTENDANCE_FUNCTIONS.sql
-4. sql/migrations/FIX_GATE_ATTENDANCE_PHASE2.sql
-5. sql/migrations/FIX_STUDENT_FEATURES.sql
-6. sql/migrations/ADD_NOTIFICATIONS_SYSTEM.sql
-```
-
-**Step 5: Run Development Server**
-```bash
-npm run dev
-# Open http://localhost:5173
-```
-
----
-
-### HALAMAN 10: DEPLOYMENT GUIDE
-
-**Vercel Deployment:**
-
-**Method 1: Via Dashboard**
-1. Login ke vercel.com
-2. Import GitHub repo: jbyyy7/Siakad-Fatsal
-3. Set Environment Variables:
-   ```
-   VITE_SUPABASE_URL
-   VITE_SUPABASE_ANON_KEY
-   ```
-4. Deploy! 🚀
-
-**Method 2: Via CLI**
-```bash
-npm i -g vercel
-vercel login
-vercel
-# Follow prompts
-vercel --prod
-```
-
-**Build Settings:**
-- Framework: Vite
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Install Command: `npm install`
-
-**Post-Deployment Checklist:**
-- ✅ Visit deployed URL
-- ✅ Test login
-- ✅ Check all role dashboards
-- ✅ Verify mobile responsive
-- ✅ Test notifications (after migrations)
-
----
-
-### HALAMAN 11: USER GUIDE - ADMIN
-
-**Panduan Admin:**
-
-**1. Login Pertama Kali**
-- Buka aplikasi
-- Masukkan email: admin@fathussalafi.com
-- Password: (yang sudah dibuat)
-- Klik "Masuk"
-
-**2. Dashboard Admin**
-Setelah login, Anda akan melihat:
-- Card KPI: Total sekolah, siswa, guru
+### 1. � Melihat Laporan Keseluruhan
+Setelah login, Admin langsung melihat:
+- Berapa total sekolah, siswa, dan guru
 - Grafik performa akademik
-- Tabel monitoring real-time
+- Statistik kehadiran real-time
 
-**3. Manajemen Pengguna**
-```
-Sidebar → Kelola Pengguna
-```
-- **Lihat Users**: Tabel dengan filter role/sekolah
-- **Tambah User**: 
-  - Klik tombol "+ Tambah Pengguna"
-  - Isi form: Email, Password, Nama, Role, Sekolah
-  - Klik "Simpan"
-- **Edit User**:
-  - Klik icon pensil pada user
-  - Update data
-  - Klik "Simpan Perubahan"
-- **Hapus User**:
-  - Klik icon trash
-  - Konfirmasi hapus
-  - User & data terkait akan terhapus
+### 2. 👥 Mengelola Pengguna
+**Cara Menambah Pengguna Baru:**
+1. Klik menu "Kelola Pengguna" di sidebar kiri
+2. Klik tombol "+ Tambah Pengguna"
+3. Isi formulir:
+   - Email (contoh: guru@fathussalafi.com)
+   - Password
+   - Nama Lengkap
+   - Pilih Role (Guru/Siswa/Staff/dll)
+   - Pilih Sekolah
+4. Klik "Simpan"
+5. Pengguna baru bisa langsung login
 
-**4. Monitoring Akademik**
-```
-Sidebar → Monitoring Akademik
-```
-- Lihat statistik per sekolah
-- Filter by periode
-- Export laporan (coming soon)
+**Cara Mengubah Data Pengguna:**
+1. Cari pengguna di tabel (bisa pakai search)
+2. Klik icon pensil (✏️) di samping nama
+3. Ubah data yang perlu diubah
+4. Klik "Simpan Perubahan"
 
-**5. Pengaturan Sistem**
-```
-Sidebar → Pengaturan Sistem
-```
-- Konfigurasi umum
-- Manajemen sekolah
-- Settings aplikasi
+**Cara Menghapus Pengguna:**
+1. Klik icon tempat sampah (🗑️) di samping nama
+2. Konfirmasi dengan klik "Ya, Hapus"
+3. Data pengguna akan terhapus permanent
+
+### 3. ⚙️ Pengaturan Sistem
+- Mengelola data sekolah
+- Konfigurasi aplikasi
+- Lihat statistik penggunaan
+
+**Screenshot**: [Tampilan dashboard admin dengan 3 kotak statistik]
 
 ---
 
-### HALAMAN 12: USER GUIDE - SISWA
+## 👔 UNTUK KEPALA YAYASAN
 
-**Panduan Siswa:**
+**Apa yang Bisa Dilihat?**
 
-**1. Login**
-- Email: (dari sekolah)
-- Password: (dari sekolah)
+### 1. 🏫 Ringkasan Semua Sekolah
+Dashboard menampilkan:
+- Total 4 sekolah di bawah yayasan
+- Jumlah total: 1,600 siswa, 121 guru
+- Rata-rata nilai semua sekolah: 84.6
+- Rata-rata kehadiran: 93%
 
-**2. Dashboard Siswa**
-Quick access ke:
-- Nilai Saya
-- Jadwal Pelajaran
-- Materi Belajar
-- Tugas Saya
-- Absensi Saya
+### 2. 🏆 Peringkat Sekolah
+Melihat sekolah mana yang berprestasi terbaik:
+- 🥇 Peringkat 1: [Nama Sekolah]
+- 🥈 Peringkat 2: [Nama Sekolah]
+- 🥉 Peringkat 3: [Nama Sekolah]
 
-**3. Cek Nilai**
-```
-Dashboard → Nilai Saya
-```
-- Lihat nilai per mata pelajaran
-- Grafik performa visual
-- Status: Lulus/Perlu Perbaikan
-- Download rapor (coming soon)
+### 3. 📈 Perbandingan Antar Sekolah
+- Grafik perbandingan nilai
+- Perbandingan kehadiran
+- Tabel detail per sekolah
 
-**4. Lihat Jadwal**
-```
-Dashboard → Jadwal Saya
-```
-- Jadwal mingguan (Senin-Sabtu)
-- Info: Pelajaran, Jam, Guru, Ruangan
-- Swipe di mobile untuk lihat hari lain
+**Kegunaan:**
+Kepala Yayasan bisa cepat tahu sekolah mana yang perlu perhatian lebih dan sekolah mana yang berprestasi baik.
 
-**5. Akses Materi Pelajaran**
-```
-Dashboard → Materi Pelajaran
-```
-- Filter by mata pelajaran
-- Filter by tipe (PDF/Video/Link)
-- Search materi
-- Klik "Lihat/Download" untuk akses
-
-**6. Submit Tugas**
-```
-Dashboard → Tugas Saya
-```
-- Lihat daftar tugas
-- Filter by status (Pending/Submitted)
-- Klik "Submit" untuk upload
-- Pilih file → Submit
-- Lihat feedback guru setelah dinilai
-
-**7. Cek Absensi**
-```
-Dashboard → Absensi Saya
-```
-- Calendar view bulan ini
-- Klik tanggal untuk detail
-- Lihat statistik: Hadir, Sakit, Izin, Alpha
-- Breakdown per mata pelajaran
+**Screenshot**: [Dashboard yayasan dengan ranking dan perbandingan]
 
 ---
 
-### HALAMAN 13: USER GUIDE - GURU
+## 🏫 UNTUK KEPALA SEKOLAH
 
-**Panduan Guru:**
+**Apa yang Bisa Dilakukan?**
 
-**1. Dashboard Guru**
-Menu utama:
-- Input Nilai
-- Kelas Saya
-- Jadwal Mengajar (soon)
-- Absensi Siswa (soon)
+### 1. 📊 Lihat Data Sekolah
+Dashboard menampilkan:
+- Jumlah siswa di sekolah
+- Jumlah guru/staff
+- Rata-rata nilai sekolah
+- Persentase kehadiran siswa
 
-**2. Input Nilai Siswa**
-```
-Sidebar → Input Nilai
-```
-**Langkah-langkah:**
-1. Pilih Kelas (dropdown)
-2. Pilih Mata Pelajaran (dropdown)
-3. Klik "Tampilkan Siswa"
-4. Tabel siswa muncul dengan kolom nilai
-5. Input nilai (0-100) per siswa
-6. Klik "Simpan Nilai" (batch save)
-   
+### 2. ⚡ Aksi Cepat (Quick Actions)
+Tombol pintasan untuk:
+- **Kelola Guru**: Lihat daftar guru
+- **Kelola Siswa**: Lihat daftar siswa
+- **Lihat Laporan**: Akses laporan akademik
+- **Buat Pengumuman**: Kirim pengumuman ke warga sekolah
+
+### 3. 📚 Performa Per Kelas
+Tabel menampilkan 6 kelas (X, XI, XII IPA):
+- Status kelas: Excellent (Bagus) / Good (Baik) / Needs Improvement (Perlu Perbaikan)
+- Tingkat kehadiran tiap kelas (90-96%)
+- Bisa klik kelas untuk lihat detail
+
+### 4. 👨‍🏫 Kehadiran Guru
+Statistik mingguan:
+- 32 guru hadir
+- 2 guru izin
+- 1 guru alpha
+- Grafik untuk melihat tren
+
+### 5. 📰 Aktivitas Terbaru
+Feed yang menampilkan kegiatan terakhir di sekolah
+
+**Screenshot**: [Dashboard kepala sekolah dengan tabel performa kelas]
+
+---
+
+## 👨‍🏫 UNTUK GURU
+
+**Fitur yang Tersedia:**
+
+### A. 📝 Input Nilai Siswa
+
+**Cara Mengisi Nilai:**
+1. Klik menu "Input Nilai" di sidebar
+2. Pilih Kelas dari dropdown (contoh: X IPA 1)
+3. Pilih Mata Pelajaran (contoh: Matematika)
+4. Klik "Tampilkan Siswa"
+5. Tabel muncul dengan daftar siswa
+6. Isi kolom nilai (angka 0-100)
+7. Klik "Simpan Nilai"
+8. Sistem otomatis validasi (tidak boleh lebih dari 100)
+
 **Tips:**
-- Validasi otomatis: 0-100
-- Save otomatis per siswa atau batch
-- Mobile: scroll horizontal untuk tabel
+- Bisa input satu per satu atau langsung banyak
+- Di HP: bisa scroll tabel ke samping
+- Nilai otomatis tersimpan per siswa
 
-**3. Lihat Kelas Saya**
-```
-Sidebar → Kelas Saya
-```
-- Daftar kelas yang diajar
-- Info: Nama kelas, Jumlah siswa
-- Actions:
-  - Lihat Siswa
-  - Input Nilai (shortcut)
-  - Absensi (soon)
+**Screenshot**: [Halaman input nilai dengan tabel siswa]
 
-**4. Absen Siswa** (Coming Soon)
-- QR code scan
-- Manual input
-- Bulk attendance
+### B. 📚 Lihat Kelas Saya
+
+**Apa yang Ditampilkan:**
+- Daftar kelas yang Anda ajar
+- Jumlah siswa per kelas
+- Jadwal mengajar
+
+**Tombol yang Tersedia:**
+- **Lihat Siswa**: Daftar nama siswa di kelas
+- **Input Nilai**: Langsung ke halaman input nilai kelas ini
+- **Absensi**: (Segera hadir)
+
+### C. ✅ Absensi Siswa (Segera Hadir)
+### D. 🕐 Jadwal Mengajar (Segera Hadir)
 
 ---
 
-### HALAMAN 14: TROUBLESHOOTING
+## 👨‍🎓 UNTUK SISWA
 
-**Common Issues & Solutions:**
+**5 Menu Utama yang Bisa Diakses:**
 
-**1. Login Gagal**
+### A. 📊 Nilai Saya
+
+**Apa yang Ditampilkan:**
+- Nilai semua mata pelajaran (8 mapel)
+- Grafik batang untuk setiap nilai
+- Rata-rata keseluruhan
+- Status: LULUS (hijau) atau PERLU PERBAIKAN (merah)
+
+**Warna Nilai:**
+- 🟢 Hijau: Nilai ≥ 75 (Bagus!)
+- 🟡 Kuning: Nilai 60-74 (Cukup)
+- 🔴 Merah: Nilai < 60 (Perlu belajar lebih giat)
+
+**Contoh yang Ditampilkan:**
 ```
-Error: "Invalid credentials"
+Matematika:    85  🟢
+Bahasa Indonesia: 78  🟢
+IPA:           82  🟢
+Rata-rata:     82.5
+Status:        LULUS ✅
 ```
+
+**Screenshot**: [Report card dengan grafik batang]
+
+---
+
+### B. 📅 Jadwal Saya
+
+**Apa yang Ditampilkan:**
+- Jadwal pelajaran senin-sabtu
+- Setiap jam pelajaran menampilkan:
+  - Nama mata pelajaran
+  - Jam mulai - selesai
+  - Nama guru pengajar
+  - Ruang kelas
+
+**Cara Lihat:**
+- **Di Komputer**: Lihat semua hari dalam satu layar (grid)
+- **Di HP**: Swipe kiri/kanan untuk ganti hari
+
+**Contoh:**
+```
+SENIN
+07:00-08:00  Matematika    Pak Ahmad    Ruang 101
+08:00-09:00  B. Indonesia  Bu Siti      Ruang 101
+09:00-10:00  IPA           Pak Budi     Lab IPA
+```
+
+**Screenshot**: [Jadwal mingguan dengan grid]
+
+---
+
+### C. 📚 Materi Pelajaran
+
+**Apa yang Bisa Dilakukan:**
+- Lihat semua materi dari guru
+- Filter berdasarkan mata pelajaran
+- Filter berdasarkan tipe:
+  - 📄 PDF (dokumen)
+  - 🎥 Video
+  - 🔗 Link website
+  - 📑 Document Word
+  - 📊 Presentasi PPT
+
+**Cara Menggunakan:**
+1. Pilih mata pelajaran di dropdown (atau pilih "Semua")
+2. Pilih tipe materi (atau pilih "Semua")
+3. Ketik keyword di search box (optional)
+4. Klik "Lihat" atau "Download" pada materi yang diinginkan
+
+**Contoh Materi:**
+```
+Matematika - Teorema Pythagoras
+📄 PDF  |  Diupload: Pak Ahmad  |  20 Okt 2024
+[Lihat] [Download]
+
+IPA - Video Fotosintesis
+🎥 Video  |  Diupload: Bu Sari  |  19 Okt 2024
+[Lihat]
+```
+
+**Screenshot**: [Library materi dengan filter]
+
+---
+
+### D. 📝 Tugas Saya
+
+**Apa yang Ditampilkan:**
+- Semua tugas dari semua mata pelajaran
+- Status tiap tugas:
+  - ⏳ Pending (belum dikerjakan)
+  - ✅ Submitted (sudah dikumpulkan)
+  - 📊 Graded (sudah dinilai guru)
+  - ⚠️ Overdue (terlambat)
+
+**Kotak Statistik:**
+- Total tugas: 8
+- Pending: 3
+- Submitted: 2
+- Graded: 2
+- Overdue: 1
+
+**Cara Submit Tugas:**
+1. Cari tugas yang mau dikumpulkan
+2. Klik tombol "Submit"
+3. Modal muncul
+4. Klik "Pilih File" dan pilih file tugas Anda
+5. Klik "Submit Tugas"
+6. Tugas terkirim ke guru
+
+**Melihat Nilai & Feedback:**
+- Tugas yang sudah dinilai ada badge "Dinilai"
+- Klik untuk lihat nilai dan feedback dari guru
+
+**Countdown Deadline:**
+- Tugas yang belum submit: "Sisa 2 hari"
+- Warna merah jika H-1
+- Warna abu jika sudah lewat deadline
+
+**Screenshot**: [Daftar tugas dengan status dan countdown]
+
+---
+
+### E. ✅ Absensi Saya
+
+**Apa yang Ditampilkan:**
+
+**1. Kalender Bulan Ini:**
+- Setiap tanggal ada warna:
+  - 🟢 Hijau = Hadir
+  - 🟡 Kuning = Sakit
+  - 🔵 Biru = Izin
+  - 🔴 Merah = Alpha/Tidak hadir
+
+**2. Statistik Kehadiran:**
+```
+Total Hari Sekolah: 20 hari
+✅ Hadir:  16 hari
+🤒 Sakit:   2 hari
+📋 Izin:    1 hari
+❌ Alpha:   1 hari
+
+Persentase Kehadiran: 80%
+```
+
+**3. Kehadiran Per Mata Pelajaran:**
+Tabel menampilkan kehadiran untuk 8 mata pelajaran:
+```
+Matematika:    Hadir 15 dari 16 (94%)
+B. Indonesia:  Hadir 16 dari 16 (100%)
+IPA:           Hadir 14 dari 16 (88%)
+```
+
+**Cara Menggunakan:**
+- **Ganti Bulan**: Klik tombol ◀ atau ▶
+- **Lihat Detail**: Klik tanggal tertentu
+- **Di HP**: List hari ditampilkan vertikal
+
+**Screenshot**: [Kalender absensi dengan legend warna]
+
+---
+
+## 🧑‍💼 UNTUK STAFF
+
+**Akses yang Dimiliki:**
+- Membantu admin dalam entry data
+- Generate laporan
+- Akses terbatas dibanding Admin
+- Support kegiatan administratif
+
+---
+
+### HALAMAN 5: FITUR TAMBAHAN
+
+**Fitur Ekstra yang Tersedia:**
+
+## 🔔 Notifikasi
+
+**Cara Kerja:**
+- Icon lonceng (🔔) di pojok kanan atas
+- Ada angka merah jika ada notifikasi baru
+- Klik untuk lihat daftar notifikasi
+
+**Jenis Notifikasi:**
+- 📢 Pengumuman dari sekolah
+- 📝 Nilai baru telah diinput
+- 📚 Tugas baru dari guru
+- ⏰ Reminder deadline tugas
+
+**Cara Menandai Sudah Dibaca:**
+- Klik notifikasi → otomatis tandai sudah dibaca
+- Angka merah berkurang
+
+---
+
+## 🎮 Gamification (Segera Hadir)
+
+**Fitur yang Akan Datang:**
+- Sistem poin untuk siswa berprestasi
+- Badge achievement (misalnya: "Perfect Attendance", "Top Score")
+- Leaderboard (papan peringkat kelas)
+- Motivasi siswa untuk aktif dan rajin
+
+---
+
+## 👨‍👩‍👧 Portal Orang Tua (Dalam Pengembangan)
+
+**Untuk Orang Tua Siswa:**
+- Login untuk lihat progress anak
+- Download rapor
+- Lihat nilai dan kehadiran anak
+- Komunikasi dengan guru (chat)
+
+---
+
+## 🤖 AI Chat Assistant (Prototype)
+
+**Asisten Virtual untuk Bantuan:**
+- Tanya jawab seputar akademik
+- Bantuan penggunaan aplikasi
+- Cari informasi cepat
+
+---
+
+### HALAMAN 6: CARA MENGAKSES APLIKASI
+
+## 🌐 Akses dari Berbagai Perangkat
+
+**SIAKAD bisa dibuka dari:**
+
+### 💻 Komputer/Laptop
+1. Buka browser (Chrome, Firefox, Edge, Safari)
+2. Ketik alamat: `https://siakad-fathussalafi.vercel.app`
+3. Login dengan email dan password
+4. Tampilan penuh dengan semua fitur
+
+**Keuntungan:**
+- Layar lebar, mudah lihat tabel
+- Bisa input data lebih cepat
+- Multi-tab untuk buka banyak halaman
+
+---
+
+### 📱 HP / Smartphone
+1. Buka browser HP (Chrome/Safari)
+2. Ketik alamat yang sama
+3. Login seperti biasa
+4. Tampilan otomatis menyesuaikan layar HP
+
+**Keuntungan:**
+- Akses dimana saja
+- Tampilan card yang mudah di-swipe
+- Touch-friendly (tombol besar)
+- Tidak perlu install aplikasi
+
+---
+
+### 📱 Tablet / iPad
+- Kombinasi tampilan desktop & mobile
+- Nyaman untuk input data
+- Portabel dan fleksibel
+
+---
+
+## 🔐 Login Pertama Kali
+
+**Langkah-langkah Login:**
+
+1. **Buka Website**
+   - Alamat: https://siakad-fathussalafi.vercel.app
+
+2. **Isi Form Login**
+   - Email: Gunakan email yang didapat dari admin
+   - Password: Password yang didapat dari admin
+
+3. **Klik "Masuk"**
+
+4. **Dashboard Muncul**
+   - Setiap role lihat dashboard berbeda
+   - Sesuai hak aksesnya masing-masing
+
+**Lupa Password?**
+- Klik "Lupa Password?"
+- Masukkan email
+- Cek email untuk link reset password
+- Buat password baru
+
+---
+
+## ⚙️ Pengaturan Akun
+
+**Menu Pengaturan:**
+- Klik icon profil di pojok kanan atas
+- Pilih "Pengaturan Akun"
+
+**Yang Bisa Diubah:**
+- Nama lengkap
+- Nomor telepon
+- Alamat
+- Foto profil
+- Ganti password
+
+**Cara Ganti Password:**
+1. Masuk ke Pengaturan Akun
+2. Scroll ke "Ubah Password"
+3. Masukkan password lama
+4. Masukkan password baru (2x)
+5. Klik "Simpan"
+
+---
+
+### HALAMAN 7: TIPS & TRIK PENGGUNAAN
+
+## 💡 Tips untuk Semua Pengguna
+
+**1. Gunakan Search/Pencarian**
+- Hampir semua halaman ada search box
+- Ketik keyword untuk cari cepat
+- Contoh: cari nama siswa, mata pelajaran
+
+**2. Filter untuk Mempermudah**
+- Gunakan dropdown filter
+- Filter by kelas, mata pelajaran, status
+- Data langsung tersaring
+
+**3. Di HP: Swipe untuk Navigasi**
+- Swipe kiri/kanan untuk ganti hari (jadwal)
+- Scroll untuk lihat tabel panjang
+- Pinch zoom untuk perbesar
+
+**4. Bookmark Halaman Favorit**
+- Simpan link halaman yang sering diakses
+- Contoh: guru bookmark "Input Nilai"
+- Siswa bookmark "Nilai Saya"
+
+**5. Notifikasi: Jangan Terlewat Info Penting**
+- Cek notifikasi setiap hari
+- Bell icon di kanan atas
+- Ada angka merah = ada notifikasi baru
+
+---
+
+## 👨‍🏫 Tips Khusus Guru
+
+**1. Input Nilai Lebih Cepat:**
+- Siapkan daftar nilai di Excel/kertas dulu
+- Buka halaman Input Nilai
+- Copy-paste atau ketik langsung
+- Save batch sekaligus
+
+**2. Gunakan Tab/Enter:**
+- Setelah isi nilai, tekan Tab untuk kolom berikutnya
+- Lebih cepat dari klik mouse
+
+**3. Double Check Sebelum Simpan:**
+- Review nilai yang diinput
+- Pastikan tidak ada salah ketik
+- Klik Simpan jika sudah yakin
+
+---
+
+## 👨‍🎓 Tips Khusus Siswa
+
+**1. Cek Jadwal Setiap Hari:**
+- Lihat jadwal besok dari sekarang
+- Siapkan buku dan alat tulis
+
+**2. Download Materi Offline:**
+- Download PDF materi saat ada WiFi
+- Bisa dibaca kapan saja tanpa internet
+
+**3. Set Reminder Tugas:**
+- Catat deadline tugas di kalender HP
+- Set alarm H-1 sebelum deadline
+
+**4. Submit Tugas Jangan Mepet:**
+- Upload tugas minimal H-1 deadline
+- Antisipasi jika ada masalah internet
+
+---
+
+### HALAMAN 8: TROUBLESHOOTING (SOLUSI MASALAH)
+
+## ❓ Masalah yang Sering Terjadi & Solusinya
+
+### 1. 🔒 Tidak Bisa Login
+
+**Masalah:**
+"Email atau password salah"
+
 **Solusi:**
-- Cek email & password
-- Pastikan akun sudah dibuat admin
-- Contact admin untuk reset password
+- ✅ Cek penulisan email (huruf kecil semua)
+- ✅ Cek password (huruf besar/kecil, angka, simbol)
+- ✅ Gunakan fitur "Lupa Password"
+- ✅ Hubungi admin jika akun belum dibuat
 
 ---
 
-**2. Email .sch.id Tidak Valid**
-```
-Error: "Email address invalid"
-```
+### 2. 📱 Tampilan Berantakan di HP
+
+**Masalah:**
+"Tabel keluar dari layar / huruf terlalu kecil"
+
 **Solusi:**
-- Sistem otomatis handle custom domain
-- Login dengan: email@fathussalafi.com (bukan .sch.id)
-- Di app akan muncul: email@fathussalafi.sch.id
+- ✅ Scroll ke kanan untuk lihat kolom lain
+- ✅ Zoom in/out dengan 2 jari
+- ✅ Rotate HP ke landscape (horizontal)
+- ✅ Refresh halaman (tarik ke bawah)
 
 ---
 
-**3. Tidak Bisa Hapus User**
-```
-Error: "Function delete_user not found"
-```
+### 3. 🔄 Data Tidak Muncul
+
+**Masalah:**
+"Halaman kosong / loading terus"
+
 **Solusi:**
-- Run migration: ADD_DELETE_USER_FUNCTION.sql
-- Di Supabase SQL Editor
-- Refresh aplikasi
+- ✅ Pastikan internet stabil
+- ✅ Refresh halaman (F5 atau tarik ke bawah)
+- ✅ Clear cache browser
+- ✅ Coba browser lain
+- ✅ Logout dan login lagi
 
 ---
 
-**4. Data Tidak Muncul**
-```
-Empty state atau loading forever
-```
+### 4. 📤 Tidak Bisa Upload File (Tugas)
+
+**Masalah:**
+"Gagal upload file"
+
 **Solusi:**
-- Pastikan migrations sudah dirun semua (6 files)
-- Cek RLS policies di Supabase
-- Cek browser console untuk error
-- Clear cache & reload
+- ✅ Cek ukuran file (max 10MB)
+- ✅ Format file yang dibolehkan: PDF, DOC, JPG, PNG
+- ✅ Rename file (jangan pakai simbol aneh)
+- ✅ Pastikan internet stabil
+- ✅ Coba file lain dulu
 
 ---
 
-**5. TypeScript Errors di VS Code**
-```
-"Cannot find module" atau "Property does not exist"
-```
+### 5. 🔢 Nilai Yang Diinput Tidak Tersimpan
+
+**Masalah:**
+"Sudah input nilai tapi hilang"
+
 **Solusi:**
-- Restart TS Server:
-  `Cmd/Ctrl + Shift + P` → "TypeScript: Restart TS Server"
-- Atau reload VS Code window
-- Error ini visual only, build tetap success
+- ✅ Pastikan klik tombol "Simpan"
+- ✅ Tunggu notifikasi "Berhasil disimpan"
+- ✅ Jangan close tab sebelum tersimpan
+- ✅ Jika error, coba lagi atau hubungi admin
 
 ---
 
-**6. Build Failed**
-```
-npm run build error
-```
+### 6. ⚠️ Error / Pesan Merah Muncul
+
+**Masalah:**
+"Ada pesan error atau warning"
+
 **Solusi:**
-- Delete node_modules: `rm -rf node_modules`
-- Clear cache: `rm -rf .next dist`
-- Reinstall: `npm install`
-- Rebuild: `npm run build`
+- ✅ Screenshot pesan error
+- ✅ Catat apa yang sedang dilakukan
+- ✅ Hubungi admin dengan screenshot
+- ✅ Jangan panic, data aman tersimpan
 
 ---
 
-### HALAMAN 15: ROADMAP & FUTURE FEATURES
+### 7. 🐌 Aplikasi Lambat
 
-**Current Status: 75-80% Complete**
+**Masalah:**
+"Loading lama / lemot"
 
-**✅ Completed (Production Ready):**
-- Authentication & Authorization
-- 6 Role-based dashboards
-- User management (CRUD)
-- 5 Student pages (complete)
-- 2 Teacher pages (Input Nilai, Kelas Saya)
-- 2 Leadership dashboards (Foundation Head, Principal)
-- Mobile responsive design
-- Loading states & error handling
-- Custom icons & UI components
-- Database schema & migrations
-- Deployment ready
-
-**🚧 In Progress (20-25%):**
-- Absensi siswa (GPS-based)
-- Teacher attendance (check-in/out)
-- Jadwal pelajaran (CRUD)
-- Teaching journals
-- Grade reports (PDF export)
-- Parent portal (view only)
-- AI Chat assistant
-- Gamification system
-
-**🎯 Planned Features (Future):**
-- Pembayaran SPP
-- E-Learning modules
-- Video conferencing
-- Library management
-- Exam management
-- Certificate generator
-- Mobile app (React Native)
-- WhatsApp notifications
-- Email automation
-- Analytics dashboard
-- Multi-language support
-- Dark mode
-- Offline mode (PWA)
-
-**Timeline Estimate:**
-- 80-90% completion: +2 weeks
-- 90-100% completion: +1 month
-- Full features: +3 months
+**Solusi:**
+- ✅ Cek koneksi internet (speedtest)
+- ✅ Close tab browser yang tidak perlu
+- ✅ Clear cache & cookies
+- ✅ Gunakan browser update terbaru
+- ✅ Restart browser atau device
 
 ---
 
-### HALAMAN 16: SUPPORT & CONTACT
+### HALAMAN 9: FITUR YANG AKAN DATANG
 
-**Technical Support:**
+## 🚀 Apa Saja yang Sedang Dikembangkan?
 
-**Developer:**
-- GitHub: @jbyyy7
-- Repository: https://github.com/jbyyy7/Siakad-Fatsal
-- Issues: Report bugs via GitHub Issues
+**Status Saat Ini: 75-80% Complete**
 
-**Documentation:**
-- README.md: Setup guide
-- MIGRATION_GUIDE.md: Database setup
-- Code comments: Inline documentation
-
-**Community:**
-- GitHub Discussions: Q&A
-- Pull Requests: Contributions welcome
-
-**Commercial Support:**
-- Custom development available
-- Training & onboarding
-- Maintenance contracts
+### ✅ Sudah Bisa Digunakan (Production Ready):
+- Login & Keamanan
+- Dashboard semua role (6 role)
+- Manajemen Pengguna (tambah, edit, hapus)
+- 5 Halaman Siswa (Nilai, Jadwal, Materi, Tugas, Absensi)
+- 2 Halaman Guru (Input Nilai, Kelas Saya)
+- Dashboard Kepala Yayasan & Kepala Sekolah
+- Notifikasi
+- Tampilan mobile responsive
 
 ---
 
-**Yayasan Fathus Salafi:**
-- Website: (TBD)
+### 🚧 Sedang Dikembangkan (20-25%):
+- ✏️ Absensi siswa (dengan GPS/lokasi)
+- ✏️ Absensi guru (check-in/out)
+- ✏️ Jadwal pelajaran (CRUD lengkap)
+- ✏️ Jurnal mengajar guru
+- ✏️ Export rapor ke PDF
+- ✏️ Portal orang tua
+- ✏️ AI Chat assistant
+- ✏️ Sistem gamification
+
+---
+
+### 🎯 Rencana Fitur Masa Depan:
+- 💳 Pembayaran SPP online
+- 📚 E-Learning (kelas online)
+- 🎥 Video conference
+- 📖 Perpustakaan digital
+- 📝 Bank soal & ujian online
+- 🎓 Generator sertifikat
+- 📱 Mobile app (Android/iOS)
+- 💬 WhatsApp notifications
+- 📧 Email automation
+- 📊 Advanced analytics
+- 🌍 Multi-bahasa (Inggris, Arab)
+- 🌙 Dark mode
+- ⚡ Offline mode
+
+**Estimasi Timeline:**
+- 80-90%: 2 minggu lagi
+- 90-100%: 1 bulan lagi
+- Fitur lengkap: 3 bulan lagi
+
+---
+
+### HALAMAN 10: KONTAK & BANTUAN
+
+## 📞 Butuh Bantuan?
+
+### 🆘 Untuk Masalah Teknis:
+
+**Admin Sekolah:**
+- Hubungi admin sekolah Anda
+- Mereka bisa bantu reset password, buat akun baru, dll
+
+**Support Developer:**
 - Email: admin@fathussalafi.sch.id
-- Location: Jember, Jawa Timur
+- GitHub Issues: https://github.com/jbyyy7/Siakad-Fatsal/issues
 
 ---
 
-### HALAMAN 17: CREDITS & ACKNOWLEDGMENTS
+### 📚 Dokumentasi & Panduan:
 
-**Development Team:**
-- **Lead Developer**: @jbyyy7
-- **AI Assistant**: GitHub Copilot
-- **Development Time**: ~2 weeks intensive coding
-- **Total Commits**: 22+ commits
-- **Lines of Code**: 5,000+ lines
-
-**Technology Stack:**
-- React (Meta/Facebook)
-- TypeScript (Microsoft)
-- Tailwind CSS (Tailwind Labs)
-- Supabase (Supabase Inc.)
-- Vercel (Vercel Inc.)
-
-**Open Source Libraries:**
-- react-router-dom
-- recharts
-- react-hot-toast
-- dompurify
-- xlsx
-
-**Special Thanks:**
-- Yayasan Fathus Salafi (client)
-- Supabase community
-- React community
-- Stack Overflow contributors
+**Ada di Website:**
+- Panduan Lengkap (PDF ini)
+- Video tutorial (segera hadir)
+- FAQ (Frequently Asked Questions)
 
 ---
 
-### HALAMAN 18: APPENDIX
+### 🏫 Informasi Yayasan:
 
-**A. Database Tables Reference**
-
-**profiles:**
-- id, email, full_name, role, school_id
-- identity_number, avatar_url
-- place_of_birth, date_of_birth, gender
-- religion, address, phone_number
-- parent_name, parent_phone_number
-
-**schools:**
-- id, name, level, address
-- latitude, longitude, location_name
-- radius, location_attendance_enabled
-
-**classes:**
-- id, name, school_id
-- homeroom_teacher_id
-
-**subjects:**
-- id, name, school_id
-
-**grades:**
-- id, student_id, class_id, subject_id
-- teacher_id, score, semester, notes
-
-**attendances:**
-- id, date, student_id, class_id
-- subject_id, teacher_id, status
-- teacher_latitude, teacher_longitude
-
-**announcements:**
-- id, title, content
-- author_id, school_id
-
-**user_notifications:**
-- id, user_id, announcement_id
-- is_read, read_at
+**Yayasan Fathus Salafi**
+- Lokasi: Jember, Jawa Timur
+- Website: (akan segera hadir)
+- Email: admin@fathussalafi.sch.id
 
 ---
 
-**B. Environment Variables Reference**
+### 💬 Saran & Masukan:
 
-**Required (Client):**
-```bash
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJxxx...
-```
-
-**Optional (Development):**
-```bash
-GEMINI_API_KEY=xxx  # For AI features
-VITE_CREATE_USER_SECRET=dev-secret-123
-```
-
-**Required (Production/Vercel):**
-```bash
-SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
-CREATE_USER_SECRET=xxx
-DELETE_USER_SECRET=xxx
-SENDGRID_API_KEY=xxx  # For emails
-```
+**Kami Terbuka untuk Feedback:**
+- Kirim saran fitur baru via email
+- Laporkan bug/error yang ditemukan
+- Request training untuk user baru
+- Konsultasi kustomisasi sistem
 
 ---
 
-**C. API Endpoints**
+## 🎓 Training & Onboarding
 
-**Serverless Functions (Vercel):**
-```
-/api/create-user       POST   Create user with admin privileges
-/api/delete-user       POST   Delete user from auth & DB
-/api/reset-password    POST   Send password reset email
-/api/import-students   POST   Bulk import students from Excel
-/api/export-attendance GET    Export attendance to Excel
-/api/export-grades     GET    Export grades to Excel
-/api/check-email       GET    Check if email exists
-/api/health           GET    API health check
-```
+**Tersedia Layanan:**
+- Training tatap muka untuk admin & guru
+- Onboarding untuk pengguna baru
+- Workshop penggunaan fitur
+- Support berkelanjutan
+
+**Hubungi kami untuk jadwal training!**
 
 ---
 
-### BACK COVER
+### HALAMAN 11: PENUTUP
 
-**SIAKAD Fathus Salafi**
-*Sistem Informasi Akademik Terintegrasi*
+## 🎉 Selamat Menggunakan SIAKAD!
 
-**Status**: v1.0 Beta (75-80% Complete)  
-**Production Ready**: ✅ Yes  
-**Deployment**: Vercel  
-**Database**: Supabase (PostgreSQL)
+**Terima kasih telah mempercayai SIAKAD Fathus Salafi sebagai solusi digital sekolah Anda.**
 
-**Key Stats:**
-- 18 Pages Complete
-- 6 User Roles
-- 13 Custom Icons
-- 5,000+ Lines of Code
-- 22+ Git Commits
-- 100% Mobile Responsive
+### 📖 Rangkuman Penggunaan:
 
-**Repository:**
-https://github.com/jbyyy7/Siakad-Fatsal
+**Untuk Guru:**
+- Login → Input Nilai → Lihat Kelas → Selesai!
+- Simpel dan efisien
 
-**© 2024 Yayasan Fathus Salafi**
-*Digitalisasi Pendidikan untuk Masa Depan*
+**Untuk Siswa:**
+- Login → Cek Nilai, Jadwal, Tugas → Done!
+- Semua info akademik dalam satu tempat
+
+**Untuk Manajemen:**
+- Login → Lihat Dashboard → Monitoring mudah!
+- Laporan real-time tanpa ribet
 
 ---
 
-## 🎨 DESIGN GUIDELINES UNTUK PDF
+### ✨ Keunggulan SIAKAD:
 
-**Font Recommendations:**
-- Headings: Poppins Bold / Montserrat Bold
-- Body: Open Sans / Inter
-- Code: Fira Code / JetBrains Mono
+1. **Mudah Digunakan**
+   - Tampilan sederhana
+   - Tidak perlu training lama
+   - Intuitif untuk semua umur
 
-**Color Palette:**
-- Primary: #4F46E5 (Indigo)
-- Secondary: #10B981 (Green)
-- Accent: #F59E0B (Amber)
-- Gray: #6B7280
-- Background: #F9FAFB
+2. **Akses Kapan Saja**
+   - 24/7 online
+   - Dari HP, tablet, atau komputer
+   - Tidak perlu install aplikasi
 
-**Layout:**
-- Page Size: A4 (210 x 297 mm)
-- Margins: 20mm all sides
-- Line Height: 1.6
-- Column: 2-column untuk comparison sections
+3. **Data Aman**
+   - Tersimpan di cloud
+   - Backup otomatis
+   - Keamanan berlapis
 
-**Visual Elements:**
-- Icons: Use emoji atau custom icons
-- Screenshots: Bordered dengan shadow
-- Tables: Striped rows, header background
-- Code Blocks: Light gray background, monospace
-- Callouts: Colored boxes untuk tips/warnings
+4. **Hemat Waktu**
+   - Tidak perlu ke sekolah untuk cek nilai
+   - Input nilai lebih cepat
+   - Laporan otomatis
 
-**Branding:**
-- Logo: FS in purple square (top right every page)
-- Footer: Page number + "SIAKAD Fathus Salafi v1.0"
-- Header: Section title (alternating pages)
+5. **Ramah Lingkungan**
+   - Paperless (tanpa kertas)
+   - Reduce, reuse, recycle
+   - Go green!
 
 ---
 
-## 📝 NOTES UNTUK AI:
+### 🚀 Mari Mulai Digitalisasi!
 
-1. **Gunakan bahasa Indonesia** untuk user-facing content
-2. **Bahasa Inggris** untuk technical terms (tidak diterjemahkan)
-3. **Screenshots**: Tambahkan placeholder "[Screenshot: ...]"
-4. **Tables**: Format dengan border dan zebra striping
-5. **Icons**: Gunakan emoji atau Unicode symbols
-6. **Code blocks**: Syntax highlighting dengan gray background
-7. **Callouts**: 
-   - ℹ️ Info (blue box)
-   - ⚠️ Warning (yellow box)
-   - ✅ Success (green box)
-   - ❌ Error (red box)
-8. **Page breaks**: Jelas antar section
-9. **TOC**: Auto-generate table of contents di awal
-10. **Index**: Buat index di akhir (optional)
+**Langkah Pertama:**
+1. Login ke aplikasi
+2. Explore fitur-fitur yang ada
+3. Mulai gunakan untuk kegiatan sehari-hari
+4. Berikan feedback untuk perbaikan
+
+**Motto Kami:**
+> "Digitalisasi Pendidikan untuk Masa Depan yang Lebih Baik"
 
 ---
 
-## ✅ CHECKLIST COMPLETION:
+**Versi**: 1.0  
+**Tanggal**: Oktober 2024  
+**Status**: Production Ready (75-80%)
+
+**© 2024 Yayasan Fathus Salafi**  
+**Dikembangkan dengan ❤️ untuk pendidikan yang lebih baik**
+
+---
+
+## 🎨 CATATAN UNTUK PEMBUAT PDF:
+
+**Desain Guidelines:**
+
+### Font yang Direkomendasikan:
+- Judul: **Poppins Bold** (besar, tebal)
+- Subjudul: **Poppins SemiBold**
+- Isi: **Open Sans Regular** (mudah dibaca)
+- Kode/teknis: **Courier New** (jika ada)
+
+### Warna yang Digunakan:
+- **Ungu utama**: #4F46E5 (untuk header, tombol, aksen)
+- **Hijau**: #10B981 (untuk success, checklist)
+- **Kuning**: #F59E0B (untuk warning, pending)
+- **Merah**: #EF4444 (untuk error, alert)
+- **Abu-abu**: #6B7280 (untuk teks biasa)
+- **Background**: #F9FAFB (abu muda)
+
+### Layout Halaman:
+- **Ukuran**: A4 (210 x 297 mm)
+- **Margin**: 2cm semua sisi
+- **Header**: Logo FS (kanan atas)
+- **Footer**: Halaman X dari Y + "SIAKAD Fathus Salafi v1.0"
+
+### Elemen Visual:
+- 📌 Gunakan emoji untuk icon (lebih friendly)
+- 📸 Tambahkan placeholder screenshot: `[Screenshot: Deskripsi]`
+- 📋 Tabel dengan border & zebra striping (baris selang-seling)
+- 💡 Kotak tip dengan background kuning muda
+- ⚠️ Kotak warning dengan background merah muda
+- ✅ Kotak success dengan background hijau muda
+
+### Struktur:
+1. Cover page dengan logo besar
+2. Daftar isi (auto-generate)
+3. Isi sesuai halaman 1-11
+4. Back cover dengan statistik & kontak
+
+---
+
+## ✅ CHECKLIST LENGKAP:
 
 Pastikan PDF mencakup:
-- [x] Cover page profesional
-- [x] Executive summary
-- [x] Fitur lengkap per role (6 roles)
-- [x] Technical specifications
-- [x] UI/UX showcase
-- [x] Installation guide
-- [x] Deployment guide
-- [x] User guides (Admin, Siswa, Guru)
-- [x] Troubleshooting
-- [x] Roadmap (75-80% status)
-- [x] Support info
-- [x] Credits
-- [x] Appendix (tables, env vars, API)
-- [x] Back cover
+- [x] Cover page user-friendly (bukan teknis)
+- [x] Penjelasan SIAKAD untuk non-IT
+- [x] Panduan per role dengan bahasa sederhana
+- [x] Step-by-step cara pakai (dengan screenshot placeholder)
+- [x] Tips & trik praktis
+- [x] Troubleshooting masalah umum
+- [x] Kontak bantuan
+- [x] Roadmap fitur (user perspective)
+- [x] Penutup motivasi
 
-**Target:** Minimal 18 halaman, maksimal 25 halaman  
-**Format:** PDF dengan bookmark/TOC untuk navigasi  
-**Size:** < 10MB (compress images jika perlu)
+**Target Audience**: Guru, Siswa, Orang Tua, Staff (BUKAN Developer)  
+**Bahasa**: Indonesia, friendly, tidak teknis  
+**Panjang**: 10-15 halaman  
+**Format**: PDF dengan bookmark untuk navigasi mudah
 
 ---
 
-**GOOD LUCK! 🚀**
+**Selamat membuat dokumentasi! 📄✨**

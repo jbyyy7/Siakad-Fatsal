@@ -155,6 +155,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </div>
         </div>
 
+        {/* About Link */}
+        <div className="text-center border-t border-gray-200 pt-4">
+          <a 
+            href="/about"
+            className="inline-flex items-center justify-center text-sm text-gray-600 hover:text-brand-600 transition-colors group"
+          >
+            <svg className="w-5 h-5 mr-2 group-hover:text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">Tentang SIAKAD</span>
+          </a>
+          <p className="text-xs text-gray-500 mt-2">
+            Pelajari fitur dan cara menggunakan aplikasi
+          </p>
+        </div>
+
         {/* Version Footer */}
         <div className="text-center text-xs text-gray-500 space-y-1">
           <p>© 2025 SIAKAD Fathus Salafi</p>
@@ -170,6 +186,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </span>
           </p>
         </div>
+      </div>
+      
+      {/* Mobile Bottom Info Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 text-center sm:hidden shadow-lg z-50">
+        <a
+          href="/about"
+          className="text-sm text-brand-600 font-medium hover:text-brand-700 inline-flex items-center justify-center"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          📱 Pelajari lebih lanjut tentang SIAKAD →
+        </a>
       </div>
     </div>
   );
