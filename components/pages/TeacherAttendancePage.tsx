@@ -31,12 +31,18 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
 
   async function loadTeachers() {
     try {
-      const { data, error } = await supabase
+      // Build query with conditional school_id filter
+      let query = supabase
         .from('profiles')
         .select('*')
-        .in('role', ['Guru', 'Kepala Sekolah', 'Staff'])
-        .eq('school_id', currentUser.schoolId)
-        .order('name');
+        .in('role', ['Guru', 'Kepala Sekolah', 'Staff']);
+      
+      // Only add school_id filter if it exists (avoid school_id=eq.null error)
+      if (currentUser.schoolId) {
+        query = query.eq('school_id', currentUser.schoolId);
+      }
+      
+      const { data, error } = await query.order('full_name');
 
       if (error) throw error;
 
@@ -44,7 +50,7 @@ export default function TeacherAttendancePage({ currentUser }: TeacherAttendance
         id: p.id,
         email: p.email || '',
         identityNumber: p.identity_number || '',
-        name: p.name || '',
+        name: p.full_name || '',
         role: p.role || '',
         avatarUrl: p.avatar_url || '',
         schoolId: p.school_id,
