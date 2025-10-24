@@ -11,6 +11,10 @@ import EmptyState from '../ui/EmptyState';
 import { PlusIcon } from '../icons/PlusIcon';
 import { PencilIcon } from '../icons/PencilIcon';
 import { TrashIcon } from '../icons/TrashIcon';
+import { IdentificationIcon } from '../icons/IdentificationIcon';
+import { UserGroupIcon } from '../icons/UserGroupIcon';
+import { AcademicCapIcon } from '../icons/AcademicCapIcon';
+import { BuildingLibraryIcon } from '../icons/BuildingLibraryIcon';
 import ClassForm from '../forms/ClassForm';
 
 const ManageClassesPage: React.FC = () => {
@@ -22,6 +26,15 @@ const ManageClassesPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClassWithStudents, setSelectedClassWithStudents] = useState<any>(null);
     const [initialSchoolIdForNewClass, setInitialSchoolIdForNewClass] = useState<string | undefined>();
+    
+    // Calculate stats
+    const totalStudentsInClasses = useMemo(() => {
+        return classes.reduce((sum, cls) => sum + (cls.studentIds?.length || 0), 0);
+    }, [classes]);
+    
+    const classesWithTeachers = useMemo(() => {
+        return classes.filter(cls => cls.homeroomTeacherId).length;
+    }, [classes]);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -108,8 +121,55 @@ const ManageClassesPage: React.FC = () => {
     }, {} as Record<string, Class[]>), [classes]);
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Kelas</h2>
+        <div className="p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
+                <h2 className="text-3xl font-bold mb-2">Kelola Kelas</h2>
+                <p className="text-indigo-100">Manajemen kelas dan penempatan siswa</p>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-indigo-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Total Kelas</p>
+                            <p className="text-3xl font-bold text-indigo-600">{isLoading ? '...' : classes.length}</p>
+                        </div>
+                        <IdentificationIcon className="h-10 w-10 text-indigo-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Total Siswa</p>
+                            <p className="text-3xl font-bold text-purple-600">{isLoading ? '...' : totalStudentsInClasses}</p>
+                        </div>
+                        <UserGroupIcon className="h-10 w-10 text-purple-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Wali Kelas</p>
+                            <p className="text-3xl font-bold text-green-600">{isLoading ? '...' : classesWithTeachers}</p>
+                        </div>
+                        <AcademicCapIcon className="h-10 w-10 text-green-200" />
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase">Sekolah</p>
+                            <p className="text-3xl font-bold text-blue-600">{isLoading ? '...' : schools.length}</p>
+                        </div>
+                        <BuildingLibraryIcon className="h-10 w-10 text-blue-200" />
+                    </div>
+                </div>
+            </div>
             
             {isLoading ? (
                 <Loading text="Memuat data kelas..." />
@@ -122,12 +182,18 @@ const ManageClassesPage: React.FC = () => {
                         />
                     ) : (
                         schools.map(school => (
-                        <Card key={school.id}>
-                            <div className="flex justify-between items-center p-4 border-b">
-                                <h3 className="text-lg font-semibold">{school.name}</h3>
+                        <div key={school.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div className="flex justify-between items-center p-5 bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-indigo-200">
+                                <div className="flex items-center">
+                                    <BuildingLibraryIcon className="h-6 w-6 text-indigo-600 mr-3" />
+                                    <h3 className="text-lg font-bold text-gray-800">{school.name}</h3>
+                                    <span className="ml-3 px-2 py-1 text-xs font-semibold bg-indigo-100 text-indigo-700 rounded-full">
+                                        {(classesBySchool[school.id] || []).length} kelas
+                                    </span>
+                                </div>
                                 <button
                                     onClick={() => openModal(null, school.id)}
-                                    className="flex items-center text-sm px-3 py-1.5 bg-brand-100 text-brand-700 font-semibold rounded-md hover:bg-brand-200"
+                                    className="flex items-center text-sm px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
                                 >
                                     <PlusIcon className="h-4 w-4 mr-1" />
                                     Tambah Kelas
@@ -159,7 +225,7 @@ const ManageClassesPage: React.FC = () => {
                                     </tbody>
                                 </table>
                             </div>
-                        </Card>
+                        </div>
                     ))
                     )}
                 </div>
