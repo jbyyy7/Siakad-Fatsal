@@ -32,7 +32,7 @@ import TeachingJournalPage from './pages/TeachingJournalPage';
 import GradesPage from './pages/GradesPage';
 import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
-import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import AccountSettingsPage from './pages/AccountSettingsPage';
 // FIX: Import AdminAttendancePage and AdminGradesPage, which were previously missing files.
 import AdminAttendancePage from './pages/AdminAttendancePage';
 import AdminGradesPage from './pages/AdminGradesPage';
@@ -183,7 +183,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
           <Routes>
             <Route path="/" element={renderDashboardByRole()} />
-            <Route path="/pengaturan-akun" element={<ProfileSettingsPage user={user} />} />
+            <Route path="/pengaturan-akun" element={<AccountSettingsPage user={user} onUpdate={(updatedUser) => console.log('User updated:', updatedUser)} />} />
             {renderRoutesByRole()}
             {/* Fallback route can be added here for 404 */}
           </Routes>
