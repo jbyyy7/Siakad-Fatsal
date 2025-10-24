@@ -32,6 +32,7 @@ import TeachingJournalPage from './pages/TeachingJournalPage';
 import GradesPage from './pages/GradesPage';
 import ClassSchedulePage from './pages/ClassSchedulePage';
 import MyAttendancePage from './pages/MyAttendancePage';
+import MateriPelajaranPage from './pages/MateriPelajaranPage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
 // Monitoring Pages
 import MonitoringAkademikPage from './pages/MonitoringAkademikPage';
@@ -165,6 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <>
             <Route path="/lihat-nilai" element={<GradesPage user={user} />} />
             <Route path="/jadwal-pelajaran" element={<ClassSchedulePage user={user} />} />
+            <Route path="/materi" element={<MateriPelajaranPage user={user} />} />
             <Route path="/absensi" element={<MyAttendancePage user={user} />} />
             <Route path="/qr-gerbang" element={<StudentGateQRPage />} />
             <Route path="/rapor-saya" element={<ReportCardViewPage />} />
