@@ -292,7 +292,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function untuk validasi nomor induk (NIS/NIP/NIK) - cek apakah sudah digunakan
-CREATE OR REPLACE FUNCTION get_email_from_identity(identity_number_input TEXT)
+DROP FUNCTION IF EXISTS get_email_from_identity(TEXT);
+CREATE OR REPLACE FUNCTION get_email_from_identity(identity_num TEXT)
 RETURNS TEXT AS $$
 DECLARE
     user_email TEXT;
@@ -300,7 +301,7 @@ BEGIN
     -- Cari email berdasarkan identity_number
     SELECT email INTO user_email
     FROM profiles
-    WHERE identity_number = identity_number_input
+    WHERE identity_number = identity_num
     LIMIT 1;
     
     RETURN user_email;
