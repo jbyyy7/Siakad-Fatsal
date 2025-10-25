@@ -735,4 +735,36 @@ export const dataService = {
     const { error } = await supabase.from('teacher_attendance').update(updates).eq('id', id);
     if (error) throw error;
   },
+
+  // CLASS SCHEDULES MANAGEMENT
+  async createSchedule(schedule: {
+    class_id: string;
+    subject_id: string;
+    teacher_id: string;
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    room?: string;
+  }): Promise<void> {
+    const { error } = await supabase.from('class_schedules').insert(schedule);
+    if (error) throw error;
+  },
+
+  async updateSchedule(id: string, updates: {
+    class_id?: string;
+    subject_id?: string;
+    teacher_id?: string;
+    day_of_week?: number;
+    start_time?: string;
+    end_time?: string;
+    room?: string;
+  }): Promise<void> {
+    const { error } = await supabase.from('class_schedules').update(updates).eq('id', id);
+    if (error) throw error;
+  },
+
+  async deleteSchedule(id: string): Promise<void> {
+    const { error } = await supabase.from('class_schedules').delete().eq('id', id);
+    if (error) throw error;
+  },
 };

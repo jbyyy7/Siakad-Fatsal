@@ -19,6 +19,7 @@ import ManageSchoolsPage from './pages/ManageSchoolsPage';
 import ManageSubjectsPage from './pages/ManageSubjectsPage';
 import ManageClassesPage from './pages/ManageClassesPage';
 import ManageHomeroomTeachersPage from './pages/ManageHomeroomTeachersPage';
+import ManageSchedulesPage from './pages/ManageSchedulesPage';
 import SystemSettingsPage from './pages/SystemSettingsPage';
 import AcademicReportPage from './pages/AcademicReportPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
@@ -92,6 +93,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/kelola-mapel" element={<ManageSubjectsPage />} />
             <Route path="/kelola-kelas" element={<ManageClassesPage />} />
             <Route path="/kelola-wali-kelas" element={<ManageHomeroomTeachersPage currentUser={user} />} />
+            <Route path="/kelola-jadwal" element={<ManageSchedulesPage />} />
             <Route path="/monitoring-akademik" element={<MonitoringAkademikPage />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
@@ -111,6 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/manage-users" element={<ManageUsersPage />} />
             <Route path="/manage-classes" element={<ManageClassesPage />} />
             <Route path="/manage-subjects" element={<ManageSubjectsPage />} />
+            <Route path="/kelola-jadwal" element={<ManageSchedulesPage />} />
             <Route path="/student-attendance" element={<AdminAttendancePage user={user} />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
             <Route path="/absensi-saya" element={<SelfAttendancePage user={user} />} />
