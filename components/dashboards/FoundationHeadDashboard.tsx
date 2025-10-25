@@ -31,43 +31,42 @@ const FoundationHeadDashboard: React.FC<FoundationHeadDashboardProps> = ({ user 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // TODO: Replace with actual API call
-        const demoSchoolsData: SchoolStats[] = [
-          {
-            id: '1',
-            name: 'SMA Al-Fatih Jakarta',
-            studentCount: 450,
-            teacherCount: 35,
-            averageGrade: 85.5,
-            attendanceRate: 94.2
-          },
-          {
-            id: '2',
-            name: 'SMA Al-Fatih Bogor',
-            studentCount: 380,
-            teacherCount: 28,
-            averageGrade: 82.3,
-            attendanceRate: 91.8
-          },
-          {
-            id: '3',
-            name: 'SMA Al-Fatih Depok',
-            studentCount: 420,
-            teacherCount: 32,
-            averageGrade: 88.7,
-            attendanceRate: 95.5
-          },
-          {
-            id: '4',
-            name: 'SMA Al-Fatih Tangerang',
-            studentCount: 350,
-            teacherCount: 26,
-            averageGrade: 81.9,
-            attendanceRate: 90.3
-          },
-        ];
+        // Fetch all schools and their data
+        const schools = await dataService.getSchools();
+        
+        // Calculate stats for each school
+        const schoolStatsData: SchoolStats[] = await Promise.all(
+          schools.map(async (school: any) => {
+            const [schoolStudents, schoolTeachers, schoolGrades, schoolAttendance] = await Promise.all([
+              dataService.getUsers({ role: 'Student' as any, schoolId: school.id }),
+              dataService.getUsers({ role: 'Teacher' as any, schoolId: school.id }),
+              dataService.getGradesForAdmin({ schoolId: school.id }),
+              dataService.getAttendanceForAdmin({ date: new Date().toISOString().split('T')[0], schoolId: school.id })
+            ]);
 
-        setSchoolsData(demoSchoolsData);
+            // Calculate average grade from grades data
+            const avgGrade = schoolGrades.length > 0
+              ? schoolGrades.reduce((sum: number, g: any) => sum + g.score, 0) / schoolGrades.length
+              : 0;
+
+            // Calculate attendance rate from attendance records
+            const hadirCount = schoolAttendance.filter((a: any) => a.status === 'Hadir').length;
+            const attendanceRate = schoolAttendance.length > 0
+              ? (hadirCount / schoolAttendance.length) * 100
+              : 0;
+
+            return {
+              id: school.id,
+              name: school.name,
+              studentCount: schoolStudents.length,
+              teacherCount: schoolTeachers.length,
+              averageGrade: Math.round(avgGrade * 10) / 10,
+              attendanceRate: Math.round(attendanceRate * 10) / 10
+            };
+          })
+        );
+
+        setSchoolsData(schoolStatsData);
       } catch (error) {
         console.error("Failed to fetch foundation head dashboard stats:", error);
       } finally {

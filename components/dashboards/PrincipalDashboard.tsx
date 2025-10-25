@@ -33,9 +33,10 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user }) => {
       try {
         const filters = user.schoolId ? { schoolId: user.schoolId } : {};
         
-        const [teachers, students] = await Promise.all([
+        const [teachers, students, classes] = await Promise.all([
           dataService.getUsers({ role: UserRole.TEACHER, ...filters }),
-          dataService.getUsers({ role: UserRole.STUDENT, ...filters })
+          dataService.getUsers({ role: UserRole.STUDENT, ...filters }),
+          dataService.getClasses(filters)
         ]);
         
         setStats({
@@ -43,16 +44,41 @@ const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({ user }) => {
           studentCount: students.length
         });
 
-        // Demo class performance data
-        const demoClassData: ClassPerformance[] = [
-          { className: 'X IPA 1', studentCount: 36, averageGrade: 85.5, attendanceRate: 94.2 },
-          { className: 'X IPA 2', studentCount: 35, averageGrade: 83.2, attendanceRate: 92.8 },
-          { className: 'XI IPA 1', studentCount: 34, averageGrade: 87.3, attendanceRate: 95.5 },
-          { className: 'XI IPA 2', studentCount: 33, averageGrade: 84.8, attendanceRate: 93.1 },
-          { className: 'XII IPA 1', studentCount: 32, averageGrade: 88.9, attendanceRate: 96.2 },
-          { className: 'XII IPA 2', studentCount: 31, averageGrade: 86.7, attendanceRate: 94.8 },
-        ];
-        setClassData(demoClassData);
+        // Calculate real class performance data
+        const classPerformanceData: ClassPerformance[] = await Promise.all(
+          classes.map(async (cls: any) => {
+            const classStudents = students.filter((s: any) => s.classId === cls.id);
+            
+            // Fetch grades and attendance for this class
+            const [classGrades, classAttendance] = await Promise.all([
+              dataService.getGradesForAdmin({ classId: cls.id }),
+              dataService.getAttendanceForAdmin({ 
+                date: new Date().toISOString().split('T')[0], 
+                classId: cls.id 
+              })
+            ]);
+
+            // Calculate average grade for this class
+            const avgGrade = classGrades.length > 0
+              ? classGrades.reduce((sum: number, g: any) => sum + g.score, 0) / classGrades.length
+              : 0;
+
+            // Calculate attendance rate for this class
+            const hadirCount = classAttendance.filter((a: any) => a.status === 'Hadir').length;
+            const attendanceRate = classAttendance.length > 0
+              ? (hadirCount / classAttendance.length) * 100
+              : 0;
+
+            return {
+              className: cls.name,
+              studentCount: classStudents.length,
+              averageGrade: Math.round(avgGrade * 10) / 10,
+              attendanceRate: Math.round(attendanceRate * 10) / 10
+            };
+          })
+        );
+
+        setClassData(classPerformanceData);
 
       } catch (error) {
         console.error("Failed to fetch principal dashboard stats:", error);

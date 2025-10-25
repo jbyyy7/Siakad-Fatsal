@@ -28,6 +28,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
   const [showAIChat, setShowAIChat] = useState(false);
   const [grades, setGrades] = useState<{ subject: string; score: number; grade: string; }[]>([]);
   const [attendancePercentage, setAttendancePercentage] = useState<number | null>(null);
+  const [attendanceStats, setAttendanceStats] = useState({ hadir: 0, izin: 0, sakit: 0, alpha: 0 });
+  const [averageGrade, setAverageGrade] = useState<number | null>(null);
+  const [todaySchedule, setTodaySchedule] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,12 +43,31 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
         
         setGrades(gradesData);
 
+        // Calculate average grade
+        if (gradesData.length > 0) {
+          const total = gradesData.reduce((sum: number, g: any) => sum + g.score, 0);
+          setAverageGrade(Math.round((total / gradesData.length) * 10) / 10);
+        } else {
+          setAverageGrade(0);
+        }
+
+        // Calculate attendance stats
         if (attendanceData.length > 0) {
-          const hadirCount = attendanceData.filter(a => a.status === 'Hadir').length;
+          const hadirCount = attendanceData.filter((a: any) => a.status === 'Hadir').length;
+          const izinCount = attendanceData.filter((a: any) => a.status === 'Izin').length;
+          const sakitCount = attendanceData.filter((a: any) => a.status === 'Sakit').length;
+          const alphaCount = attendanceData.filter((a: any) => a.status === 'Alpha').length;
+          
+          setAttendanceStats({ hadir: hadirCount, izin: izinCount, sakit: sakitCount, alpha: alphaCount });
           setAttendancePercentage(Math.round((hadirCount / attendanceData.length) * 100));
         } else {
           setAttendancePercentage(100);
+          setAttendanceStats({ hadir: 0, izin: 0, sakit: 0, alpha: 0 });
         }
+
+        // TODO: Fetch today's schedule when API method is available
+        // For now, leaving empty until schedule API is implemented
+        setTodaySchedule([]);
 
       } catch (error) {
         console.error("Failed to fetch student dashboard data:", error);
@@ -85,7 +107,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 uppercase">Nilai Rata-rata</p>
-              <p className="text-3xl font-bold text-blue-600">85.5</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {isLoading ? '...' : (averageGrade !== null ? averageGrade : '-')}
+              </p>
             </div>
             <ChartBarIcon className="h-10 w-10 text-blue-200" />
           </div>
@@ -104,8 +128,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
         <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase">Tugas Selesai</p>
-              <p className="text-3xl font-bold text-purple-600">12/15</p>
+              <p className="text-xs text-gray-500 uppercase">Mata Pelajaran</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {isLoading ? '...' : grades.length}
+              </p>
             </div>
             <ClipboardDocumentListIcon className="h-10 w-10 text-purple-200" />
           </div>
@@ -114,8 +140,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
         <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-amber-500 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase">Poin Badge</p>
-              <p className="text-3xl font-bold text-amber-600">1,250</p>
+              <p className="text-xs text-gray-500 uppercase">Total Nilai</p>
+              <p className="text-3xl font-bold text-amber-600">
+                {isLoading ? '...' : grades.length}
+              </p>
             </div>
             <TrophyIcon className="h-10 w-10 text-amber-200" />
           </div>
@@ -174,30 +202,22 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
               Jadwal Hari Ini
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
-                <div>
-                  <p className="text-sm text-gray-600">⏰ 07:30 - 09:00</p>
-                  <p className="font-bold text-gray-800">Matematika</p>
-                  <p className="text-xs text-gray-500">Guru: Bu Siti</p>
-                </div>
-                <ChartBarIcon className="h-10 w-10 text-blue-400" />
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
-                <div>
-                  <p className="text-sm text-gray-600">⏰ 10:00 - 11:30</p>
-                  <p className="font-bold text-gray-800">Bahasa Indonesia</p>
-                  <p className="text-xs text-gray-500">Guru: Pak Ahmad</p>
-                </div>
-                <BookOpenIcon className="h-10 w-10 text-green-400" />
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
-                <div>
-                  <p className="text-sm text-gray-600">⏰ 13:00 - 14:30</p>
-                  <p className="font-bold text-gray-800">Fisika</p>
-                  <p className="text-xs text-gray-500">Guru: Pak Budi</p>
-                </div>
-                <BeakerIcon className="h-10 w-10 text-purple-400" />
-              </div>
+              {isLoading ? (
+                <p className="text-gray-500 text-center py-4">Memuat jadwal...</p>
+              ) : todaySchedule.length > 0 ? (
+                todaySchedule.map((schedule, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
+                    <div>
+                      <p className="text-sm text-gray-600">⏰ {schedule.start_time} - {schedule.end_time}</p>
+                      <p className="font-bold text-gray-800">{schedule.subject_name}</p>
+                      <p className="text-xs text-gray-500">Guru: {schedule.teacher_name}</p>
+                    </div>
+                    <BookOpenIcon className="h-10 w-10 text-blue-400" />
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">Tidak ada jadwal hari ini</p>
+              )}
             </div>
             <Link to="/jadwal-pelajaran" className="mt-4 inline-block text-sm font-semibold text-blue-600 hover:text-blue-800">
               Lihat Jadwal Lengkap →
@@ -247,11 +267,11 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
               <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">18</p>
+                <p className="text-2xl font-bold">{attendanceStats.hadir}</p>
                 <p className="text-xs text-green-100">Hadir</p>
               </div>
               <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">2</p>
+                <p className="text-2xl font-bold">{attendanceStats.izin}</p>
                 <p className="text-xs text-green-100">Izin</p>
               </div>
             </div>
@@ -267,18 +287,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
               Tugas Mendatang
             </h3>
             <div className="space-y-3">
-              <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-l-4 border-amber-500">
-                <p className="font-semibold text-gray-800 text-sm">PR Matematika</p>
-                <p className="text-xs text-gray-600">Deadline: Besok, 15:00</p>
-              </div>
-              <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
-                <p className="font-semibold text-gray-800 text-sm">Essay Bahasa Indonesia</p>
-                <p className="text-xs text-gray-600">Deadline: Jumat, 10:00</p>
-              </div>
-              <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
-                <p className="font-semibold text-gray-800 text-sm">Laporan Praktikum Fisika</p>
-                <p className="text-xs text-gray-600">Deadline: Senin, 08:00</p>
-              </div>
+              <p className="text-gray-500 text-center py-8 text-sm">
+                Fitur tugas/assignment belum tersedia.<br />
+                Akan segera hadir! 🚀
+              </p>
             </div>
           </div>
         </div>
