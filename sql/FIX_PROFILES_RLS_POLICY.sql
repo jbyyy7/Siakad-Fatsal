@@ -4,13 +4,17 @@
 -- Supaya semua role bisa read profiles yang diperlukan
 
 -- 1. DROP semua existing policies yang mungkin restrictive
+-- DROP OLD policies
 DROP POLICY IF EXISTS "Users can view profiles" ON profiles;
 DROP POLICY IF EXISTS "Admin can manage profiles" ON profiles;
 DROP POLICY IF EXISTS "Staff can manage profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Public profiles readable by authenticated users" ON profiles;
 DROP POLICY IF EXISTS "Admin and Staff can manage all profiles" ON profiles;
+
+-- DROP NEW policies (case sensitive!)
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Admin can manage all profiles" ON profiles;
 DROP POLICY IF EXISTS "Staff can manage their school profiles" ON profiles;
 DROP POLICY IF EXISTS "Teachers can view their students" ON profiles;
 DROP POLICY IF EXISTS "Principals can view their school profiles" ON profiles;
