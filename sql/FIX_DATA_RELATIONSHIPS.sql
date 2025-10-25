@@ -142,21 +142,35 @@ WHERE EXISTS (
 -- 3. VALIDASI CONSTRAINT (RUN AFTER FIX)
 -- ============================================================================
 
--- 3.1. Tambahkan constraint untuk memastikan wali kelas satu sekolah dengan kelasnya
--- DROP jika sudah ada
-ALTER TABLE classes 
-DROP CONSTRAINT IF EXISTS classes_homeroom_teacher_same_school;
+-- 3.1. Tambahkan trigger untuk memastikan wali kelas satu sekolah dengan kelasnya
+-- (Constraint tidak bisa pakai subquery, jadi gunakan trigger)
+CREATE OR REPLACE FUNCTION validate_homeroom_teacher_school()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Cek apakah wali kelas dari sekolah yang sama dengan kelas
+    IF NEW.homeroom_teacher_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM profiles p
+            WHERE p.id = NEW.homeroom_teacher_id
+            AND p.school_id = NEW.school_id
+        ) THEN
+            RAISE EXCEPTION 'Wali kelas harus dari sekolah yang sama dengan kelas';
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- Tambah constraint baru
-ALTER TABLE classes
-ADD CONSTRAINT classes_homeroom_teacher_same_school
-CHECK (
-    homeroom_teacher_id IS NULL
-    OR
-    (
-        SELECT school_id FROM profiles WHERE id = homeroom_teacher_id
-    ) = school_id
-);
+-- Drop trigger jika sudah ada
+DROP TRIGGER IF EXISTS homeroom_teacher_school_validation ON classes;
+
+-- Tambah trigger
+CREATE TRIGGER homeroom_teacher_school_validation
+    BEFORE INSERT OR UPDATE ON classes
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_homeroom_teacher_school();
 
 -- 3.2. Tambahkan function untuk validasi class_members
 CREATE OR REPLACE FUNCTION validate_class_member_school()
