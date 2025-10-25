@@ -114,13 +114,19 @@ export const dataService = {
   async getUsers(filters?: { role?: UserRole; schoolId?: string }): Promise<User[]> {
     let query = supabase.from('profiles').select('*, school:schools(name)');
     if (filters?.role) {
+      console.log('🔍 Filtering users by role:', filters.role);
       query = query.eq('role', filters.role);
     }
     if (filters?.schoolId) {
+      console.log('🔍 Filtering users by schoolId:', filters.schoolId);
       query = query.eq('school_id', filters.schoolId);
     }
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('❌ getUsers error:', error);
+      throw error;
+    }
+    console.log(`✅ getUsers returned ${data?.length || 0} users`);
     return data.map(mapUserFromDb);
   },
 
@@ -361,7 +367,7 @@ export const dataService = {
     *, 
     school:schools(name), 
     homeroom_teacher:profiles(full_name),
-    class_members!inner(profile_id, role)
+    class_members(profile_id, role)
   `);
   if (filters?.teacherId) {
     query = query.eq('homeroom_teacher_id', filters.teacherId);

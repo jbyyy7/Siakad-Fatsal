@@ -45,6 +45,13 @@ const ManageClassesPage: React.FC = () => {
                 dataService.getUsers({ role: UserRole.TEACHER }),
                 dataService.getUsers({ role: UserRole.STUDENT }),
             ]);
+            
+            console.log('📊 Data Fetched:');
+            console.log('- Classes:', classesData.length);
+            console.log('- Schools:', schoolsData.length);
+            console.log('- Teachers:', teachersData.length, teachersData);
+            console.log('- Students:', studentsData.length, studentsData);
+            
             setClasses(classesData);
             setSchools(schoolsData);
             setAllTeachers(teachersData);
