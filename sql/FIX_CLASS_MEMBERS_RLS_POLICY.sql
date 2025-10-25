@@ -19,8 +19,8 @@ ALTER TABLE class_members ENABLE ROW LEVEL SECURITY;
 
 -- 3. CREATE COMPREHENSIVE POLICIES
 
--- Policy 1: Admin & Staff - Full Access (SELECT, INSERT, UPDATE, DELETE)
-CREATE POLICY "Admin and Staff can manage all class members"
+-- Policy 1: Admin - Full Access to ALL (SELECT, INSERT, UPDATE, DELETE)
+CREATE POLICY "Admin can manage all class members"
 ON class_members
 FOR ALL
 TO authenticated
@@ -28,18 +28,46 @@ USING (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('Admin', 'Staff')
+    AND profiles.role = 'Admin'
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM profiles
     WHERE profiles.id = auth.uid()
-    AND profiles.role IN ('Admin', 'Staff')
+    AND profiles.role = 'Admin'
   )
 );
 
--- Policy 2: Guru - Bisa lihat siswa di kelas yang diajar (SELECT only)
+-- Policy 2: Staff - Full Access ONLY to their school (SELECT, INSERT, UPDATE, DELETE)
+CREATE POLICY "Staff can manage their school class members"
+ON class_members
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles staff
+    WHERE staff.id = auth.uid()
+    AND staff.role = 'Staff'
+    AND class_members.class_id IN (
+      SELECT c.id FROM classes c
+      WHERE c.school_id = staff.school_id
+    )
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles staff
+    WHERE staff.id = auth.uid()
+    AND staff.role = 'Staff'
+    AND class_members.class_id IN (
+      SELECT c.id FROM classes c
+      WHERE c.school_id = staff.school_id
+    )
+  )
+);
+
+-- Policy 3: Guru - Bisa lihat siswa di kelas yang diajar (SELECT only)
 CREATE POLICY "Teachers can view their class members"
 ON class_members
 FOR SELECT
@@ -63,7 +91,7 @@ USING (
   )
 );
 
--- Policy 3: Kepala Sekolah - Bisa lihat semua class members di sekolahnya (SELECT only)
+-- Policy 4: Kepala Sekolah - Bisa lihat semua class members di sekolahnya (SELECT only)
 CREATE POLICY "Principals can view their school class members"
 ON class_members
 FOR SELECT
@@ -80,7 +108,7 @@ USING (
   )
 );
 
--- Policy 4: Kepala Yayasan - Bisa lihat SEMUA class members (SELECT only)
+-- Policy 5: Kepala Yayasan - Bisa lihat SEMUA class members (SELECT only)
 CREATE POLICY "Foundation heads can view all class members"
 ON class_members
 FOR SELECT
@@ -93,7 +121,7 @@ USING (
   )
 );
 
--- Policy 5: Siswa - Bisa lihat teman sekelas (SELECT only)
+-- Policy 6: Siswa - Bisa lihat teman sekelas (SELECT only)
 CREATE POLICY "Students can view their classmates"
 ON class_members
 FOR SELECT
@@ -126,11 +154,12 @@ WHERE tablename = 'class_members'
 ORDER BY policyname;
 
 -- Expected policies:
--- 1. Admin and Staff can manage all class members (ALL)
--- 2. Teachers can view their class members (SELECT)
--- 3. Principals can view their school class members (SELECT)
--- 4. Foundation heads can view all class members (SELECT)
--- 5. Students can view their classmates (SELECT)
+-- 1. Admin can manage all class members (ALL) - semua sekolah
+-- 2. Staff can manage their school class members (ALL) - sekolahnya saja
+-- 3. Teachers can view their class members (SELECT)
+-- 4. Principals can view their school class members (SELECT)
+-- 5. Foundation heads can view all class members (SELECT)
+-- 6. Students can view their classmates (SELECT)
 
 -- ========================================
 -- TEST QUERIES

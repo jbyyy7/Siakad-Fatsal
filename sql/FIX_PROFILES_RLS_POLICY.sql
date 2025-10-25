@@ -22,8 +22,8 @@ FOR SELECT
 TO authenticated
 USING (id = auth.uid());
 
--- Policy 2: Admin & Staff - Full Access
-CREATE POLICY "Admin and Staff can manage all profiles"
+-- Policy 2: Admin - Full Access ke SEMUA profiles
+CREATE POLICY "Admin can manage all profiles"
 ON profiles
 FOR ALL
 TO authenticated
@@ -31,18 +31,46 @@ USING (
   EXISTS (
     SELECT 1 FROM profiles p
     WHERE p.id = auth.uid()
-    AND p.role IN ('Admin', 'Staff')
+    AND p.role = 'Admin'
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM profiles p
     WHERE p.id = auth.uid()
-    AND p.role IN ('Admin', 'Staff')
+    AND p.role = 'Admin'
   )
 );
 
--- Policy 3: Guru bisa lihat siswa di kelasnya
+-- Policy 3: Staff - Full Access ONLY ke profiles di sekolahnya
+CREATE POLICY "Staff can manage their school profiles"
+ON profiles
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles staff
+    WHERE staff.id = auth.uid()
+    AND staff.role = 'Staff'
+    AND (
+      profiles.school_id = staff.school_id
+      OR profiles.id = staff.id  -- Bisa edit profile sendiri
+    )
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles staff
+    WHERE staff.id = auth.uid()
+    AND staff.role = 'Staff'
+    AND (
+      profiles.school_id = staff.school_id
+      OR profiles.id = staff.id
+    )
+  )
+);
+
+-- Policy 4: Guru bisa lihat siswa di kelasnya
 CREATE POLICY "Teachers can view their students"
 ON profiles
 FOR SELECT
@@ -68,11 +96,14 @@ USING (
       OR
       -- Lihat semua guru (untuk kolaborasi)
       profiles.role = 'Guru'
+      OR
+      -- Lihat kepala sekolah & staff di sekolahnya
+      (profiles.role IN ('Kepala Sekolah', 'Staff') AND profiles.school_id = teacher.school_id)
     )
   )
 );
 
--- Policy 4: Kepala Sekolah bisa lihat semua di sekolahnya
+-- Policy 5: Kepala Sekolah bisa lihat semua di sekolahnya
 CREATE POLICY "Principals can view their school profiles"
 ON profiles
 FOR SELECT
@@ -90,7 +121,7 @@ USING (
   )
 );
 
--- Policy 5: Kepala Yayasan bisa lihat SEMUA
+-- Policy 6: Kepala Yayasan bisa lihat SEMUA
 CREATE POLICY "Foundation heads can view all profiles"
 ON profiles
 FOR SELECT
@@ -103,7 +134,7 @@ USING (
   )
 );
 
--- Policy 6: Siswa bisa lihat teman sekelas dan guru mereka
+-- Policy 7: Siswa bisa lihat teman sekelas dan guru mereka
 CREATE POLICY "Students can view classmates and teachers"
 ON profiles
 FOR SELECT
