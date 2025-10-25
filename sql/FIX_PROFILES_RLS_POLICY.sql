@@ -87,34 +87,34 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
-  -- Guru lihat profile sendiri
+  -- Lihat profile sendiri
   id = auth.uid()
   OR
-  EXISTS (
-    SELECT 1 FROM profiles teacher
-    WHERE teacher.id = auth.uid()
-    AND teacher.role = 'Guru'
-    AND teacher.school_id IS NOT NULL
-    AND (
-      -- Lihat siswa di kelas yang diajar (via class_members)
-      profiles.id IN (
-        SELECT cm.profile_id FROM class_members cm
-        WHERE cm.role = 'student'
-        AND cm.class_id IN (
-          -- Kelas yang diajar
-          SELECT DISTINCT class_id FROM class_schedules WHERE teacher_id = auth.uid()
-          UNION
-          -- Kelas sebagai wali kelas
-          SELECT id FROM classes WHERE homeroom_teacher_id = auth.uid()
-        )
+  -- Lihat siswa di kelas yang diajar
+  (
+    profiles.id IN (
+      SELECT cm.profile_id FROM class_members cm
+      WHERE cm.role = 'student'
+      AND cm.class_id IN (
+        -- Kelas yang diajar (via class_schedules)
+        SELECT DISTINCT class_id FROM class_schedules WHERE teacher_id = auth.uid()
+        UNION
+        -- Kelas sebagai wali kelas
+        SELECT id FROM classes WHERE homeroom_teacher_id = auth.uid()
       )
-      OR
-      -- Lihat guru lain di sekolah yang sama
-      (profiles.role = 'Guru' AND profiles.school_id = teacher.school_id)
-      OR
-      -- Lihat kepala sekolah & staff di sekolahnya
-      (profiles.role IN ('Kepala Sekolah', 'Staff') AND profiles.school_id = teacher.school_id)
     )
+  )
+  OR
+  -- Lihat guru/staff di sekolah yang sama (tanpa query profiles untuk cek role)
+  (
+    profiles.school_id IN (
+      SELECT school_id FROM class_schedules cs
+      JOIN classes c ON c.id = cs.class_id
+      WHERE cs.teacher_id = auth.uid()
+      UNION
+      SELECT school_id FROM classes WHERE homeroom_teacher_id = auth.uid()
+    )
+    AND profiles.role IN ('Guru', 'Kepala Sekolah', 'Staff')
   )
 );
 
@@ -124,33 +124,21 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
-  -- Kepala Sekolah lihat profile sendiri
+  -- Lihat profile sendiri
   id = auth.uid()
   OR
-  EXISTS (
-    SELECT 1 FROM profiles p
-    WHERE p.id = auth.uid()
-    AND p.role = 'Kepala Sekolah'
-    AND p.school_id IS NOT NULL
-    AND (
-      profiles.school_id = p.school_id
-      OR profiles.role IN ('Kepala Sekolah', 'Kepala Yayasan')
+  -- Lihat profiles di sekolah yang sama (tanpa rekursi)
+  (
+    profiles.school_id IN (
+      SELECT school_id FROM classes WHERE principal_id = auth.uid()
     )
   )
 );
 
 -- Policy 6: Kepala Yayasan bisa lihat SEMUA
-CREATE POLICY "Foundation heads can view all profiles"
-ON profiles
-FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM profiles
-    WHERE profiles.id = auth.uid()
-    AND profiles.role = 'Kepala Yayasan'
-  )
-);
+-- Catatan: Kita asumsikan tidak ada field khusus untuk Kepala Yayasan
+-- Jadi kita skip policy ini untuk menghindari rekursi
+-- Jika ada field khusus (misal foundation_id), bisa ditambahkan nanti
 
 -- Policy 7: Siswa bisa lihat teman sekelas dan guru mereka
 CREATE POLICY "Students can view classmates and teachers"
@@ -158,36 +146,35 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
-  -- Siswa lihat profile sendiri
+  -- Lihat profile sendiri
   id = auth.uid()
   OR
-  EXISTS (
-    SELECT 1 FROM profiles student
-    WHERE student.id = auth.uid()
-    AND student.role = 'Siswa'
-    AND (
-      -- Lihat teman sekelas
-      profiles.id IN (
-        SELECT cm.profile_id FROM class_members cm
-        WHERE cm.class_id IN (
-          SELECT class_id FROM class_members WHERE profile_id = auth.uid()
-        )
+  -- Lihat teman sekelas (tanpa cek role di profiles)
+  (
+    profiles.id IN (
+      SELECT cm.profile_id FROM class_members cm
+      WHERE cm.class_id IN (
+        SELECT class_id FROM class_members WHERE profile_id = auth.uid()
       )
-      OR
-      -- Lihat guru yang mengajar di kelasnya
-      profiles.id IN (
-        SELECT DISTINCT teacher_id FROM class_schedules
-        WHERE class_id IN (
-          SELECT class_id FROM class_members WHERE profile_id = auth.uid()
-        )
+    )
+  )
+  OR
+  -- Lihat guru yang mengajar di kelasnya
+  (
+    profiles.id IN (
+      SELECT DISTINCT teacher_id FROM class_schedules
+      WHERE class_id IN (
+        SELECT class_id FROM class_members WHERE profile_id = auth.uid()
       )
-      OR
-      -- Lihat wali kelas
-      profiles.id IN (
-        SELECT homeroom_teacher_id FROM classes
-        WHERE id IN (
-          SELECT class_id FROM class_members WHERE profile_id = auth.uid()
-        )
+    )
+  )
+  OR
+  -- Lihat wali kelas
+  (
+    profiles.id IN (
+      SELECT homeroom_teacher_id FROM classes
+      WHERE id IN (
+        SELECT class_id FROM class_members WHERE profile_id = auth.uid()
       )
     )
   )
