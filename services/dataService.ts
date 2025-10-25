@@ -471,7 +471,11 @@ export const dataService = {
     throw new Error('Kelas gagal dibuat');
   }
   if (studentIds && studentIds.length > 0) {
-    const members = studentIds.map((sid: string) => ({ class_id: newClass.id, student_id: sid }));
+    const members = studentIds.map((sid: string) => ({ 
+      class_id: newClass.id, 
+      profile_id: sid,
+      role: 'student'
+    }));
     const { error: memberError } = await supabase.from('class_members').insert(members);
     if (memberError) {
       console.error('[Supabase][createClass] Error inserting class_members:', memberError);
@@ -493,7 +497,11 @@ export const dataService = {
     if (deleteError) throw deleteError;
 
     if (studentIds && studentIds.length > 0) {
-        const members = studentIds.map((sid: string) => ({ class_id: id, student_id: sid }));
+        const members = studentIds.map((sid: string) => ({ 
+          class_id: id, 
+          profile_id: sid,
+          role: 'student'
+        }));
         const { error: memberError } = await supabase.from('class_members').insert(members);
         if (memberError) throw memberError;
     }
