@@ -44,6 +44,29 @@ export default function ScheduleForm({ schedule, onSuccess, onCancel, classes, s
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
+
+  // Get school_id from selected class
+  useEffect(() => {
+    if (formData.class_id) {
+      const selectedClass = classes.find(c => c.id === formData.class_id);
+      if (selectedClass?.schoolId) {
+        setSelectedSchoolId(selectedClass.schoolId);
+      }
+    } else {
+      setSelectedSchoolId('');
+    }
+  }, [formData.class_id, classes]);
+
+  // Filter subjects by school
+  const filteredSubjects = selectedSchoolId
+    ? subjects.filter(s => s.schoolId === selectedSchoolId)
+    : subjects;
+
+  // Filter teachers by school
+  const filteredTeachers = selectedSchoolId
+    ? teachers.filter(t => t.schoolId === selectedSchoolId)
+    : teachers;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,14 +139,22 @@ export default function ScheduleForm({ schedule, onSuccess, onCancel, classes, s
                 value={formData.subject_id}
                 onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!formData.class_id}
               >
-                <option value="">Pilih Mata Pelajaran</option>
-                {subjects.map((subject) => (
+                <option value="">
+                  {!formData.class_id ? 'Pilih Kelas Terlebih Dahulu' : 'Pilih Mata Pelajaran'}
+                </option>
+                {filteredSubjects.map((subject) => (
                   <option key={subject.id} value={subject.id}>
                     {subject.name}
                   </option>
                 ))}
               </select>
+              {formData.class_id && filteredSubjects.length === 0 && (
+                <p className="mt-1 text-sm text-red-500">
+                  Tidak ada mata pelajaran untuk sekolah ini
+                </p>
+              )}
             </div>
 
             {/* Guru */}
@@ -136,14 +167,22 @@ export default function ScheduleForm({ schedule, onSuccess, onCancel, classes, s
                 value={formData.teacher_id}
                 onChange={(e) => setFormData({ ...formData, teacher_id: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!formData.class_id}
               >
-                <option value="">Pilih Guru</option>
-                {teachers.map((teacher) => (
+                <option value="">
+                  {!formData.class_id ? 'Pilih Kelas Terlebih Dahulu' : 'Pilih Guru'}
+                </option>
+                {filteredTeachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
                     {teacher.name}
                   </option>
                 ))}
               </select>
+              {formData.class_id && filteredTeachers.length === 0 && (
+                <p className="mt-1 text-sm text-red-500">
+                  Tidak ada guru untuk sekolah ini
+                </p>
+              )}
             </div>
 
             {/* Hari */}

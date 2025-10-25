@@ -143,6 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
     <>
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Pengajaran</div>
       <NavItem to="/kelas-saya" icon={<UserGroupIcon className="h-5 w-5" />}>Kelas Saya</NavItem>
+      <NavItem to="/jadwal-saya" icon={<CalendarIcon className="h-5 w-5" />}>Jadwal Saya</NavItem>
       <NavItem to="/jurnal-mengajar" icon={<BookOpenIcon className="h-5 w-5" />}>Jurnal Mengajar</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Penilaian</div>
