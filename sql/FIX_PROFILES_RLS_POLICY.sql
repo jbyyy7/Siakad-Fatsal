@@ -76,10 +76,14 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
+  -- Guru lihat profile sendiri
+  id = auth.uid()
+  OR
   EXISTS (
     SELECT 1 FROM profiles teacher
     WHERE teacher.id = auth.uid()
     AND teacher.role = 'Guru'
+    AND teacher.school_id IS NOT NULL
     AND (
       -- Lihat siswa di kelas yang diajar (via class_members)
       profiles.id IN (
@@ -94,8 +98,8 @@ USING (
         )
       )
       OR
-      -- Lihat semua guru (untuk kolaborasi)
-      profiles.role = 'Guru'
+      -- Lihat guru lain di sekolah yang sama
+      (profiles.role = 'Guru' AND profiles.school_id = teacher.school_id)
       OR
       -- Lihat kepala sekolah & staff di sekolahnya
       (profiles.role IN ('Kepala Sekolah', 'Staff') AND profiles.school_id = teacher.school_id)
@@ -109,14 +113,17 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
+  -- Kepala Sekolah lihat profile sendiri
+  id = auth.uid()
+  OR
   EXISTS (
     SELECT 1 FROM profiles p
     WHERE p.id = auth.uid()
     AND p.role = 'Kepala Sekolah'
+    AND p.school_id IS NOT NULL
     AND (
       profiles.school_id = p.school_id
-      OR profiles.role = 'Kepala Sekolah' -- Bisa lihat kepala sekolah lain
-      OR profiles.role = 'Kepala Yayasan' -- Bisa lihat kepala yayasan
+      OR profiles.role IN ('Kepala Sekolah', 'Kepala Yayasan')
     )
   )
 );
@@ -140,6 +147,9 @@ ON profiles
 FOR SELECT
 TO authenticated
 USING (
+  -- Siswa lihat profile sendiri
+  id = auth.uid()
+  OR
   EXISTS (
     SELECT 1 FROM profiles student
     WHERE student.id = auth.uid()
