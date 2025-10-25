@@ -25,13 +25,16 @@ export default async function handler(req: any, res: any) {
     return res.status(400).send({ error: 'Missing fields' });
   }
   try {
-    // Create user via admin.createUser. We avoid returning any password.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Create user via admin.createUser with email auto-confirmed
     const { data: authData, error: authError } = await serverSupabase.auth.admin.createUser({
       email,
       password: password || Math.random().toString(36).slice(2, 10) + 'A1!',
-      email_confirm: true,
-    } as any);
+      email_confirm: true, // Auto-confirm email (no verification needed)
+      user_metadata: {
+        full_name: profile.full_name,
+        role: profile.role
+      }
+    });
 
     if (authError) throw authError;
     if (!authData || !authData.user) throw new Error('Failed to create auth user');
