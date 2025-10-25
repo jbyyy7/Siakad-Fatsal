@@ -387,9 +387,18 @@ export const dataService = {
   
   let classes = data.map(c => {
     // Extract student IDs from class_members
-    const studentIds = (c.class_members || [])
-      .filter((cm: any) => cm.role === 'student')
-      .map((cm: any) => cm.profile_id);
+    console.log(`🔍 [getClasses] Processing class: ${c.name}`);
+    console.log(`📊 [getClasses] class_members data:`, c.class_members);
+    
+    const allMembers = c.class_members || [];
+    console.log(`📊 [getClasses] Total members: ${allMembers.length}`);
+    
+    const students = allMembers.filter((cm: any) => cm.role === 'student');
+    console.log(`👥 [getClasses] Students filtered: ${students.length}`);
+    console.log(`👥 [getClasses] Students data:`, students);
+    
+    const studentIds = students.map((cm: any) => cm.profile_id);
+    console.log(`✅ [getClasses] Student IDs: ${studentIds.length}`, studentIds);
     
     return {
       id: c.id,
