@@ -58,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <NavItem to="/kelola-sekolah" icon={<BuildingLibraryIcon className="h-5 w-5" />}>Kelola Sekolah</NavItem>
       <NavItem to="/kelola-mapel" icon={<TagIcon className="h-5 w-5" />}>Kelola Mapel</NavItem>
       <NavItem to="/kelola-kelas" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kelas</NavItem>
+      <NavItem to="/kelola-wali-kelas" icon={<AcademicCapIcon className="h-5 w-5" />}>Kelola Wali Kelas</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Monitoring</div>
       <NavItem to="/monitoring-akademik" icon={<ChartBarIcon className="h-5 w-5" />}>Monitoring Akademik</NavItem>
@@ -124,6 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Data Sekolah</div>
       <NavItem to="/data-guru" icon={<UserGroupIcon className="h-5 w-5" />}>Data Guru</NavItem>
       <NavItem to="/data-siswa" icon={<AcademicCapIcon className="h-5 w-5" />}>Data Siswa</NavItem>
+      <NavItem to="/kelola-wali-kelas" icon={<AcademicCapIcon className="h-5 w-5" />}>Kelola Wali Kelas</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Laporan & Absensi</div>
       <NavItem to="/laporan-sekolah" icon={<ChartBarIcon className="h-5 w-5" />}>Laporan Sekolah</NavItem>

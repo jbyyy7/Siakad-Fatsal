@@ -357,7 +357,12 @@ export const dataService = {
   
   // TEACHER DATA
    async getClasses(filters?: { teacherId?: string, schoolId?: string }): Promise<Class[]> {
-  let query = supabase.from('classes').select('*, school:schools(name), homeroom_teacher:profiles(full_name)');
+  let query = supabase.from('classes').select(`
+    *, 
+    school:schools(name), 
+    homeroom_teacher:profiles(full_name),
+    class_members!inner(profile_id, role)
+  `);
   if (filters?.teacherId) {
     query = query.eq('homeroom_teacher_id', filters.teacherId);
   }
@@ -373,15 +378,23 @@ export const dataService = {
     console.error('[Supabase][getClasses] Data is null or undefined');
     throw new Error('Data kelas tidak ditemukan');
   }
-  return data.map(c => ({
-    id: c.id,
-    name: c.name,
-    schoolId: c.school_id,
-    schoolName: c.school?.name,
-    homeroomTeacherId: c.homeroom_teacher_id,
-    homeroomTeacherName: c.homeroom_teacher?.full_name,
-    academicYear: c.academic_year,
-  }));
+  return data.map(c => {
+    // Extract student IDs from class_members
+    const studentIds = (c.class_members || [])
+      .filter((cm: any) => cm.role === 'student')
+      .map((cm: any) => cm.profile_id);
+    
+    return {
+      id: c.id,
+      name: c.name,
+      schoolId: c.school_id,
+      schoolName: c.school?.name,
+      homeroomTeacherId: c.homeroom_teacher_id,
+      homeroomTeacherName: c.homeroom_teacher?.full_name,
+      academicYear: c.academic_year,
+      studentIds: studentIds,
+    };
+  });
   },
   async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
       let query = supabase.from('subjects').select('*, school:schools(name)');

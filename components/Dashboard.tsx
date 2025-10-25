@@ -18,6 +18,7 @@ import ManageUsersPage from './pages/ManageUsersPage';
 import ManageSchoolsPage from './pages/ManageSchoolsPage';
 import ManageSubjectsPage from './pages/ManageSubjectsPage';
 import ManageClassesPage from './pages/ManageClassesPage';
+import ManageHomeroomTeachersPage from './pages/ManageHomeroomTeachersPage';
 import SystemSettingsPage from './pages/SystemSettingsPage';
 import AcademicReportPage from './pages/AcademicReportPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
@@ -90,6 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/kelola-sekolah" element={<ManageSchoolsPage />} />
             <Route path="/kelola-mapel" element={<ManageSubjectsPage />} />
             <Route path="/kelola-kelas" element={<ManageClassesPage />} />
+            <Route path="/kelola-wali-kelas" element={<ManageHomeroomTeachersPage currentUser={user} />} />
             <Route path="/monitoring-akademik" element={<MonitoringAkademikPage />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
@@ -136,6 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <>
             <Route path="/data-guru" element={<TeacherDataPage user={user} />} />
             <Route path="/data-siswa" element={<StudentDataPage user={user} />} />
+            <Route path="/kelola-wali-kelas" element={<ManageHomeroomTeachersPage currentUser={user} />} />
             <Route path="/laporan-sekolah" element={<SchoolReportPage user={user} />} />
             <Route path="/teacher-attendance" element={<TeacherAttendancePage currentUser={user} />} />
             <Route path="/absensi-saya" element={<SelfAttendancePage user={user} />} />
