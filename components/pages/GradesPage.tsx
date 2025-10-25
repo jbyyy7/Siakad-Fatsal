@@ -34,78 +34,13 @@ const GradesPage: React.FC<GradesPageProps> = ({ user }) => {
     const fetchGradesData = async () => {
         setIsLoading(true);
         try {
-            // TODO: Fetch actual grades from database filtered by semester
             const [gradesData, classData] = await Promise.all([
-                dataService.getGradesForStudent(user.id),
+                dataService.getDetailedGradesForStudent(user.id, selectedSemester),
                 dataService.getClassForStudent(user.id)
             ]);
 
-            // Transform data to include all grade components
-            const transformedGrades: SubjectGrade[] = [
-                {
-                    subject: 'Matematika',
-                    subject_id: '1',
-                    tugas: 85,
-                    ulangan_harian: 88,
-                    uts: 90,
-                    uas: 87,
-                    final_score: 87.5,
-                    grade_letter: 'A'
-                },
-                {
-                    subject: 'Bahasa Indonesia',
-                    subject_id: '2',
-                    tugas: 90,
-                    ulangan_harian: 85,
-                    uts: 88,
-                    uas: 92,
-                    final_score: 88.75,
-                    grade_letter: 'A'
-                },
-                {
-                    subject: 'Bahasa Inggris',
-                    subject_id: '3',
-                    tugas: 78,
-                    ulangan_harian: 82,
-                    uts: 80,
-                    uas: 84,
-                    final_score: 81,
-                    grade_letter: 'B+'
-                },
-                {
-                    subject: 'IPA',
-                    subject_id: '4',
-                    tugas: 92,
-                    ulangan_harian: 88,
-                    uts: 90,
-                    uas: 94,
-                    final_score: 91,
-                    grade_letter: 'A'
-                },
-                {
-                    subject: 'IPS',
-                    subject_id: '5',
-                    tugas: 82,
-                    ulangan_harian: 80,
-                    uts: 78,
-                    uas: 85,
-                    final_score: 81.25,
-                    grade_letter: 'B+'
-                },
-                {
-                    subject: 'Pendidikan Agama',
-                    subject_id: '6',
-                    tugas: 95,
-                    ulangan_harian: 92,
-                    uts: 94,
-                    uas: 96,
-                    final_score: 94.25,
-                    grade_letter: 'A'
-                }
-            ];
-
-            setGrades(transformedGrades);
-            setStudentClass(classData || 'Kelas VII-A');
+            setGrades(gradesData);
+            setStudentClass(classData || 'Tidak ada kelas');
         } catch (error) {
             console.error('Failed to fetch grades:', error);
         } finally {

@@ -318,6 +318,40 @@ export const dataService = {
         grade: getGradeLetter(g.score),
     }));
   },
+
+  async getDetailedGradesForStudent(studentId: string, semester?: string): Promise<any[]> {
+    let query = supabase
+      .from('grades')
+      .select(`
+        *,
+        subject:subjects(id, name),
+        class:classes(name)
+      `)
+      .eq('student_id', studentId);
+    
+    if (semester) {
+      query = query.eq('semester', semester);
+    }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('[Supabase][getDetailedGradesForStudent] Error:', error);
+      return [];
+    }
+
+    return (data || []).map((g: any) => ({
+      subject: g.subject?.name || 'Unknown',
+      subject_id: g.subject?.id || '',
+      score: g.score,
+      final_score: g.score,
+      grade_letter: getGradeLetter(g.score),
+      semester: g.semester,
+      notes: g.notes,
+      className: g.class?.name || '',
+    }));
+  },
+
   async getAttendanceForStudent(studentId: string): Promise<{ date: string; status: AttendanceStatus }[]> {
       const { data, error } = await supabase.from('attendances').select('date, status').eq('student_id', studentId);
       if (error) throw error;
@@ -455,6 +489,67 @@ export const dataService = {
       className: s.class?.name || 'Unknown Class',
       startTime: s.start_time,
       endTime: s.end_time,
+    }));
+  },
+
+  async getScheduleForStudent(studentId: string, dayOfWeek?: number): Promise<any[]> {
+    // First get student's class(es)
+    const { data: classMemberships, error: memberError } = await supabase
+      .from('class_members')
+      .select('class_id')
+      .eq('profile_id', studentId)
+      .eq('role', 'student');
+    
+    if (memberError) {
+      console.error('[Supabase][getScheduleForStudent] Error fetching class memberships:', memberError);
+      return [];
+    }
+
+    if (!classMemberships || classMemberships.length === 0) {
+      console.warn('[Supabase][getScheduleForStudent] Student not assigned to any class');
+      return [];
+    }
+
+    const classIds = classMemberships.map(cm => cm.class_id);
+
+    // Get schedules for the student's classes
+    let query = supabase
+      .from('class_schedules')
+      .select(`
+        *,
+        class:classes(name),
+        subject:subjects(name),
+        teacher:profiles!class_schedules_teacher_id_fkey(full_name)
+      `)
+      .in('class_id', classIds);
+    
+    // Filter by day if provided
+    if (dayOfWeek !== undefined) {
+      query = query.eq('day_of_week', dayOfWeek);
+    }
+
+    query = query.order('day_of_week', { ascending: true })
+                 .order('start_time', { ascending: true });
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('[Supabase][getScheduleForStudent] Error fetching schedules:', error);
+      return [];
+    }
+    
+    return (data || []).map(s => ({
+      id: s.id,
+      dayOfWeek: s.day_of_week,
+      startTime: s.start_time,
+      endTime: s.end_time,
+      time: `${s.start_time} - ${s.end_time}`,
+      subject: s.subject?.name || 'Unknown Subject',
+      subjectName: s.subject?.name || 'Unknown Subject',
+      teacher: s.teacher?.full_name || 'Unknown Teacher',
+      teacherName: s.teacher?.full_name || 'Unknown Teacher',
+      className: s.class?.name || 'Unknown Class',
+      room: s.room || '',
     }));
   },
   

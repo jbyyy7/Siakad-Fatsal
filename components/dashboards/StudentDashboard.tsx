@@ -36,9 +36,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [gradesData, attendanceData] = await Promise.all([
+        // Get current day of week (0 = Sunday, 1 = Monday, etc.)
+        const today = new Date().getDay();
+        
+        const [gradesData, attendanceData, scheduleData] = await Promise.all([
           dataService.getGradesForStudent(user.id),
-          dataService.getAttendanceForStudent(user.id)
+          dataService.getAttendanceForStudent(user.id),
+          dataService.getScheduleForStudent(user.id, today)
         ]);
         
         setGrades(gradesData);
@@ -65,9 +69,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
           setAttendanceStats({ hadir: 0, izin: 0, sakit: 0, alpha: 0 });
         }
 
-        // TODO: Fetch today's schedule when API method is available
-        // For now, leaving empty until schedule API is implemented
-        setTodaySchedule([]);
+        // Set today's schedule from real data
+        setTodaySchedule(scheduleData);
 
       } catch (error) {
         console.error("Failed to fetch student dashboard data:", error);
@@ -208,9 +211,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user }) => {
                 todaySchedule.map((schedule, idx) => (
                   <div key={idx} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
                     <div>
-                      <p className="text-sm text-gray-600">⏰ {schedule.start_time} - {schedule.end_time}</p>
-                      <p className="font-bold text-gray-800">{schedule.subject_name}</p>
-                      <p className="text-xs text-gray-500">Guru: {schedule.teacher_name}</p>
+                      <p className="text-sm text-gray-600">⏰ {schedule.time}</p>
+                      <p className="font-bold text-gray-800">{schedule.subjectName}</p>
+                      <p className="text-xs text-gray-500">Guru: {schedule.teacherName}</p>
+                      {schedule.room && <p className="text-xs text-gray-500">Ruangan: {schedule.room}</p>}
                     </div>
                     <BookOpenIcon className="h-10 w-10 text-blue-400" />
                   </div>

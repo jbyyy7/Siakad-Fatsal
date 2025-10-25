@@ -45,49 +45,33 @@ const ClassSchedulePage: React.FC<ClassSchedulePageProps> = ({ user }) => {
             
             setClassName(studentClass);
             
-            // TODO: Fetch actual schedule from database
-            const demoSchedule: WeekSchedule = {
-                'Senin': [
-                    { time: '07:00 - 07:45', subject: 'Upacara Bendera', teacher: 'Pembina', room: 'Lapangan' },
-                    { time: '07:45 - 08:30', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
-                    { time: '08:30 - 09:15', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
-                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
-                    { time: '09:30 - 10:15', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
-                    { time: '10:15 - 11:00', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
-                    { time: '11:00 - 11:45', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
-                    { time: '11:45 - 12:15', subject: 'Istirahat', teacher: '', room: '' },
-                    { time: '12:15 - 13:00', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
-                ],
-                'Selasa': [
-                    { time: '07:00 - 07:45', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
-                    { time: '07:45 - 08:30', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
-                    { time: '08:30 - 09:15', subject: 'IPS', teacher: 'Bu Ratna', room: 'Kelas 7A' },
-                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
-                    { time: '09:30 - 10:15', subject: 'IPS', teacher: 'Bu Ratna', room: 'Kelas 7A' },
-                    { time: '10:15 - 11:00', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
-                    { time: '11:00 - 11:45', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
-                ],
-                'Rabu': [
-                    { time: '07:00 - 07:45', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
-                    { time: '07:45 - 08:30', subject: 'Matematika', teacher: 'Pak Ahmad', room: 'Kelas 7A' },
-                    { time: '08:30 - 09:15', subject: 'PJOK', teacher: 'Pak Dedi', room: 'Lapangan' },
-                    { time: '09:15 - 09:30', subject: 'Istirahat', teacher: '', room: '' },
-                    { time: '09:30 - 10:15', subject: 'PJOK', teacher: 'Pak Dedi', room: 'Lapangan' },
-                    { time: '10:15 - 11:00', subject: 'PKN', teacher: 'Bu Wati', room: 'Kelas 7A' },
-                ],
-                'Kamis': [
-                    { time: '07:00 - 07:45', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
-                    { time: '07:45 - 08:30', subject: 'IPA', teacher: 'Pak Budi', room: 'Lab IPA' },
-                    { time: '08:30 - 09:15', subject: 'Bahasa Inggris', teacher: 'Miss Linda', room: 'Kelas 7A' },
-                ],
-                'Jumat': [
-                    { time: '07:00 - 07:45', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
-                    { time: '07:45 - 08:30', subject: 'Pendidikan Agama', teacher: 'Ustadz Yusuf', room: 'Kelas 7A' },
-                    { time: '08:30 - 09:15', subject: 'Bahasa Indonesia', teacher: 'Bu Siti', room: 'Kelas 7A' },
-                ],
+            // Fetch actual schedule from database
+            const scheduleData = await dataService.getScheduleForStudent(user.id);
+            
+            // Group schedule by day
+            const groupedSchedule: WeekSchedule = {
+                'Senin': [],
+                'Selasa': [],
+                'Rabu': [],
+                'Kamis': [],
+                'Jumat': [],
             };
+            
+            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            
+            scheduleData.forEach((schedule: any) => {
+                const dayName = dayNames[schedule.dayOfWeek];
+                if (groupedSchedule[dayName]) {
+                    groupedSchedule[dayName].push({
+                        time: schedule.time,
+                        subject: schedule.subjectName,
+                        teacher: schedule.teacherName,
+                        room: schedule.room || '-',
+                    });
+                }
+            });
 
-            setScheduleData(demoSchedule);
+            setScheduleData(groupedSchedule);
         } catch (error) {
             console.error("Failed to fetch class schedule:", error);
         } finally {
