@@ -369,12 +369,12 @@ export const dataService = {
     homeroom_teacher:profiles(full_name),
     class_members(profile_id, role)
   `);
-  if (filters?.teacherId) {
-    query = query.eq('homeroom_teacher_id', filters.teacherId);
-  }
+  
+  // Filter by school if provided
   if (filters?.schoolId) {
     query = query.eq('school_id', filters.schoolId);
   }
+  
   const { data, error } = await query;
   if (error) {
     console.error('[Supabase][getClasses] Error:', error);
@@ -384,7 +384,8 @@ export const dataService = {
     console.error('[Supabase][getClasses] Data is null or undefined');
     throw new Error('Data kelas tidak ditemukan');
   }
-  return data.map(c => {
+  
+  let classes = data.map(c => {
     // Extract student IDs from class_members
     const studentIds = (c.class_members || [])
       .filter((cm: any) => cm.role === 'student')
@@ -401,6 +402,25 @@ export const dataService = {
       studentIds: studentIds,
     };
   });
+  
+  // Filter by teacher if provided (homeroom teacher OR teaching in class_schedules)
+  if (filters?.teacherId) {
+    // Get class IDs where teacher teaches from class_schedules
+    const { data: schedules } = await supabase
+      .from('class_schedules')
+      .select('class_id')
+      .eq('teacher_id', filters.teacherId);
+    
+    const teachingClassIds = new Set(schedules?.map(s => s.class_id) || []);
+    
+    // Filter classes: homeroom teacher OR teaches in class_schedules
+    classes = classes.filter(c => 
+      c.homeroomTeacherId === filters.teacherId || 
+      teachingClassIds.has(c.id)
+    );
+  }
+  
+  return classes;
   },
   async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
       let query = supabase.from('subjects').select('*, school:schools(name)');

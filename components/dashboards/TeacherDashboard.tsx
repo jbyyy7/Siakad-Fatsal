@@ -63,9 +63,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
         const journal = await dataService.getJournalForTeacher(user.id, today);
         setJournalToday(journal);
         
-        // Fetch classes taught by this teacher
-        const classes = await dataService.getClasses();
-        const myClassList = classes.filter((c: any) => c.homeroomTeacherId === user.id);
+        // Fetch classes taught by this teacher (homeroom OR teaching in schedules)
+        const myClassList = await dataService.getClasses({ teacherId: user.id });
         
         // Count total students and prepare class info
         const totalStudents = myClassList.reduce((acc: number, c: any) => acc + (c.studentIds?.length || 0), 0);

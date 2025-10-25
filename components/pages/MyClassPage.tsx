@@ -52,12 +52,12 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
       try {
         const studentsData = await dataService.getStudentsInClass(selectedClassId);
         
-        // TODO: Fetch actual stats from database
-        // For now, generate random stats for demo
+        // Set students without dummy stats
+        // Real stats will be calculated from actual attendance and grades data
         const studentsWithStats: StudentWithStats[] = studentsData.map(s => ({
           ...s,
-          attendance_rate: Math.floor(Math.random() * 30) + 70, // 70-100%
-          average_grade: Math.floor(Math.random() * 30) + 70 // 70-100
+          attendance_rate: undefined, // Will be calculated from real attendance data
+          average_grade: undefined // Will be calculated from real grades data
         }));
         
         setStudents(studentsWithStats);
@@ -93,11 +93,25 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
   const getClassStats = () => {
     if (students.length === 0) return null;
 
-    const avgAttendance = students.reduce((sum, s) => sum + (s.attendance_rate || 0), 0) / students.length;
-    const avgGrade = students.reduce((sum, s) => sum + (s.average_grade || 0), 0) / students.length;
-    const excellentStudents = students.filter(s => (s.average_grade || 0) >= 85).length;
+    // Only calculate stats if we have data
+    const studentsWithAttendance = students.filter(s => s.attendance_rate !== undefined);
+    const studentsWithGrades = students.filter(s => s.average_grade !== undefined);
+    
+    const avgAttendance = studentsWithAttendance.length > 0
+      ? studentsWithAttendance.reduce((sum, s) => sum + (s.attendance_rate || 0), 0) / studentsWithAttendance.length
+      : undefined;
+      
+    const avgGrade = studentsWithGrades.length > 0
+      ? studentsWithGrades.reduce((sum, s) => sum + (s.average_grade || 0), 0) / studentsWithGrades.length
+      : undefined;
+      
+    const excellentStudents = studentsWithGrades.filter(s => (s.average_grade || 0) >= 85).length;
 
-    return { avgAttendance, avgGrade, excellentStudents };
+    return { 
+      avgAttendance, 
+      avgGrade, 
+      excellentStudents: studentsWithGrades.length > 0 ? excellentStudents : undefined 
+    };
   };
 
   const stats = getClassStats();
@@ -152,27 +166,36 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
               </div>
               <p className="text-2xl font-bold text-blue-700">{students.length}</p>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <ClipboardDocumentListIcon className="h-5 w-5 text-green-600" />
-                <p className="text-sm text-green-600 font-medium">Rata² Kehadiran</p>
+            
+            {stats.avgAttendance !== undefined && (
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ClipboardDocumentListIcon className="h-5 w-5 text-green-600" />
+                  <p className="text-sm text-green-600 font-medium">Rata² Kehadiran</p>
+                </div>
+                <p className="text-2xl font-bold text-green-700">{stats.avgAttendance.toFixed(1)}%</p>
               </div>
-              <p className="text-2xl font-bold text-green-700">{stats.avgAttendance.toFixed(1)}%</p>
-            </div>
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <ChartBarIcon className="h-5 w-5 text-yellow-600" />
-                <p className="text-sm text-yellow-600 font-medium">Rata² Nilai</p>
+            )}
+            
+            {stats.avgGrade !== undefined && (
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ChartBarIcon className="h-5 w-5 text-yellow-600" />
+                  <p className="text-sm text-yellow-600 font-medium">Rata² Nilai</p>
+                </div>
+                <p className="text-2xl font-bold text-yellow-700">{stats.avgGrade.toFixed(1)}</p>
               </div>
-              <p className="text-2xl font-bold text-yellow-700">{stats.avgGrade.toFixed(1)}</p>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <ChartBarIcon className="h-5 w-5 text-purple-600" />
-                <p className="text-sm text-purple-600 font-medium">Nilai ≥ 85</p>
+            )}
+            
+            {stats.excellentStudents !== undefined && (
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ChartBarIcon className="h-5 w-5 text-purple-600" />
+                  <p className="text-sm text-purple-600 font-medium">Nilai ≥ 85</p>
+                </div>
+                <p className="text-2xl font-bold text-purple-700">{stats.excellentStudents}</p>
               </div>
-              <p className="text-2xl font-bold text-purple-700">{stats.excellentStudents}</p>
-            </div>
+            )}
           </div>
         )}
       </div>
@@ -237,18 +260,26 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
                         {student.identityNumber || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-semibold ${
-                          (student.attendance_rate || 0) >= 80 ? 'text-green-600' : 'text-yellow-600'
-                        }`}>
-                          {student.attendance_rate?.toFixed(1)}%
-                        </span>
+                        {student.attendance_rate !== undefined ? (
+                          <span className={`text-sm font-semibold ${
+                            student.attendance_rate >= 80 ? 'text-green-600' : 'text-yellow-600'
+                          }`}>
+                            {student.attendance_rate.toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-semibold ${
-                          (student.average_grade || 0) >= 75 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {student.average_grade?.toFixed(1)}
-                        </span>
+                        {student.average_grade !== undefined ? (
+                          <span className={`text-sm font-semibold ${
+                            student.average_grade >= 75 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {student.average_grade.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
@@ -292,19 +323,27 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white rounded p-2 text-center">
                       <p className="text-xs text-gray-600 mb-1">Kehadiran</p>
-                      <p className={`text-lg font-bold ${
-                        (student.attendance_rate || 0) >= 80 ? 'text-green-600' : 'text-yellow-600'
-                      }`}>
-                        {student.attendance_rate?.toFixed(1)}%
-                      </p>
+                      {student.attendance_rate !== undefined ? (
+                        <p className={`text-lg font-bold ${
+                          student.attendance_rate >= 80 ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {student.attendance_rate.toFixed(1)}%
+                        </p>
+                      ) : (
+                        <p className="text-lg font-bold text-gray-400">-</p>
+                      )}
                     </div>
                     <div className="bg-white rounded p-2 text-center">
                       <p className="text-xs text-gray-600 mb-1">Rata² Nilai</p>
-                      <p className={`text-lg font-bold ${
-                        (student.average_grade || 0) >= 75 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {student.average_grade?.toFixed(1)}
-                      </p>
+                      {student.average_grade !== undefined ? (
+                        <p className={`text-lg font-bold ${
+                          student.average_grade >= 75 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {student.average_grade.toFixed(1)}
+                        </p>
+                      ) : (
+                        <p className="text-lg font-bold text-gray-400">-</p>
+                      )}
                     </div>
                   </div>
                   <button
