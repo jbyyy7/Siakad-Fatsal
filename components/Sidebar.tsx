@@ -16,6 +16,7 @@ import { ClipboardDocumentListIcon } from './icons/ClipboardDocumentListIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
 import { UserCircleIcon } from './icons/UserCircleIcon';
 import { ArrowRightOnRectangleIcon } from './icons/ArrowRightOnRectangleIcon';
+import { SparklesIcon } from './icons/SparklesIcon';
 
 interface SidebarProps {
   user: User;
@@ -65,6 +66,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Gate System</div>
       <NavItem to="/absensi-gerbang" icon={<ArrowRightOnRectangleIcon className="h-5 w-5" />}>Absensi Gerbang</NavItem>
       <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>Analytics Gerbang</NavItem>
+      <NavItem to="/kelola-kartu-rfid" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kartu RFID</NavItem>
+      <NavItem to="/nfc-tap" icon={<SparklesIcon className="h-5 w-5" />}>NFC Tap</NavItem>
       
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Akademik</div>
       <NavItem to="/kartu-pelajar" icon={<IdentificationIcon className="h-5 w-5" />}>Kartu Pelajar</NavItem>
@@ -93,6 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, setOpen }) => {
       <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mt-4 mb-2">Gate & Rapor</div>
       <NavItem to="/absensi-gerbang" icon={<ArrowRightOnRectangleIcon className="h-5 w-5" />}>Absensi Gerbang</NavItem>
       <NavItem to="/analytics-gerbang" icon={<ChartBarIcon className="h-5 w-5" />}>Analytics Gerbang</NavItem>
+      <NavItem to="/kelola-kartu-rfid" icon={<IdentificationIcon className="h-5 w-5" />}>Kelola Kartu RFID</NavItem>
+      <NavItem to="/nfc-tap" icon={<SparklesIcon className="h-5 w-5" />}>NFC Tap</NavItem>
       <NavItem to="/kartu-pelajar" icon={<IdentificationIcon className="h-5 w-5" />}>Kartu Pelajar</NavItem>
       <NavItem to="/tahun-ajaran" icon={<CalendarIcon className="h-5 w-5" />}>Tahun Ajaran</NavItem>
       <NavItem to="/kelola-rapor" icon={<ClipboardDocumentListIcon className="h-5 w-5" />}>Kelola Rapor</NavItem>

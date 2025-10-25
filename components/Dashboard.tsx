@@ -49,6 +49,9 @@ import StudentCardPage from './pages/StudentCardPage';
 import ReportCardManagementPage from './pages/ReportCardManagementPage';
 import ReportCardViewPage from './pages/ReportCardViewPage';
 import AcademicYearManagementPage from './pages/AcademicYearManagementPage';
+// New Features - RFID Gate Attendance System
+import { RFIDCardManagementPage } from './pages/RFIDCardManagementPage';
+import { NFCTapPage } from './pages/NFCTapPage';
 
 
 interface DashboardProps {
@@ -90,6 +93,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/monitoring-akademik" element={<MonitoringAkademikPage />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
+            <Route path="/kelola-kartu-rfid" element={<RFIDCardManagementPage user={user} />} />
+            <Route path="/nfc-tap" element={<NFCTapPage user={user} />} />
             <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
             <Route path="/tahun-ajaran" element={<AcademicYearManagementPage />} />
             <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
@@ -110,6 +115,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <Route path="/grades" element={<AdminGradesPage user={user} />} />
             <Route path="/absensi-gerbang" element={<GateAttendancePage />} />
             <Route path="/analytics-gerbang" element={<GateAnalyticsPage />} />
+            <Route path="/kelola-kartu-rfid" element={<RFIDCardManagementPage user={user} />} />
+            <Route path="/nfc-tap" element={<NFCTapPage user={user} />} />
             <Route path="/kartu-pelajar" element={<StudentCardPage user={user} />} />
             <Route path="/tahun-ajaran" element={<AcademicYearManagementPage />} />
             <Route path="/kelola-rapor" element={<ReportCardManagementPage />} />
