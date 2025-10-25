@@ -252,7 +252,7 @@ export const RFIDCardManagementPage: React.FC<RFIDCardManagementPageProps> = ({ 
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Manajemen Kartu RFID
           </h1>
-          <p className="text-gray-400 mt-1">Kelola kartu RFID untuk absensi gerbang</p>
+          <p className="text-gray-300 mt-1">Kelola kartu RFID untuk absensi gerbang</p>
         </div>
         <button
           onClick={() => setShowRegisterModal(true)}
@@ -265,63 +265,63 @@ export const RFIDCardManagementPage: React.FC<RFIDCardManagementPageProps> = ({ 
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 border-2 border-purple-500/40 rounded-xl p-6 shadow-lg shadow-purple-500/10">
+        <div className="bg-gradient-to-br from-purple-600 to-purple-800 border-2 border-purple-400 rounded-xl p-6 shadow-lg shadow-purple-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-300 text-sm font-medium">Total Kartu</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats.total}</p>
+              <p className="text-purple-100 text-sm font-medium">Total Kartu</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.total}</p>
             </div>
-            <IdentificationIcon className="w-12 h-12 text-purple-400 opacity-50" />
+            <IdentificationIcon className="w-14 h-14 text-white opacity-40" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 border-2 border-green-500/40 rounded-xl p-6 shadow-lg shadow-green-500/10">
+        <div className="bg-gradient-to-br from-green-600 to-green-800 border-2 border-green-400 rounded-xl p-6 shadow-lg shadow-green-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-300 text-sm font-medium">Kartu Aktif</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats.active}</p>
+              <p className="text-green-100 text-sm font-medium">Kartu Aktif</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.active}</p>
             </div>
-            <div className="text-4xl">✓</div>
+            <div className="text-5xl opacity-40">✓</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500/20 to-red-600/10 border-2 border-red-500/40 rounded-xl p-6 shadow-lg shadow-red-500/10">
+        <div className="bg-gradient-to-br from-red-600 to-red-800 border-2 border-red-400 rounded-xl p-6 shadow-lg shadow-red-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-300 text-sm font-medium">Diblokir</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats.blocked}</p>
+              <p className="text-red-100 text-sm font-medium">Diblokir</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.blocked}</p>
             </div>
-            <div className="text-4xl">🚫</div>
+            <div className="text-5xl opacity-40">🚫</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 border-2 border-yellow-500/40 rounded-xl p-6 shadow-lg shadow-yellow-500/10">
+        <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 border-2 border-yellow-400 rounded-xl p-6 shadow-lg shadow-yellow-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-300 text-sm font-medium">Hilang</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats.lost}</p>
+              <p className="text-yellow-100 text-sm font-medium">Hilang</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.lost}</p>
             </div>
-            <div className="text-4xl">⚠️</div>
+            <div className="text-5xl opacity-40">⚠️</div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+      <div className="flex flex-col md:flex-row gap-4 bg-gray-800/80 border border-gray-600 rounded-xl p-4">
         <div className="flex-1">
           <input
             type="text"
             placeholder="🔍 Cari UID kartu, nama siswa, atau NIS..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
         <div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-3 bg-gray-700 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="all">Semua Status</option>
             <option value="active">Aktif</option>
@@ -339,47 +339,62 @@ export const RFIDCardManagementPage: React.FC<RFIDCardManagementPageProps> = ({ 
           <p className="text-gray-400 mt-4">Memuat data kartu...</p>
         </div>
       ) : filteredCards.length === 0 ? (
-        <div className="text-center py-12 bg-gray-800/30 border border-gray-700 rounded-xl">
-          <IdentificationIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400 text-lg">
+        <div className="text-center py-16 bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-xl">
+          <IdentificationIcon className="w-20 h-20 text-gray-500 mx-auto mb-4" />
+          <p className="text-gray-300 text-lg font-medium mb-2">
             {searchQuery || filterStatus !== 'all' 
               ? 'Tidak ada kartu yang sesuai dengan filter'
               : 'Belum ada kartu yang terdaftar'}
           </p>
+          <p className="text-gray-400 text-sm">
+            {searchQuery || filterStatus !== 'all'
+              ? 'Coba ubah filter atau kata kunci pencarian'
+              : 'Klik tombol "Daftarkan Kartu Baru" untuk memulai'}
+          </p>
         </div>
       ) : (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
+        <div className="bg-gray-800/80 border border-gray-600 rounded-xl overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-700/50">
+              <thead className="bg-gray-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">UID Kartu</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Siswa</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">NIS</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Kelas</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total Tap</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Terakhir Digunakan</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Aksi</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">UID Kartu</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Siswa</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">NIS</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Kelas</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Total Tap</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Terakhir Digunakan</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-gray-600">
                 {filteredCards.map((card) => (
-                  <tr key={card.id} className="hover:bg-gray-700/30 transition-colors">
+                  <tr key={card.id} className="hover:bg-gray-700/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-mono text-purple-400 font-medium">{card.card_uid}</span>
+                      <span className="font-mono text-purple-300 font-semibold text-sm">{card.card_uid}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-white">{card.student_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">{card.nis || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">{card.student_class || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(card.status)}`}>
+                      <span className="text-white font-medium">{card.student_name || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-gray-200">{card.nis || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-gray-200">{card.student_class || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(card.status)}`}>
                         {getStatusText(card.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">{card.total_taps}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                      {card.last_used ? new Date(card.last_used).toLocaleString('id-ID') : 'Belum digunakan'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-gray-200 font-medium">{card.total_taps}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-gray-200 text-sm">
+                        {card.last_used ? new Date(card.last_used).toLocaleString('id-ID') : 'Belum digunakan'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2">

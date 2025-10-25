@@ -216,20 +216,24 @@ export const NFCTapPage: React.FC<NFCTapPageProps> = ({ user }) => {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
           NFC Tap - Absensi Gerbang
         </h1>
-        <p className="text-gray-400 mt-2">Gunakan smartphone untuk scan kartu NFC siswa</p>
+        <p className="text-gray-300 mt-2">Gunakan smartphone untuk scan kartu NFC siswa</p>
       </div>
 
       {/* NFC Scanner Card */}
       <div className="max-w-md mx-auto">
-        <div className={`bg-gradient-to-br ${isScanning ? 'from-green-500/30 to-blue-500/30 border-green-500/50' : 'from-gray-700/30 to-gray-800/30 border-gray-600'} border-2 rounded-2xl p-8 text-center transition-all duration-300 ${isScanning ? 'animate-pulse' : ''}`}>
+        <div className={`rounded-2xl p-8 text-center transition-all duration-300 shadow-xl ${
+          isScanning 
+            ? 'bg-gradient-to-br from-green-600 to-blue-600 border-4 border-green-400 animate-pulse' 
+            : 'bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-gray-600'
+        }`}>
           <div className="text-7xl mb-4">
             {isScanning ? '📱' : '📲'}
           </div>
           
           {!nfcSupported ? (
             <div className="space-y-4">
-              <p className="text-red-400 font-medium">❌ NFC Tidak Didukung</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-red-300 font-bold text-xl">❌ NFC Tidak Didukung</p>
+              <p className="text-sm text-gray-200">
                 Browser atau perangkat Anda tidak mendukung Web NFC API.
                 <br/>
                 Gunakan Chrome/Edge di Android untuk fitur ini.
@@ -237,25 +241,25 @@ export const NFCTapPage: React.FC<NFCTapPageProps> = ({ user }) => {
             </div>
           ) : isScanning ? (
             <div className="space-y-4">
-              <p className="text-green-400 font-bold text-xl">Siap Scan!</p>
-              <p className="text-gray-300">Dekatkan kartu NFC ke smartphone Anda</p>
+              <p className="text-white font-bold text-2xl drop-shadow-lg">✓ Siap Scan!</p>
+              <p className="text-white font-medium text-lg">Dekatkan kartu NFC ke smartphone Anda</p>
               <button
                 onClick={stopNFCScanning}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                className="px-8 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-bold shadow-lg"
               >
                 ⏹️ Stop Scanning
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-gray-300 font-medium">Mulai Scan Kartu NFC</p>
+              <p className="text-white font-semibold text-lg">Mulai Scan Kartu NFC</p>
               <button
                 onClick={startNFCScanning}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all shadow-lg transform hover:scale-105 font-bold text-lg"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all shadow-xl transform hover:scale-105 font-bold text-lg"
               >
                 🚀 Mulai Scanning
               </button>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-300 font-medium">
                 Pastikan NFC aktif di pengaturan smartphone
               </p>
             </div>
@@ -266,36 +270,36 @@ export const NFCTapPage: React.FC<NFCTapPageProps> = ({ user }) => {
       {/* Last Tap Result */}
       {lastTap && (
         <div className="max-w-md mx-auto">
-          <h3 className="text-lg font-semibold text-white mb-3">Tap Terakhir:</h3>
-          <div className={`border-2 rounded-xl p-6 ${getStatusColor(lastTap.success)}`}>
+          <h3 className="text-xl font-bold text-white mb-3">Tap Terakhir:</h3>
+          <div className={`border-2 rounded-xl p-6 shadow-lg ${getStatusColor(lastTap.success)}`}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl font-bold">
-                {lastTap.success ? '✓' : '✗'}
+              <span className="text-3xl font-bold">
+                {lastTap.success ? '✅' : '❌'}
               </span>
-              <span className="text-sm opacity-75">
+              <span className="text-sm font-medium opacity-90">
                 {new Date(lastTap.tap_time).toLocaleTimeString('id-ID')}
               </span>
             </div>
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="opacity-75">Siswa:</span>
-                <span className="font-semibold">{lastTap.student_name}</span>
+                <span className="font-medium opacity-90">Siswa:</span>
+                <span className="font-bold">{lastTap.student_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="opacity-75">UID Kartu:</span>
-                <span className="font-mono">{lastTap.card_uid}</span>
+                <span className="font-medium opacity-90">UID Kartu:</span>
+                <span className="font-mono font-bold">{lastTap.card_uid}</span>
               </div>
               {lastTap.success && (
                 <div className="flex justify-between">
-                  <span className="opacity-75">Tipe:</span>
-                  <span className="font-semibold">{getTapTypeText(lastTap.tap_type)}</span>
+                  <span className="font-medium opacity-90">Tipe:</span>
+                  <span className="font-bold">{getTapTypeText(lastTap.tap_type)}</span>
                 </div>
               )}
               {!lastTap.success && lastTap.failure_reason && (
-                <div className="mt-3 p-3 bg-black/20 rounded-lg">
-                  <p className="text-xs opacity-75">Alasan Error:</p>
-                  <p className="font-medium">{lastTap.failure_reason}</p>
+                <div className="mt-3 p-3 bg-black/30 rounded-lg border border-red-500/30">
+                  <p className="text-xs font-medium opacity-90">Alasan Error:</p>
+                  <p className="font-bold">{lastTap.failure_reason}</p>
                 </div>
               )}
             </div>
@@ -305,41 +309,41 @@ export const NFCTapPage: React.FC<NFCTapPageProps> = ({ user }) => {
 
       {/* Recent Taps */}
       <div className="max-w-4xl mx-auto">
-        <h3 className="text-lg font-semibold text-white mb-3">Riwayat Tap Terbaru:</h3>
-        <div className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
+        <h3 className="text-xl font-bold text-white mb-3">Riwayat Tap Terbaru:</h3>
+        <div className="bg-gray-800/80 border border-gray-600 rounded-xl overflow-hidden shadow-lg">
           {recentTaps.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-12 text-gray-300 font-medium">
               Belum ada riwayat tap
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-700/50">
+                <thead className="bg-gray-700">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Waktu</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Siswa</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">UID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Tipe</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-200 uppercase">Waktu</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-200 uppercase">Siswa</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-200 uppercase">UID</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-200 uppercase">Tipe</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-200 uppercase">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700">
+                <tbody className="divide-y divide-gray-600">
                   {recentTaps.map((tap) => (
-                    <tr key={tap.id} className="hover:bg-gray-700/30 transition-colors">
-                      <td className="px-4 py-3 text-sm text-gray-300">
+                    <tr key={tap.id} className="hover:bg-gray-700/50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-200">
                         {new Date(tap.tap_time).toLocaleString('id-ID')}
                       </td>
-                      <td className="px-4 py-3 text-sm text-white font-medium">
+                      <td className="px-4 py-3 text-sm text-white font-semibold">
                         {tap.student_name}
                       </td>
-                      <td className="px-4 py-3 text-sm text-purple-400 font-mono">
+                      <td className="px-4 py-3 text-sm text-purple-300 font-mono font-semibold">
                         {tap.card_uid}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-300">
+                      <td className="px-4 py-3 text-sm text-gray-200 font-medium">
                         {tap.success ? getTapTypeText(tap.tap_type) : '-'}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${tap.success ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${tap.success ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                           {tap.success ? '✓ Sukses' : '✗ Gagal'}
                         </span>
                       </td>
@@ -353,11 +357,11 @@ export const NFCTapPage: React.FC<NFCTapPageProps> = ({ user }) => {
       </div>
 
       {/* Info Card */}
-      <div className="max-w-md mx-auto bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-        <h4 className="text-blue-400 font-semibold mb-2 flex items-center gap-2">
+      <div className="max-w-md mx-auto bg-blue-600/80 border-2 border-blue-400 rounded-xl p-6 shadow-lg">
+        <h4 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
           <span>ℹ️</span> Cara Menggunakan:
         </h4>
-        <ol className="text-sm text-gray-300 space-y-2 list-decimal list-inside">
+        <ol className="text-sm text-white space-y-2 list-decimal list-inside font-medium">
           <li>Pastikan NFC aktif di smartphone Android Anda</li>
           <li>Gunakan browser Chrome atau Edge</li>
           <li>Klik "Mulai Scanning" dan izinkan akses NFC</li>
