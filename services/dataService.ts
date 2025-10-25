@@ -470,13 +470,34 @@ export const dataService = {
     return data || [];
   },
   async getStudentsInClass(classId: string): Promise<User[]> {
+      console.log('🔍 [getStudentsInClass] Fetching students for class:', classId);
+      
       const { data, error } = await supabase
         .from('class_members')
         .select('profile:profiles(*, school:schools(name))')
         .eq('class_id', classId)
         .eq('role', 'student');
-      if (error) throw error;
-      return data.map(m => mapUserFromDb(m.profile));
+      
+      if (error) {
+        console.error('❌ [getStudentsInClass] Error:', error);
+        throw error;
+      }
+      
+      console.log('📊 [getStudentsInClass] Raw data:', data);
+      console.log('📊 [getStudentsInClass] Count:', data?.length || 0);
+      
+      if (!data || data.length === 0) {
+        console.warn('⚠️ [getStudentsInClass] No students found for class:', classId);
+        return [];
+      }
+      
+      const students = data.map(m => {
+        console.log('👤 [getStudentsInClass] Mapping profile:', m.profile);
+        return mapUserFromDb(m.profile);
+      });
+      
+      console.log('✅ [getStudentsInClass] Returning', students.length, 'students');
+      return students;
   },
   async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
       const { data, error } = await supabase

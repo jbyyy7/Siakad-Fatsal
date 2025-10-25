@@ -48,9 +48,12 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
     if (!selectedClassId) return;
 
     const fetchStudents = async () => {
+      console.log('🔍 [MyClassPage] Fetching students for class:', selectedClassId);
       setIsLoading(prev => ({...prev, students: true}));
       try {
         const studentsData = await dataService.getStudentsInClass(selectedClassId);
+        console.log('✅ [MyClassPage] Received students:', studentsData.length);
+        console.log('📊 [MyClassPage] Students data:', studentsData);
         
         // Set students without dummy stats
         // Real stats will be calculated from actual attendance and grades data
@@ -62,8 +65,9 @@ const MyClassPage: React.FC<MyClassPageProps> = ({ user }) => {
         
         setStudents(studentsWithStats);
         setFilteredStudents(studentsWithStats);
+        console.log('✅ [MyClassPage] Students set to state:', studentsWithStats.length);
       } catch (error) {
-        console.error(`Failed to fetch students for class ${selectedClassId}:`, error);
+        console.error(`❌ [MyClassPage] Failed to fetch students for class ${selectedClassId}:`, error);
       } finally {
         setIsLoading(prev => ({...prev, students: false}));
       }
