@@ -155,6 +155,7 @@ BEGIN
             WHERE p.id = NEW.homeroom_teacher_id
             AND p.school_id = NEW.school_id
         ) THEN
+        
             RAISE EXCEPTION 'Wali kelas harus dari sekolah yang sama dengan kelas';
         END IF;
     END IF;

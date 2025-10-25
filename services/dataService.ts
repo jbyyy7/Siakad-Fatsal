@@ -343,7 +343,7 @@ export const dataService = {
       return { note: 'Ananda menunjukkan perkembangan yang sangat baik semester ini. Terus tingkatkan!', teacherName: 'Dewi Lestari, S.Pd.' };
   },
   async getClassForStudent(studentId: string): Promise<string | null> { 
-    const { data, error } = await supabase.from('class_members').select('class:classes(name)').eq('student_id', studentId).single();
+    const { data, error } = await supabase.from('class_members').select('class:classes(name)').eq('profile_id', studentId).eq('role', 'student').single();
     if (error || !data) return null;
     const classField = (data as any).class;
     const className = Array.isArray(classField) ? classField[0]?.name : classField?.name;
@@ -404,9 +404,13 @@ export const dataService = {
     return data || [];
   },
   async getStudentsInClass(classId: string): Promise<User[]> {
-      const { data, error } = await supabase.from('class_members').select('student:profiles(*, school:schools(name))').eq('class_id', classId);
+      const { data, error } = await supabase
+        .from('class_members')
+        .select('profile:profiles(*, school:schools(name))')
+        .eq('class_id', classId)
+        .eq('role', 'student');
       if (error) throw error;
-      return data.map(m => mapUserFromDb(m.student));
+      return data.map(m => mapUserFromDb(m.profile));
   },
   async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
       // Mock, needs real implementation
@@ -432,14 +436,15 @@ export const dataService = {
   async getClassMemberships(schoolId: string): Promise<{ student_id: string, class_id: string }[]> {
     const { data, error } = await supabase
       .from('classes')
-      .select('id, class_members(student_id)')
+      .select('id, class_members(profile_id)')
       .eq('school_id', schoolId);
   
     if (error) throw error;
   
     const memberships = data.flatMap(c =>
-      (c.class_members || []).map((cm: any) => ({ student_id: cm.student_id, class_id: c.id }))
+      (c.class_members || []).map((cm: any) => ({ student_id: cm.profile_id, class_id: c.id }))
     );
+    
     return memberships;
   },
   async createSubject(data: { name: string, schoolId: string }): Promise<void> { 
