@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getClasses, 
-  getSubjects, 
-  getUsers, 
-  deleteSchedule 
-} from '../../services/dataService';
+import { dataService } from '../../services/dataService';
 import { supabase } from '../../services/supabaseClient';
 import ScheduleForm from '../forms/ScheduleForm';
-import PencilIcon from '../icons/PencilIcon';
-import TrashIcon from '../icons/TrashIcon';
-import PlusIcon from '../icons/PlusIcon';
-import CalendarIcon from '../icons/CalendarIcon';
-import type { Class, Subject, Profile } from '../../types';
+import { PencilIcon } from '../icons/PencilIcon';
+import { TrashIcon } from '../icons/TrashIcon';
+import { PlusIcon } from '../icons/PlusIcon';
+import { CalendarIcon } from '../icons/CalendarIcon';
+import { Class, Subject, User, UserRole } from '../../types';
 
 const DAYS = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
 
@@ -33,7 +28,7 @@ export default function ManageSchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [teachers, setTeachers] = useState<Profile[]>([]);
+  const [teachers, setTeachers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -63,15 +58,15 @@ export default function ManageSchedulesPage() {
       setSchedules(schedulesData || []);
 
       // Fetch classes
-      const classesData = await getClasses();
+      const classesData = await dataService.getClasses();
       setClasses(classesData);
 
       // Fetch subjects
-      const subjectsData = await getSubjects();
+      const subjectsData = await dataService.getSubjects();
       setSubjects(subjectsData);
 
       // Fetch teachers (Guru only)
-      const usersData = await getUsers({ role: 'Guru' });
+      const usersData = await dataService.getUsers({ role: UserRole.TEACHER });
       setTeachers(usersData);
 
     } catch (error: any) {
@@ -96,7 +91,7 @@ export default function ManageSchedulesPage() {
     if (!confirm('Yakin ingin menghapus jadwal ini?')) return;
 
     try {
-      await deleteSchedule(id);
+      await dataService.deleteSchedule(id);
       alert('Jadwal berhasil dihapus');
       fetchData();
     } catch (error: any) {

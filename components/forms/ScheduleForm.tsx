@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createSchedule, updateSchedule } from '../../services/dataService';
-import type { Class, Subject, Profile } from '../../types';
+import { dataService } from '../../services/dataService';
+import { Class, Subject, User } from '../../types';
 
 interface ScheduleFormData {
   class_id: string;
@@ -18,7 +18,7 @@ interface ScheduleFormProps {
   onCancel: () => void;
   classes: Class[];
   subjects: Subject[];
-  teachers: Profile[];
+  teachers: User[];
 }
 
 const DAYS = [
@@ -59,9 +59,9 @@ export default function ScheduleForm({ schedule, onSuccess, onCancel, classes, s
       }
 
       if (schedule?.id) {
-        await updateSchedule(schedule.id, formData);
+        await dataService.updateSchedule(schedule.id, formData);
       } else {
-        await createSchedule(formData);
+        await dataService.createSchedule(formData);
       }
       onSuccess();
     } catch (err: any) {
@@ -140,7 +140,7 @@ export default function ScheduleForm({ schedule, onSuccess, onCancel, classes, s
                 <option value="">Pilih Guru</option>
                 {teachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
-                    {teacher.full_name}
+                    {teacher.name}
                   </option>
                 ))}
               </select>
