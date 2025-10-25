@@ -3,6 +3,7 @@ import { User, School, UserRole } from '../../types';
 import toast from 'react-hot-toast';
 import Modal from '../ui/Modal';
 import { dataService } from '../../services/dataService';
+import { supabase } from '../../services/supabaseClient';
 
 type UserFormData = Omit<User, 'id' | 'createdAt'> & { password?: string };
 
@@ -21,7 +22,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     password: '',
     role: UserRole.STUDENT,
     schoolId: '',
-    avatarUrl: `https://i.pravatar.cc/150?u=${Date.now()}`,
+    avatarUrl: '', // Empty by default, user must upload
     // New fields
     placeOfBirth: '',
     dateOfBirth: '',
@@ -38,8 +39,8 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
   const emailDebounce = useRef<number | undefined>(undefined);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [schoolQuery, setSchoolQuery] = useState('');
-  const [schoolOptions, setSchoolOptions] = useState<School[]>(schools || []);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isEditMode = !!user;
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
         password: '', // Password is not edited here for security
         role: user.role || UserRole.STUDENT,
         schoolId: user.schoolId || '',
-        avatarUrl: user.avatarUrl || `https://i.pravatar.cc/150?u=${user.id}`,
+        avatarUrl: user.avatarUrl || '',
         placeOfBirth: user.placeOfBirth || '',
         dateOfBirth: user.dateOfBirth || '',
         gender: user.gender || 'Laki-laki',
@@ -64,18 +65,49 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
     }
   }, [user]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const s = await dataService.getSchools();
-        if (mounted && s) setSchoolOptions(s);
-      } catch (e) {
-        console.warn('Failed to fetch schools for autocomplete', e);
-      }
-    })();
-    return () => { mounted = false };
-  }, []);
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran file maksimal 2MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('public')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, avatarUrl: data.publicUrl }));
+      toast.success('Foto berhasil diupload');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Gagal mengupload foto');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -155,6 +187,53 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+      {/* Section: Foto Profil */}
+      <fieldset className="space-y-4">
+        <legend className="text-lg font-semibold text-gray-800">Foto Profil</legend>
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            {formData.avatarUrl ? (
+              <img 
+                src={formData.avatarUrl} 
+                alt="Avatar preview" 
+                className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-gray-300">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            )}
+            {uploadingAvatar && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+            >
+              {uploadingAvatar ? 'Mengupload...' : 'Upload Foto'}
+            </button>
+            <p className="text-xs text-gray-500 mt-2">
+              Format: JPG, PNG, atau GIF. Maksimal 2MB.
+            </p>
+          </div>
+        </div>
+      </fieldset>
+
       {/* Section: Data Diri */}
       <fieldset className="space-y-4 border-t pt-4">
         <legend className="text-lg font-semibold text-gray-800 -mt-8 bg-white px-2">Data Diri</legend>
@@ -219,19 +298,21 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
             </div>
             <div>
               <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700">Sekolah</label>
-              <div className="relative">
-                <input id="schoolId" name="schoolId" value={schoolQuery || (schoolOptions.find(s=>s.id===formData.schoolId)?.name || '')} onChange={(e) => { setSchoolQuery(e.target.value); }} placeholder="Cari atau pilih sekolah" className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
-                {schoolQuery && (
-                  <div className="absolute z-20 w-full bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
-                    {schoolOptions.filter(s => s.name.toLowerCase().includes(schoolQuery.toLowerCase())).map(s => (
-                      <div key={s.id} onClick={() => { setFormData(prev=>({...prev, schoolId: s.id})); setSchoolQuery(s.name); }} className="p-2 hover:bg-gray-100 cursor-pointer">{s.name}</div>
-                    ))}
-                    {schoolOptions.filter(s => s.name.toLowerCase().includes(schoolQuery.toLowerCase())).length === 0 && (
-                      <div className="p-2 text-sm text-gray-500">Tidak ada hasil</div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <select 
+                id="schoolId" 
+                name="schoolId" 
+                value={formData.schoolId} 
+                onChange={handleChange} 
+                required 
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+              >
+                <option value="">Pilih Sekolah</option>
+                {schools.map(school => (
+                  <option key={school.id} value={school.id}>
+                    {school.name}
+                  </option>
+                ))}
+              </select>
             </div>
         </div>
         <div>
@@ -306,7 +387,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, schools, onClose, onSave }) =
             </div>
             <div>
               <div className="text-sm font-medium">Sekolah</div>
-              <div className="text-sm">{(schoolOptions.find(s => s.id === formData.schoolId)?.name) || 'Tidak ada'}</div>
+              <div className="text-sm">{schools.find((s: School) => s.id === formData.schoolId)?.name || 'Tidak ada'}</div>
             </div>
             {formData.role === UserRole.STUDENT && (
               <div>

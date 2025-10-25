@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User } from '../../types';
 import { UserCircleIcon } from '../icons/UserCircleIcon';
 import { CameraIcon } from '../icons/CameraIcon';
 import { dataService } from '../../services/dataService';
+import { supabase } from '../../services/supabaseClient';
+import toast from 'react-hot-toast';
 
 interface AccountSettingsPageProps {
   user: User;
@@ -13,6 +15,8 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ user, onUpdat
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -21,6 +25,7 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ user, onUpdat
     address: user.address || '',
     placeOfBirth: user.placeOfBirth || '',
     dateOfBirth: user.dateOfBirth || '',
+    avatarUrl: user.avatarUrl || '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -39,6 +44,56 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ user, onUpdat
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran file maksimal 2MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('public')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
+
+      // Update database
+      await dataService.updateUser(user.id, { avatarUrl: data.publicUrl });
+
+      // Update local state
+      setFormData(prev => ({ ...prev, avatarUrl: data.publicUrl }));
+      onUpdate({ ...user, avatarUrl: data.publicUrl });
+      
+      toast.success('Foto profil berhasil diperbarui');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Gagal mengupload foto');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -127,12 +182,30 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ user, onUpdat
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-24 h-24 lg:w-32 lg:h-32 rounded-full object-cover ring-4 ring-gray-100"
+                {uploadingAvatar ? (
+                  <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gray-200 flex items-center justify-center ring-4 ring-gray-100">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+                  </div>
+                ) : (
+                  <img
+                    src={formData.avatarUrl || user.avatarUrl}
+                    alt={user.name}
+                    className="w-24 h-24 lg:w-32 lg:h-32 rounded-full object-cover ring-4 ring-gray-100"
+                  />
+                )}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
                 />
-                <button className="absolute bottom-0 right-0 p-2 bg-brand-600 text-white rounded-full hover:bg-brand-700 transition-colors shadow-lg">
+                <button 
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="absolute bottom-0 right-0 p-2 bg-brand-600 text-white rounded-full hover:bg-brand-700 transition-colors shadow-lg disabled:bg-gray-400"
+                >
                   <CameraIcon className="h-5 w-5" />
                 </button>
               </div>
