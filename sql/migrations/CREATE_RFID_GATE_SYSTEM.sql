@@ -167,10 +167,15 @@ BEGIN
     );
   END IF;
 
-  -- 3. Check if student exists
-  SELECT * INTO v_student_record 
-  FROM profiles 
-  WHERE id = v_card_record.student_id;
+  -- 3. Check if student exists and get their class
+  SELECT 
+    p.*,
+    c.name as class
+  INTO v_student_record 
+  FROM profiles p
+  LEFT JOIN class_members cm ON p.id = cm.profile_id AND cm.role = 'student'
+  LEFT JOIN classes c ON cm.class_id = c.id
+  WHERE p.id = v_card_record.student_id;
 
   IF NOT FOUND THEN
     INSERT INTO gate_tap_logs (card_uid, gate_device_id, success, failure_reason, school_id)
@@ -455,12 +460,14 @@ SELECT
   rc.last_used,
   rc.total_taps,
   p.full_name as student_name,
-  p.class as student_class,
+  c.name as student_class,
   p.identity_number as nis,
   s.name as school_name
 FROM rfid_cards rc
 LEFT JOIN profiles p ON rc.student_id = p.id
 LEFT JOIN schools s ON rc.school_id = s.id
+LEFT JOIN class_members cm ON p.id = cm.profile_id AND cm.role = 'student'
+LEFT JOIN classes c ON cm.class_id = c.id
 WHERE rc.status = 'active';
 
 -- View: Today's gate attendance summary
