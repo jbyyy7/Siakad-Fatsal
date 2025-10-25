@@ -52,6 +52,30 @@ const ManageClassesPage: React.FC = () => {
             console.log('- Teachers:', teachersData.length, teachersData);
             console.log('- Students:', studentsData.length, studentsData);
             
+            // Check for users without school_id
+            const teachersWithoutSchool = teachersData.filter(t => !t.schoolId);
+            const studentsWithoutSchool = studentsData.filter(s => !s.schoolId);
+            
+            if (teachersWithoutSchool.length > 0) {
+                console.warn('⚠️ PROBLEM: Guru tanpa school_id:', teachersWithoutSchool.length);
+                console.warn('→ Jalankan SQL: sql/FIX_MISSING_SCHOOL_ID.sql');
+                console.table(teachersWithoutSchool.map(t => ({ 
+                    name: t.name, 
+                    email: t.email,
+                    schoolId: t.schoolId || '❌ NULL'
+                })));
+            }
+            
+            if (studentsWithoutSchool.length > 0) {
+                console.warn('⚠️ PROBLEM: Siswa tanpa school_id:', studentsWithoutSchool.length);
+                console.warn('→ Jalankan SQL: sql/FIX_MISSING_SCHOOL_ID.sql');
+                console.table(studentsWithoutSchool.map(s => ({ 
+                    name: s.name, 
+                    email: s.email,
+                    schoolId: s.schoolId || '❌ NULL'
+                })));
+            }
+            
             setClasses(classesData);
             setSchools(schoolsData);
             setAllTeachers(teachersData);
