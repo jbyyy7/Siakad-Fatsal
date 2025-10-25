@@ -55,31 +55,48 @@ CREATE INDEX IF NOT EXISTS idx_gate_devices_school_id ON gate_devices(school_id)
 CREATE INDEX IF NOT EXISTS idx_gate_devices_device_id ON gate_devices(device_id);
 
 -- ===============================================
--- 3. CREATE GATE_ATTENDANCES TABLE
+-- 3. ENHANCE GATE_ATTENDANCE TABLE (already exists)
 -- ===============================================
--- Create table if not exists (for RFID gate attendance tracking)
-CREATE TABLE IF NOT EXISTS gate_attendances (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
-  date DATE NOT NULL DEFAULT CURRENT_DATE,
-  check_in_time TIMESTAMPTZ,
-  check_out_time TIMESTAMPTZ,
-  card_uid VARCHAR(20),
-  gate_device_id VARCHAR(50),
-  tap_method VARCHAR(20) DEFAULT 'rfid' CHECK (tap_method IN ('rfid', 'nfc', 'qr', 'manual')),
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(student_id, date, school_id)
-);
+-- Add RFID tracking columns to existing gate_attendance table
+DO $$ 
+BEGIN
+  -- Add card_uid column if not exists
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'gate_attendance' AND column_name = 'card_uid'
+  ) THEN
+    ALTER TABLE gate_attendance ADD COLUMN card_uid VARCHAR(20);
+  END IF;
+
+  -- Add gate_device_id column if not exists
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'gate_attendance' AND column_name = 'gate_device_id'
+  ) THEN
+    ALTER TABLE gate_attendance ADD COLUMN gate_device_id VARCHAR(50);
+  END IF;
+
+  -- Add tap_method column if not exists
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'gate_attendance' AND column_name = 'tap_method'
+  ) THEN
+    ALTER TABLE gate_attendance ADD COLUMN tap_method VARCHAR(20) DEFAULT 'rfid';
+  END IF;
+
+  -- Add constraint for tap_method if column was just created
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'gate_attendance_tap_method_check'
+  ) THEN
+    ALTER TABLE gate_attendance ADD CONSTRAINT gate_attendance_tap_method_check 
+      CHECK (tap_method IN ('rfid', 'nfc', 'qr', 'manual'));
+  END IF;
+END $$;
 
 -- Add indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_gate_attendances_student_id ON gate_attendances(student_id);
-CREATE INDEX IF NOT EXISTS idx_gate_attendances_school_id ON gate_attendances(school_id);
-CREATE INDEX IF NOT EXISTS idx_gate_attendances_date ON gate_attendances(date);
-CREATE INDEX IF NOT EXISTS idx_gate_attendances_card_uid ON gate_attendances(card_uid);
-CREATE INDEX IF NOT EXISTS idx_gate_attendances_gate_device_id ON gate_attendances(gate_device_id);
+CREATE INDEX IF NOT EXISTS idx_gate_attendance_card_uid ON gate_attendance(card_uid);
+CREATE INDEX IF NOT EXISTS idx_gate_attendance_gate_device_id ON gate_attendance(gate_device_id);
 
 -- ============================
 -- 4. CREATE TAP HISTORY TABLE
@@ -168,7 +185,7 @@ BEGIN
 
   -- 4. Check today's attendance record
   SELECT * INTO v_today_attendance 
-  FROM gate_attendances 
+  FROM gate_attendance 
   WHERE student_id = v_card_record.student_id 
     AND date = CURRENT_DATE
     AND (p_school_id IS NULL OR school_id = p_school_id)
@@ -198,7 +215,7 @@ BEGIN
   -- 6. Record the attendance
   IF v_tap_type = 'check_in' THEN
     -- Create new attendance record or update existing
-    INSERT INTO gate_attendances (
+    INSERT INTO gate_attendance (
       student_id, school_id, date, check_in_time, 
       card_uid, gate_device_id, tap_method
     ) VALUES (
@@ -219,7 +236,7 @@ BEGIN
     RETURNING id INTO v_attendance_id;
   ELSE
     -- Update with check-out time
-    UPDATE gate_attendances 
+    UPDATE gate_attendance 
     SET check_out_time = NOW()
     WHERE id = v_today_attendance.id
     RETURNING id INTO v_attendance_id;
@@ -455,7 +472,7 @@ SELECT
   COUNT(*) FILTER (WHERE EXTRACT(HOUR FROM ga.check_in_time) >= 7) as late_arrivals,
   COUNT(*) FILTER (WHERE ga.tap_method = 'rfid') as rfid_taps,
   COUNT(*) FILTER (WHERE ga.tap_method = 'nfc') as nfc_taps
-FROM gate_attendances ga
+FROM gate_attendance ga
 WHERE ga.date = CURRENT_DATE
 GROUP BY ga.school_id;
 
