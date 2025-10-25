@@ -22,7 +22,6 @@ interface DashboardStats {
   totalClasses: number;
   totalStudents: number;
   journalToday: number;
-  attendanceMarked: number;
   averageGrade: number;
   attendanceRate: number;
 }
@@ -30,7 +29,6 @@ interface DashboardStats {
 interface ClassInfo {
   id: string;
   name: string;
-  level: string;
   studentCount: number;
 }
 
@@ -50,7 +48,6 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
     totalClasses: 0,
     totalStudents: 0,
     journalToday: 0,
-    attendanceMarked: 0,
     averageGrade: 0,
     attendanceRate: 0,
   });
@@ -59,38 +56,43 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
     const today = new Date().toISOString().split('T')[0];
     const fetchData = async () => {
       try {
+        console.log('🔍 [TeacherDashboard] Fetching data for teacher:', user.id);
+        
         // Fetch journal entries for today
         const journal = await dataService.getJournalForTeacher(user.id, today);
+        console.log('📖 [TeacherDashboard] Journal entries today:', journal.length);
         setJournalToday(journal);
         
         // Fetch classes taught by this teacher (homeroom OR teaching in schedules)
         const myClassList = await dataService.getClasses({ teacherId: user.id });
+        console.log('📚 [TeacherDashboard] My classes:', myClassList.length);
+        console.log('📊 [TeacherDashboard] Classes detail:', myClassList);
         
         // Count total students and prepare class info
         const totalStudents = myClassList.reduce((acc: number, c: any) => acc + (c.studentIds?.length || 0), 0);
+        console.log('👥 [TeacherDashboard] Total students:', totalStudents);
         
         const classInfo: ClassInfo[] = myClassList.map((c: any) => ({
           id: c.id,
           name: c.name,
-          level: c.level || 'MA',
           studentCount: c.studentIds?.length || 0
         }));
         setMyClasses(classInfo);
         
-        // TODO: Fetch real schedule data from database
-        // For now, empty schedule until we implement schedule table
-        setTodaySchedule([]);
+        // Fetch today's schedule from class_schedules
+        const dayOfWeek = new Date().getDay(); // 0=Sunday, 1=Monday, etc.
+        const scheduleData = await dataService.getScheduleForTeacher(user.id, dayOfWeek);
+        console.log('📅 [TeacherDashboard] Today schedule:', scheduleData.length);
+        setTodaySchedule(scheduleData);
         
-        // TODO: Calculate real average grade and attendance rate
-        // For now, set to 0 until we implement the calculation
-        const averageGrade = 0;
-        const attendanceRate = 0;
+        // Calculate real stats - no dummy data
+        const averageGrade = 0; // Will be calculated when grades exist
+        const attendanceRate = 0; // Will be calculated when attendance exists
         
         setStats({
           totalClasses: myClassList.length,
           totalStudents,
           journalToday: journal.length,
-          attendanceMarked: journal.length,
           averageGrade,
           attendanceRate,
         });
@@ -146,8 +148,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
         <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-amber-500 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase">Absensi Dicatat</p>
-              <p className="text-3xl font-bold text-amber-600">{isLoading ? '...' : stats.attendanceMarked}</p>
+              <p className="text-xs text-gray-500 uppercase">Jadwal Hari Ini</p>
+              <p className="text-3xl font-bold text-amber-600">{isLoading ? '...' : todaySchedule.length}</p>
             </div>
             <ClipboardDocumentListIcon className="h-10 w-10 text-amber-200" />
           </div>
@@ -320,7 +322,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
                   
                   return (
                     <div key={classItem.id} className={`p-3 bg-gradient-to-br rounded-lg border-2 ${colorClass}`}>
-                      <p className="font-semibold">{classItem.level} {classItem.name}</p>
+                      <p className="font-semibold">{classItem.name}</p>
                       <p className="text-xs opacity-75">{classItem.studentCount} siswa</p>
                     </div>
                   );
@@ -330,6 +332,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ user }) => {
               <div className="text-center py-6 bg-gray-50 rounded-lg">
                 <UserGroupIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
                 <p className="text-sm text-gray-500">Belum ada kelas yang diampu</p>
+                <p className="text-xs text-gray-400 mt-1">Hubungi admin untuk assignment kelas</p>
               </div>
             )}
             <Link

@@ -422,6 +422,33 @@ export const dataService = {
   
   return classes;
   },
+  
+  async getScheduleForTeacher(teacherId: string, dayOfWeek: number): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('class_schedules')
+      .select(`
+        *,
+        class:classes(name),
+        subject:subjects(name)
+      `)
+      .eq('teacher_id', teacherId)
+      .eq('day_of_week', dayOfWeek);
+    
+    if (error) {
+      console.error('[Supabase][getScheduleForTeacher] Error:', error);
+      return [];
+    }
+    
+    return (data || []).map(s => ({
+      id: s.id,
+      time: `${s.start_time} - ${s.end_time}`,
+      subject: s.subject?.name || 'Unknown Subject',
+      className: s.class?.name || 'Unknown Class',
+      startTime: s.start_time,
+      endTime: s.end_time,
+    }));
+  },
+  
   async getSubjects(filters?: { schoolId?: string }): Promise<Subject[]> {
       let query = supabase.from('subjects').select('*, school:schools(name)');
       if (filters?.schoolId) {
@@ -452,8 +479,26 @@ export const dataService = {
       return data.map(m => mapUserFromDb(m.profile));
   },
   async getJournalForTeacher(teacherId: string, date: string): Promise<JournalEntry[]> {
-      // Mock, needs real implementation
-      return [{ subject: 'Matematika', class: 'MA Kelas 10-A', topic: 'Aljabar Linear' }];
+      const { data, error } = await supabase
+        .from('teaching_journals')
+        .select(`
+          *,
+          class:classes(name),
+          subject:subjects(name)
+        `)
+        .eq('teacher_id', teacherId)
+        .eq('date', date);
+      
+      if (error) {
+        console.error('[Supabase][getJournalForTeacher] Error:', error);
+        return [];
+      }
+      
+      return (data || []).map(j => ({
+        subject: j.subject?.name || 'Unknown Subject',
+        class: j.class?.name || 'Unknown Class',
+        topic: j.topic || j.description || 'No topic',
+      }));
   },
   async getTeachingJournals(teacherId: string): Promise<TeachingJournal[]> { return []; },
   async createTeachingJournal(data: any): Promise<void> { console.log("Mock create journal", data); },
